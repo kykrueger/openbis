@@ -3,13 +3,7 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.IDENTIFIER_ALIAS;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -128,11 +122,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
         // Obtain entity id results from search manager
 
-        Set<Map<String, Object>> newResults = getGlobalSearchManager().searchForIDs(personPE.getId(),
+        Collection<Map<String, Object>> newResults = getGlobalSearchManager().searchForIDs(personPE.getId(),
                 getAuthorisationInformation(personPE),
                 globalSearchCriteria,
                 ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
-                getTableMapper(searchableEntity), true);
+                Collections.singleton(getObjectKind(searchableEntity)), true);
 
         Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true);
 
@@ -200,23 +194,35 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return globalSearchCriteria;
     }
 
-    private TableMapper getTableMapper(SearchableEntity entityKind) {
-        TableMapper tableMapper = null;
+    private GlobalSearchObjectKind getObjectKind(final SearchableEntity entityKind) {
+        final GlobalSearchObjectKind objectKind;
         switch (entityKind) {
             case MATERIAL:
-                tableMapper = TableMapper.MATERIAL;
+            {
+                objectKind = GlobalSearchObjectKind.MATERIAL;
                 break;
+            }
             case EXPERIMENT:
-                tableMapper = TableMapper.EXPERIMENT;
+            {
+                objectKind = GlobalSearchObjectKind.EXPERIMENT;
                 break;
+            }
             case SAMPLE:
-                tableMapper = TableMapper.SAMPLE;
+            {
+                objectKind = GlobalSearchObjectKind.SAMPLE;
                 break;
+            }
             case DATA_SET:
-                tableMapper = TableMapper.DATA_SET;
+            {
+                objectKind = GlobalSearchObjectKind.DATA_SET;
                 break;
+            }
+            default:
+            {
+                throw new IllegalArgumentException();
+            }
         }
-        return tableMapper;
+        return objectKind;
     }
 
     @Override

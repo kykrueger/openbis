@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.relationship.IGetRelationshipIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -59,7 +60,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         this.sqlExecutor = sqlExecutor;
     }
 
-    public Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final AbstractCompositeSearchCriteria criterion,
+    public Set<Long> queryDBForIdsAndRanksWithNonRecursiveCriteria(final Long userId, final AbstractCompositeSearchCriteria criterion,
             final TableMapper tableMapper, final String idsColumnName, final AuthorisationInformation authorisationInformation)
     {
         final Collection<ISearchCriteria> criteria = criterion.getCriteria();
@@ -167,9 +168,57 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     }
 
     @Override
-    public Set<Map<String, Object>> queryDBWithNonRecursiveCriteria(final Long userId,
-            final GlobalSearchCriteria criterion, final TableMapper tableMapper, final String idsColumnName,
-            final AuthorisationInformation authorisationInformation, final boolean useHeadline)
+    public List<Map<String, Object>> queryDBForIdsAndRanksWithNonRecursiveCriteria(final Long userId,
+            final GlobalSearchCriteria criterion, final String idsColumnName,
+            final AuthorisationInformation authorisationInformation, final Set<GlobalSearchObjectKind> objectKinds,
+            final boolean useHeadline)
+    {
+        final TranslationContext translationContext = buildTranslationContext(userId, criterion,
+                idsColumnName, authorisationInformation, objectKinds, useHeadline);
+
+        // Short query to narrow down the result set and calculate ranks.
+        final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translateToShortQuery(translationContext);
+        return sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
+    }
+
+    @Override
+    public Set<Map<String, Object>> queryDBWithNonRecursiveCriteria(
+            final Collection<Map<String, Object>> idsAndRanksResult, final Long userId,
+            final GlobalSearchCriteria criterion, final String idsColumnName,
+            final AuthorisationInformation authorisationInformation, final Set<GlobalSearchObjectKind> objectKinds,
+            final boolean useHeadline)
+    {
+        final TranslationContext translationContext = buildTranslationContext(userId, criterion,
+                idsColumnName, authorisationInformation, objectKinds, useHeadline);
+
+        final Map<Long, Map<String, Object>> recordById = idsAndRanksResult.stream()
+                .collect(Collectors.toMap(fieldsMap -> (Long) fieldsMap.get(ID_COLUMN), Function.identity(),
+                        (existingFieldsMap, newFieldsMap) ->
+                        {
+                            throw new IllegalStateException(String.format(
+                                    "Result with the same key found. [existingFieldsMap=%s, newFieldsMap=%s]",
+                                    existingFieldsMap, newFieldsMap));
+                        }, LinkedHashMap::new)
+                );
+
+        final Set<Long> permIdSet = recordById.keySet();
+
+        // Detailed query to fetch all required information as a final result.
+        final SelectQuery detailsSelectQuery = GlobalSearchCriteriaTranslator.translateToDetailsQuery(
+                translationContext, permIdSet);
+        final List<Map<String, Object>> otherDetailsResult = sqlExecutor.execute(detailsSelectQuery.getQuery(),
+                detailsSelectQuery.getArgs());
+
+        // Adding ranks obtained from the first query to the result of the second one.
+        otherDetailsResult.forEach(record -> record.put(RANK_ALIAS,
+                recordById.get((Long) record.get(ID_COLUMN)).get(RANK_ALIAS)));
+
+        return new LinkedHashSet<>(otherDetailsResult);
+    }
+
+    private static TranslationContext buildTranslationContext(final Long userId, final GlobalSearchCriteria criterion,
+            final String idsColumnName, final AuthorisationInformation authorisationInformation,
+            final Set<GlobalSearchObjectKind> objectKinds, final boolean useHeadline)
     {
         final Collection<ISearchCriteria> criteria = criterion.getCriteria();
         final SearchOperator operator = criterion.getOperator();
@@ -178,51 +227,14 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
         final TranslationContext translationContext = new TranslationContext();
         translationContext.setUserId(userId);
-        translationContext.setTableMapper(tableMapper);
         translationContext.setParentCriterion(criterion);
         translationContext.setCriteria(criteria);
         translationContext.setOperator(operator);
         translationContext.setIdColumnName(finalIdColumnName);
         translationContext.setAuthorisationInformation(authorisationInformation);
         translationContext.setUseHeadline(useHeadline);
-
-        // Short query to narrow down the result set and calculate ranks.
-        final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translateToShortQuery(translationContext);
-        final List<Map<String, Object>> idsAndRanksResult = sqlExecutor.execute(selectQuery.getQuery(),
-                selectQuery.getArgs());
-
-        if (!idsAndRanksResult.isEmpty())
-        {
-            final Map<Long, Map<String, Object>> recordById = idsAndRanksResult.stream()
-                    .collect(Collectors.toMap(fieldsMap -> (Long) fieldsMap.get(ID_COLUMN), Function.identity(),
-                            (existingFieldsMap, newFieldsMap) ->
-                            {
-                                throw new IllegalStateException(
-                                        String.format(
-                                                "Result with the same key found. [existingFieldsMap=%s, newFieldsMap=%s]",
-                                                existingFieldsMap, newFieldsMap));
-                            }, LinkedHashMap::new)
-                    );
-
-            final Set<Long> permIdSet = recordById.keySet();
-
-            selectQuery.getArgs().clear();
-
-            // Detailed query to fetch all required information as a final result.
-            final SelectQuery detailsSelectQuery = GlobalSearchCriteriaTranslator.translateToDetailsQuery(translationContext,
-                    permIdSet);
-            final List<Map<String, Object>> otherDetailsResult = sqlExecutor.execute(detailsSelectQuery.getQuery(),
-                    selectQuery.getArgs());
-
-            // Adding ranks obtained from the first query to the result of the second one.
-            otherDetailsResult.forEach(record -> record.put(RANK_ALIAS,
-                    recordById.get((Long) record.get(ID_COLUMN)).get(RANK_ALIAS)));
-
-            return new LinkedHashSet<>(otherDetailsResult);
-        } else
-        {
-            return Collections.emptySet();
-        }
+        translationContext.setObjectKinds(objectKinds);
+        return translationContext;
     }
 
     @Override

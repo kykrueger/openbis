@@ -32,13 +32,11 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearc
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.GlobalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.globalsearch.IGlobalSearchObjectTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person.IPersonTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
@@ -101,45 +99,27 @@ public class SearchGloballyOperationExecutor
         final TranslationContext translationContext = new TranslationContext(context.getSession());
 
         final Set<GlobalSearchObjectKind> objectKinds = getObjectKinds(criteria);
-        final Set<Map<String, Object>> allResultMaps = new HashSet<>();
 
         // There results from the manager should already be filtered.
-        if (objectKinds.contains(GlobalSearchObjectKind.SAMPLE))    
-        {
-            final Set<Map<String, Object>> sampleResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.SAMPLE, fetchOptions.hasMatch());
-            allResultMaps.addAll(sampleResultMaps);
-        }
+        final Collection<Map<String, Object>> allResultMaps = globalSearchManager.searchForIDs(userId,
+                authorisationInformation, criteria, null, objectKinds, fetchOptions.hasMatch());
 
-        if (objectKinds.contains(GlobalSearchObjectKind.EXPERIMENT))
-        {
-            final Set<Map<String, Object>> experimentResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.EXPERIMENT, fetchOptions.hasMatch());
-            allResultMaps.addAll(experimentResultMaps);
-        }
+        // TODO: do sorting and paging inside the unified query.
+        final List<Map<String, Object>> pagedShortRecords = sortAndPage(allResultMaps, fetchOptions);
 
-        if (objectKinds.contains(GlobalSearchObjectKind.DATA_SET))
-        {
-            final Set<Map<String, Object>> dataSetResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.DATA_SET, fetchOptions.hasMatch());
-            allResultMaps.addAll(dataSetResultMaps);
-        }
-
-        if (objectKinds.contains(GlobalSearchObjectKind.MATERIAL))
-        {
-            final Set<Map<String, Object>> materialResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.MATERIAL, fetchOptions.hasMatch());
-            allResultMaps.addAll(materialResultMaps);
-        }
-
-        final Collection<MatchingEntity> matchingEntities = globalSearchManager.map(allResultMaps,
+        final Collection<Map<String, Object>> pagedRecords = globalSearchManager.searchForDetails(pagedShortRecords,
+                userId, authorisationInformation, criteria, null, objectKinds, fetchOptions.hasMatch());
+        final Collection<MatchingEntity> pagedMatchingEntities = globalSearchManager.map(pagedRecords,
                 fetchOptions.hasMatch());
-        final List<MatchingEntity> pagedMatchingEntities = sortAndPage(matchingEntities, fetchOptions);
-        // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
-        final Map<MatchingEntity, GlobalSearchObject> pagedResultV3DTOs = doTranslate(translationContext, pagedMatchingEntities, fetchOptions);
 
-        assert pagedMatchingEntities.size() == pagedResultV3DTOs.size() : "The number of results after translation should not change. " +
-                "[pagedResultPEs.size()=" + pagedMatchingEntities.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
+        // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
+        final Map<MatchingEntity, GlobalSearchObject> pagedResultV3DTOs = doTranslate(translationContext,
+                pagedMatchingEntities, fetchOptions);
+
+        assert pagedMatchingEntities.size() == pagedResultV3DTOs.size() : String.format(
+                "The number of results after translation should not change. " +
+                "[pagedResultPEs.size()=%d, pagedResultV3DTOs.size()=%d]",
+                pagedMatchingEntities.size(), pagedResultV3DTOs.size());
 
         // Reordering of pagedResultV3DTOs is needed because translation mixes the order
         final List<GlobalSearchObject> objectResults = pagedMatchingEntities.stream().map(pagedResultV3DTOs::get)
@@ -149,7 +129,7 @@ public class SearchGloballyOperationExecutor
         new SortAndPage().nest(objectResults, criteria, fetchOptions);
 
         final SearchResult<GlobalSearchObject> searchResult =
-                new SearchResult<>(objectResults, matchingEntities.size());
+                new SearchResult<>(objectResults, allResultMaps.size());
         return getOperationResult(searchResult);
     }
 
@@ -184,7 +164,8 @@ public class SearchGloballyOperationExecutor
         return objectKinds.isEmpty() ? EnumSet.allOf(GlobalSearchObjectKind.class) : objectKinds;
     }
 
-    protected List<MatchingEntity> sortAndPage(final Collection<MatchingEntity> results, final FetchOptions<GlobalSearchObject> fo)
+    private List<Map<String, Object>> sortAndPage(final Collection<Map<String, Object>> results,
+            final FetchOptions<GlobalSearchObject> fo)
     {
         final SortOptions<GlobalSearchObject> sortOptions;
         if (fo.getSortBy() != null)
@@ -199,7 +180,7 @@ public class SearchGloballyOperationExecutor
             sortOptions = defaultSortOptions;
         }
 
-        final List<MatchingEntity> sortedResults = globalSearchManager.sortRecords(results, sortOptions);
+        final List<Map<String, Object>> sortedResults = globalSearchManager.sortRecords(results, sortOptions);
 
         final Integer fromRecord = fo.getFrom();
         final Integer recordsCount = fo.getCount();

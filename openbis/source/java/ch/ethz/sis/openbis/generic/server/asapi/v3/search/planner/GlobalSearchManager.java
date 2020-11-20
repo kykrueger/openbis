@@ -5,10 +5,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 
 import java.util.*;
@@ -30,6 +30,16 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     private static final String PROPERTY_NAME = "Property";
 
+    private static final Map<String, String> ALIAS_BY_FIELD_NAME = new HashMap<>(4);
+
+    static
+    {
+        ALIAS_BY_FIELD_NAME.put(SCORE, RANK_ALIAS);
+        ALIAS_BY_FIELD_NAME.put(OBJECT_KIND, OBJECT_KIND_ALIAS);
+        ALIAS_BY_FIELD_NAME.put(OBJECT_PERM_ID, OBJECT_PERM_ID);
+        ALIAS_BY_FIELD_NAME.put(OBJECT_IDENTIFIER, ID_COLUMN);
+    }
+
     protected final ISQLAuthorisationInformationProviderDAO authProvider;
 
     private final ISQLSearchDAO searchDAO;
@@ -42,12 +52,13 @@ public class GlobalSearchManager implements IGlobalSearchManager
     }
 
     @Override
-    public Set<Map<String, Object>> searchForIDs(final Long userId,
+    public Collection<Map<String, Object>> searchForIDs(final Long userId,
             final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria,
-            final String idsColumnName, final TableMapper tableMapper, final boolean useHeadline)
+            final String idsColumnName, final Set<GlobalSearchObjectKind> objectKinds, final boolean useHeadline)
     {
-        final Set<Map<String, Object>> mainCriteriaIntermediateResults = searchDAO.queryDBWithNonRecursiveCriteria(
-                userId, criteria, tableMapper, idsColumnName, authorisationInformation, useHeadline);
+        final List<Map<String, Object>> mainCriteriaIntermediateResults =
+                searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(
+                userId, criteria, idsColumnName, authorisationInformation, objectKinds, useHeadline);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
@@ -56,12 +67,24 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 ? mainCriteriaIntermediateResults : Collections.emptySet();
     }
 
+    @Override
+    public Collection<Map<String, Object>> searchForDetails(final Collection<Map<String, Object>> idsAndRanksResult,
+            final Long userId, final AuthorisationInformation authorisationInformation,
+            final GlobalSearchCriteria criteria, final String idsColumnName,
+            final Set<GlobalSearchObjectKind> objectKinds, final boolean useHeadline)
+    {
+        return containsValues(idsAndRanksResult)
+                ? searchDAO.queryDBWithNonRecursiveCriteria(idsAndRanksResult, userId, criteria,
+                idsColumnName, authorisationInformation, objectKinds, useHeadline)
+                : Collections.emptySet();
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public List<MatchingEntity> sortRecords(final Collection<MatchingEntity> records,
+    public List<Map<String, Object>> sortRecords(final Collection<Map<String, Object>> records,
             final SortOptions<GlobalSearchObject> sortOptions)
     {
-        final ArrayList<MatchingEntity> result = new ArrayList<>(records);
+        final ArrayList<Map<String, Object>> result = new ArrayList<>(records);
         final List<Sorting> sortingList = sortOptions.getSortings();
         result.sort((o1, o2) ->
         {
@@ -87,36 +110,15 @@ public class GlobalSearchManager implements IGlobalSearchManager
     }
 
     @SuppressWarnings({"unchecked", "UnnecessaryBoxing"})
-    private <T extends Comparable<T>> Comparable<T> getPropertyByKey(final MatchingEntity matchingEntity,
+    private <T extends Comparable<T>> Comparable<T> getPropertyByKey(final Map<String, Object> record,
             final String field)
     {
-        switch (field)
+        final String alias = ALIAS_BY_FIELD_NAME.get(field);
+        if (alias == null)
         {
-            case SCORE:
-            {
-                return (Comparable<T>) Double.valueOf(matchingEntity.getScore());
-            }
-
-            case OBJECT_KIND:
-            {
-                return (Comparable<T>) matchingEntity.getEntityKind();
-            }
-
-            case OBJECT_PERM_ID:
-            {
-                return (Comparable<T>) matchingEntity.getPermId();
-            }
-
-            case OBJECT_IDENTIFIER:
-            {
-                return (Comparable<T>) matchingEntity.getIdentifier();
-            }
-
-            default:
-            {
-                throw new IllegalArgumentException(String.format("Unknown field %s", field));
-            }
+            throw new IllegalArgumentException(String.format("Unknown field %s", field));
         }
+        return (Comparable<T>) record.get(alias);
     }
 
     private static int sortOrderToInt(final SortOrder sortOrder)
@@ -139,7 +141,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
     public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records, final boolean withMatches)
     {
         return records.stream().map(stringObjectMap -> mapRecordToMatchingEntity(stringObjectMap, withMatches))
-                .collect(Collectors.toMap(MatchingEntity::getIdentifier, Function.identity(),
+                .collect(Collectors.toMap(MatchingEntity::getPermId, Function.identity(),
                         (existingMatchingEntity, newMatchingEntity) ->
                                 mergeMatchingEntities(existingMatchingEntity, newMatchingEntity, withMatches),
                         LinkedHashMap::new

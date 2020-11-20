@@ -16,17 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
@@ -53,6 +49,8 @@ public class TranslationContext
     private Map<String, String> dataTypeByPropertyCode;
 
     private Collection<Long> ids;
+
+    private Set<GlobalSearchObjectKind> objectKinds;
 
     private SortOptions<?> sortOptions;
 
@@ -161,6 +159,16 @@ public class TranslationContext
     public void setIds(final Collection<Long> ids)
     {
         this.ids = ids;
+    }
+
+    public Set<GlobalSearchObjectKind> getObjectKinds()
+    {
+        return objectKinds;
+    }
+
+    public void setObjectKinds(final Set<GlobalSearchObjectKind> objectKinds)
+    {
+        this.objectKinds = objectKinds;
     }
 
     public SortOptions<?> getSortOptions()
