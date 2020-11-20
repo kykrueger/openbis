@@ -18,7 +18,8 @@ async function testOpenClose() {
     testDynamicPropertyJythonPlugin,
     testDynamicPropertyPredeployedPlugin,
     testManagedPropertyJythonPlugin,
-    testEntityValidationJythonPlugin
+    testEntityValidationJythonPlugin,
+    testQuery
   } = ToolBrowserTestData
 
   openbis.mockSearchPlugins([
@@ -27,6 +28,7 @@ async function testOpenClose() {
     testManagedPropertyJythonPlugin,
     testEntityValidationJythonPlugin
   ])
+  openbis.mockSearchQueries([testQuery])
 
   const browser = await common.mount()
 
@@ -41,7 +43,8 @@ async function testOpenClose() {
       { level: 0, text: 'Dynamic Property Plugins' },
       { level: 1, text: testDynamicPropertyJythonPlugin.name },
       { level: 1, text: testDynamicPropertyPredeployedPlugin.name },
-      { level: 0, text: 'Entity Validation Plugins' }
+      { level: 0, text: 'Entity Validation Plugins' },
+      { level: 0, text: 'Queries' }
     ]
   })
 
@@ -57,7 +60,43 @@ async function testOpenClose() {
       { level: 1, text: testDynamicPropertyJythonPlugin.name },
       { level: 1, text: testDynamicPropertyPredeployedPlugin.name },
       { level: 0, text: 'Entity Validation Plugins' },
-      { level: 1, text: testEntityValidationJythonPlugin.name }
+      { level: 1, text: testEntityValidationJythonPlugin.name },
+      { level: 0, text: 'Queries' }
+    ]
+  })
+
+  browser.getNodes()[5].getIcon().click()
+  await browser.update()
+
+  browser.expectJSON({
+    filter: {
+      value: null
+    },
+    nodes: [
+      { level: 0, text: 'Dynamic Property Plugins' },
+      { level: 1, text: testDynamicPropertyJythonPlugin.name },
+      { level: 1, text: testDynamicPropertyPredeployedPlugin.name },
+      { level: 0, text: 'Entity Validation Plugins' },
+      { level: 1, text: testEntityValidationJythonPlugin.name },
+      { level: 0, text: 'Queries' },
+      { level: 1, text: testQuery.name }
+    ]
+  })
+
+  browser.getNodes()[5].getIcon().click()
+  await browser.update()
+
+  browser.expectJSON({
+    filter: {
+      value: null
+    },
+    nodes: [
+      { level: 0, text: 'Dynamic Property Plugins' },
+      { level: 1, text: testDynamicPropertyJythonPlugin.name },
+      { level: 1, text: testDynamicPropertyPredeployedPlugin.name },
+      { level: 0, text: 'Entity Validation Plugins' },
+      { level: 1, text: testEntityValidationJythonPlugin.name },
+      { level: 0, text: 'Queries' }
     ]
   })
 
@@ -71,7 +110,8 @@ async function testOpenClose() {
     nodes: [
       { level: 0, text: 'Dynamic Property Plugins' },
       { level: 0, text: 'Entity Validation Plugins' },
-      { level: 1, text: testEntityValidationJythonPlugin.name }
+      { level: 1, text: testEntityValidationJythonPlugin.name },
+      { level: 0, text: 'Queries' }
     ]
   })
 
@@ -84,7 +124,8 @@ async function testOpenClose() {
     },
     nodes: [
       { level: 0, text: 'Dynamic Property Plugins' },
-      { level: 0, text: 'Entity Validation Plugins' }
+      { level: 0, text: 'Entity Validation Plugins' },
+      { level: 0, text: 'Queries' }
     ]
   })
 }

@@ -59,10 +59,10 @@ async function testLoadNew(pluginType) {
         label: 'Entity Kind',
         value: null,
         options: [
-          { label: 'MATERIAL' },
-          { label: 'EXPERIMENT' },
-          { label: 'SAMPLE' },
-          { label: 'DATA_SET' }
+          { value: 'MATERIAL' },
+          { value: 'EXPERIMENT' },
+          { value: 'SAMPLE' },
+          { value: 'DATA_SET' }
         ],
         enabled: true,
         mode: 'edit'
@@ -111,10 +111,10 @@ async function testLoadExistingJython(plugin) {
             ? plugin.getEntityKinds()[0]
             : null,
         options: [
-          { label: 'MATERIAL' },
-          { label: 'EXPERIMENT' },
-          { label: 'SAMPLE' },
-          { label: 'DATA_SET' }
+          { value: 'MATERIAL' },
+          { value: 'EXPERIMENT' },
+          { value: 'SAMPLE' },
+          { value: 'DATA_SET' }
         ],
         mode: 'view'
       },
@@ -162,10 +162,10 @@ async function testLoadExistingJython(plugin) {
             ? plugin.getEntityKinds()[0]
             : null,
         options: [
-          { label: 'MATERIAL' },
-          { label: 'EXPERIMENT' },
-          { label: 'SAMPLE' },
-          { label: 'DATA_SET' }
+          { value: 'MATERIAL' },
+          { value: 'EXPERIMENT' },
+          { value: 'SAMPLE' },
+          { value: 'DATA_SET' }
         ],
         enabled: false,
         mode: 'edit'
@@ -220,10 +220,10 @@ async function testLoadExistingPredeployed(plugin) {
             ? plugin.getEntityKinds()[0]
             : null,
         options: [
-          { label: 'MATERIAL' },
-          { label: 'EXPERIMENT' },
-          { label: 'SAMPLE' },
-          { label: 'DATA_SET' }
+          { value: 'MATERIAL' },
+          { value: 'EXPERIMENT' },
+          { value: 'SAMPLE' },
+          { value: 'DATA_SET' }
         ],
         mode: 'view'
       },
