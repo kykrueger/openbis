@@ -145,6 +145,14 @@ const routes = {
     page: pages.TOOLS,
     type: objectTypes.ENTITY_VALIDATION_PLUGIN
   }),
+  NEW_QUERY: new Route('/new-query/:id', {
+    page: pages.TOOLS,
+    type: objectTypes.NEW_QUERY
+  }),
+  QUERY: new Route('/query/:id', {
+    page: pages.TOOLS,
+    type: objectTypes.QUERY
+  }),
   DEFAULT: new DefaultRoute()
 }
 
