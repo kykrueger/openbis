@@ -4,6 +4,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -54,15 +55,15 @@ public class GlobalSearchManager implements IGlobalSearchManager
     @Override
     public Collection<Map<String, Object>> searchForIDs(final Long userId,
             final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria,
-            final String idsColumnName, final Set<GlobalSearchObjectKind> objectKinds, final boolean useHeadline)
+            final String idsColumnName, final Set<GlobalSearchObjectKind> objectKinds,
+            final GlobalSearchObjectFetchOptions fetchOptions)
     {
         final List<Map<String, Object>> mainCriteriaIntermediateResults =
                 searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(
-                userId, criteria, idsColumnName, authorisationInformation, objectKinds, useHeadline);
+                userId, criteria, idsColumnName, authorisationInformation, objectKinds, fetchOptions);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
-
         return containsValues(mainCriteriaIntermediateResults)
                 ? mainCriteriaIntermediateResults : Collections.emptySet();
     }
@@ -71,11 +72,11 @@ public class GlobalSearchManager implements IGlobalSearchManager
     public Collection<Map<String, Object>> searchForDetails(final Collection<Map<String, Object>> idsAndRanksResult,
             final Long userId, final AuthorisationInformation authorisationInformation,
             final GlobalSearchCriteria criteria, final String idsColumnName,
-            final Set<GlobalSearchObjectKind> objectKinds, final boolean useHeadline)
+            final Set<GlobalSearchObjectKind> objectKinds, final GlobalSearchObjectFetchOptions fetchOptions)
     {
         return containsValues(idsAndRanksResult)
                 ? searchDAO.queryDBWithNonRecursiveCriteria(idsAndRanksResult, userId, criteria,
-                idsColumnName, authorisationInformation, objectKinds, useHeadline)
+                idsColumnName, authorisationInformation, objectKinds, fetchOptions)
                 : Collections.emptySet();
     }
 

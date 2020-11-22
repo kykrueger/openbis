@@ -5,6 +5,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REG
 
 import java.util.*;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -122,11 +123,13 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
         // Obtain entity id results from search manager
 
+        final GlobalSearchObjectFetchOptions fetchOptions = new GlobalSearchObjectFetchOptions();
+        fetchOptions.withMatch();
         Collection<Map<String, Object>> newResults = getGlobalSearchManager().searchForIDs(personPE.getId(),
                 getAuthorisationInformation(personPE),
                 globalSearchCriteria,
                 ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
-                Collections.singleton(getObjectKind(searchableEntity)), true);
+                Collections.singleton(getObjectKind(searchableEntity)), fetchOptions);
 
         Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true);
 

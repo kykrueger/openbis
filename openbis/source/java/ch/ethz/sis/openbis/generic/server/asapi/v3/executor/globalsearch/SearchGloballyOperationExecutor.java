@@ -101,15 +101,11 @@ public class SearchGloballyOperationExecutor
         final Set<GlobalSearchObjectKind> objectKinds = getObjectKinds(criteria);
 
         // There results from the manager should already be filtered.
-        final Collection<Map<String, Object>> allResultMaps = globalSearchManager.searchForIDs(userId,
-                authorisationInformation, criteria, null, objectKinds, fetchOptions.hasMatch());
-
-        // TODO: do sorting and paging inside the unified query.
-        final List<Map<String, Object>> pagedShortRecords = sortAndPage(allResultMaps, fetchOptions);
-
-        final Collection<Map<String, Object>> pagedRecords = globalSearchManager.searchForDetails(pagedShortRecords,
-                userId, authorisationInformation, criteria, null, objectKinds, fetchOptions.hasMatch());
-        final Collection<MatchingEntity> pagedMatchingEntities = globalSearchManager.map(pagedRecords,
+        final Collection<Map<String, Object>> shortRecords = globalSearchManager.searchForIDs(userId,
+                authorisationInformation, criteria, null, objectKinds, fetchOptions);
+        final Collection<Map<String, Object>> detailsRecords = globalSearchManager.searchForDetails(shortRecords,
+                userId, authorisationInformation, criteria, null, objectKinds, fetchOptions);
+        final Collection<MatchingEntity> pagedMatchingEntities = globalSearchManager.map(detailsRecords,
                 fetchOptions.hasMatch());
 
         // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
@@ -129,7 +125,7 @@ public class SearchGloballyOperationExecutor
         new SortAndPage().nest(objectResults, criteria, fetchOptions);
 
         final SearchResult<GlobalSearchObject> searchResult =
-                new SearchResult<>(objectResults, allResultMaps.size());
+                new SearchResult<>(objectResults, shortRecords.size());
         return getOperationResult(searchResult);
     }
 

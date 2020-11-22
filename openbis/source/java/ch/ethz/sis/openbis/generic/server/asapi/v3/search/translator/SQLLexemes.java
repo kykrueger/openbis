@@ -36,7 +36,7 @@ public class SQLLexemes
     public static final String SUM = "SUM";
 
     public static final String ARRAY_POSITION = "array_position";
-    
+
     public static final String DATE_TRUNC = "date_trunc";
 
     public static final String TS_RANK = "ts_rank";
@@ -123,9 +123,13 @@ public class SQLLexemes
 
     public static final String IS_NULL = IS + SP + NULL;
 
+    public static final String GROUP_BY = "GROUP BY";
+
     public static final String ORDER_BY = "ORDER BY";
 
-    public static final String GROUP_BY = "GROUP BY";
+    public static final String LIMIT = "LIMIT";
+
+    public static final String OFFSET = "OFFSET";
 
     public static final String INTERSECT = "INTERSECT";
 

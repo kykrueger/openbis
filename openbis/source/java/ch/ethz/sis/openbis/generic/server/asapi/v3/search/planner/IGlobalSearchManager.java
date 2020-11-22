@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -40,12 +41,12 @@ public interface IGlobalSearchManager extends ISearchManager
      * @param idsColumnName name of the column to select the ID's by; usually the
      * {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}.
      * @param objectKinds object kinds to be included in the search.
-     * @param useHeadline whether match spans should be calculated.
+     * @param fetchOptions whether match spans should be calculated.
      * @return set of IDs of found entities.
      */
     Collection<Map<String, Object>> searchForIDs(Long userId, AuthorisationInformation authorisationInformation,
             GlobalSearchCriteria criteria, String idsColumnName, Set<GlobalSearchObjectKind> objectKinds,
-            boolean useHeadline);
+            GlobalSearchObjectFetchOptions fetchOptions);
 
     /**
      * Searches for entities using certain criteria.
@@ -56,13 +57,13 @@ public interface IGlobalSearchManager extends ISearchManager
      * @param idsColumnName name of the column to select the ID's by; usually the
      * {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}.
      * @param objectKinds
-     * @param useHeadline whether match spans should be calculated.
+     * @param fetchOptions whether match spans should be calculated.
      * @return set of IDs of found entities.
      */
     Collection<Map<String, Object>> searchForDetails(Collection<Map<String, Object>> idsAndRanksResult,
             Long userId, AuthorisationInformation authorisationInformation,
             GlobalSearchCriteria criteria, String idsColumnName,
-            final Set<GlobalSearchObjectKind> objectKinds, boolean useHeadline);
+            final Set<GlobalSearchObjectKind> objectKinds, GlobalSearchObjectFetchOptions fetchOptions);
 
     List<Map<String, Object>> sortRecords(Collection<Map<String, Object>> records,
             SortOptions<GlobalSearchObject> sortOptions);

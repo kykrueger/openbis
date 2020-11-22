@@ -483,11 +483,12 @@ public class GlobalSearchTest extends AbstractTest
     {
         for (int index = 1, size = globalSearchObjects.size(); index < size; index++)
         {
-            final Comparable<Object> value1 = (Comparable<Object>) valueRetriever.apply(globalSearchObjects.get(index - 1));
+            final Comparable<Object> value1 = (Comparable<Object>) valueRetriever.apply(
+                    globalSearchObjects.get(index - 1));
             final Object value2 = valueRetriever.apply(globalSearchObjects.get(index));
             final int comparison = value1.compareTo(value2);
             assertFalse(ascending && comparison > 0 || !ascending && comparison < 0,
-                    "Ordering is incorrect. [index=" + index + "value1=" + value1 + ", value2=" + value2 + "]");
+                    String.format("Ordering is incorrect. [index=%d, value1=%s, value2=%s]", index, value1, value2));
         }
     }
 

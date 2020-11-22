@@ -22,6 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -54,13 +55,13 @@ public class TranslationContext
 
     private SortOptions<?> sortOptions;
 
+    private GlobalSearchObjectFetchOptions fetchOptions;
+
     private String[] typesToFilter;
 
     private String idColumnName;
 
     private AuthorisationInformation authorisationInformation;
-
-    private boolean useHeadline;
 
     public Long getUserId()
     {
@@ -181,6 +182,16 @@ public class TranslationContext
         this.sortOptions = sortOptions;
     }
 
+    public GlobalSearchObjectFetchOptions getFetchOptions()
+    {
+        return fetchOptions;
+    }
+
+    public void setFetchOptions(final GlobalSearchObjectFetchOptions fetchOptions)
+    {
+        this.fetchOptions = fetchOptions;
+    }
+
     public String[] getTypesToFilter()
     {
         return typesToFilter;
@@ -209,16 +220,6 @@ public class TranslationContext
     public void setAuthorisationInformation(final AuthorisationInformation authorisationInformation)
     {
         this.authorisationInformation = authorisationInformation;
-    }
-
-    public boolean isUseHeadline()
-    {
-        return useHeadline;
-    }
-
-    public void setUseHeadline(final boolean useHeadline)
-    {
-        this.useHeadline = useHeadline;
     }
 
 }

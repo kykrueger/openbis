@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
@@ -171,10 +172,10 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     public List<Map<String, Object>> queryDBForIdsAndRanksWithNonRecursiveCriteria(final Long userId,
             final GlobalSearchCriteria criterion, final String idsColumnName,
             final AuthorisationInformation authorisationInformation, final Set<GlobalSearchObjectKind> objectKinds,
-            final boolean useHeadline)
+            final GlobalSearchObjectFetchOptions fetchOptions)
     {
         final TranslationContext translationContext = buildTranslationContext(userId, criterion,
-                idsColumnName, authorisationInformation, objectKinds, useHeadline);
+                idsColumnName, authorisationInformation, objectKinds, fetchOptions);
 
         // Short query to narrow down the result set and calculate ranks.
         final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translateToShortQuery(translationContext);
@@ -186,10 +187,10 @@ public class PostgresSearchDAO implements ISQLSearchDAO
             final Collection<Map<String, Object>> idsAndRanksResult, final Long userId,
             final GlobalSearchCriteria criterion, final String idsColumnName,
             final AuthorisationInformation authorisationInformation, final Set<GlobalSearchObjectKind> objectKinds,
-            final boolean useHeadline)
+            final GlobalSearchObjectFetchOptions fetchOptions)
     {
         final TranslationContext translationContext = buildTranslationContext(userId, criterion,
-                idsColumnName, authorisationInformation, objectKinds, useHeadline);
+                idsColumnName, authorisationInformation, objectKinds, fetchOptions);
 
         final Map<Long, Map<String, Object>> recordById = idsAndRanksResult.stream()
                 .collect(Collectors.toMap(fieldsMap -> (Long) fieldsMap.get(ID_COLUMN), Function.identity(),
@@ -218,7 +219,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
     private static TranslationContext buildTranslationContext(final Long userId, final GlobalSearchCriteria criterion,
             final String idsColumnName, final AuthorisationInformation authorisationInformation,
-            final Set<GlobalSearchObjectKind> objectKinds, final boolean useHeadline)
+            final Set<GlobalSearchObjectKind> objectKinds, final GlobalSearchObjectFetchOptions fetchOptions)
     {
         final Collection<ISearchCriteria> criteria = criterion.getCriteria();
         final SearchOperator operator = criterion.getOperator();
@@ -232,7 +233,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationContext.setOperator(operator);
         translationContext.setIdColumnName(finalIdColumnName);
         translationContext.setAuthorisationInformation(authorisationInformation);
-        translationContext.setUseHeadline(useHeadline);
+        translationContext.setFetchOptions(fetchOptions);
         translationContext.setObjectKinds(objectKinds);
         return translationContext;
     }
