@@ -182,8 +182,6 @@ public class GlobalSearchCriteriaTranslator
         suffixSqlBuilder.append(OBJECT_KIND_ALIAS).append(COMMA).append(SP);
         suffixSqlBuilder.append(IDENTIFIER_ALIAS).append(NL);
 
-        translateAuthorisation(suffixSqlBuilder, translationContext);
-
         suffixSqlBuilder.append(RP).append(SP).append("q2").append(NL);
 
         translateOrderBy(suffixSqlBuilder, translationContext);
@@ -193,23 +191,28 @@ public class GlobalSearchCriteriaTranslator
                 translationContext.getArgs());
     }
 
-    private static void translateOrderBy(final StringBuilder suffixSqlBuilder,
+    private static void translateOrderBy(final StringBuilder sqlBuilder,
             final TranslationContext translationContext)
     {
         final GlobalSearchObjectSortOptions sortOptions = translationContext.getFetchOptions().getSortBy();
         if (sortOptions != null)
         {
             final List<Sorting> sortings = sortOptions.getSortings();
-            suffixSqlBuilder.append(ORDER_BY).append(SP);
-            final Spliterator<Sorting> spliterator = sortings.stream().spliterator();
 
-            if (spliterator.tryAdvance(sorting -> addOrderByField(suffixSqlBuilder, sorting)))
+            if (sortings != null && !sortings.isEmpty())
             {
-                StreamSupport.stream(spliterator, false).forEach(sorting ->
+                sqlBuilder.append(ORDER_BY).append(SP);
+                final Spliterator<Sorting> spliterator = sortings.stream().spliterator();
+
+                if (spliterator.tryAdvance(sorting -> addOrderByField(sqlBuilder, sorting)))
                 {
-                    suffixSqlBuilder.append(COMMA).append(SP);
-                    addOrderByField(suffixSqlBuilder, sorting);
-                });
+                    StreamSupport.stream(spliterator, false).forEach(sorting ->
+                    {
+                        sqlBuilder.append(COMMA).append(SP);
+                        addOrderByField(sqlBuilder, sorting);
+                    });
+                }
+                sqlBuilder.append(NL);
             }
         }
     }
@@ -237,32 +240,38 @@ public class GlobalSearchCriteriaTranslator
     }
 
     private static void translateAuthorisation(final StringBuilder sqlBuilder,
-            final TranslationContext translationContext)
+            final TranslationContext translationContext, final TableMapper tableMapper)
     {
         final AuthorisationInformation authorisationInformation = translationContext.getAuthorisationInformation();
-        final TableMapper tableMapper = translationContext.getTableMapper();
         final List<Object> args = translationContext.getArgs();
         if (!authorisationInformation.isInstanceRole())
         {
+            if (tableMapper != MATERIAL)
+            {
+                sqlBuilder.append(SP).append(AND).append(SP).append(LP).append(NL);
+            }
             switch (tableMapper)
             {
                 case SAMPLE:
                 {
-                    sqlBuilder.append(HAVING).append(SP);
-                    sqlBuilder.append(SPACE_COLUMN).append(SP).append(IN).append(SP).append(LP)
+                    sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(SPACE_COLUMN).append(SP).append(IN)
+                            .append(SP).append(LP)
                             .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).append(RP)
                             .append(SP).append(OR).append(NL);
-                    sqlBuilder.append(PROJECT_COLUMN).append(SP).append(IN).append(SP).append(LP).append(SELECT)
+                    sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PROJECT_COLUMN).append(SP).append(IN)
+                            .append(SP).append(LP).append(SELECT)
                             .append(SP).append(UNNEST).append(LP).append(QU).append(RP).append(RP)
                             .append(SP).append(OR).append(NL);
-                    sqlBuilder.append(EXPERIMENT_COLUMN).append(SP).append(IN).append(SP).append(LP).append(SELECT)
+                    sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(EXPERIMENT_COLUMN).append(SP).append(IN)
+                            .append(SP).append(LP).append(SELECT)
                             .append(SP).append(ID_COLUMN).append(SP).append(FROM).append(SP)
                             .append(TableMapper.EXPERIMENT.getEntitiesTable()).append(SP)
                             .append(WHERE).append(SP).append(PROJECT_COLUMN).append(SP).append(IN).append(SP)
                             .append(SELECT_UNNEST).append(RP)
                             .append(SP).append(OR).append(NL);
-                    sqlBuilder.append(SPACE_COLUMN).append(SP).append(IS_NULL)
-                            .append(SP).append(AND).append(SP).append(PROJECT_COLUMN).append(SP).append(IS_NULL)
+                    sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(SPACE_COLUMN).append(SP).append(IS_NULL)
+                            .append(SP).append(AND).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD)
+                            .append(PROJECT_COLUMN).append(SP).append(IS_NULL)
                             .append(NL);
 
                     final Long[] projectIds = authorisationInformation.getProjectIds().toArray(new Long[0]);
@@ -274,15 +283,16 @@ public class GlobalSearchCriteriaTranslator
 
                 case EXPERIMENT:
                 {
-                    sqlBuilder.append(HAVING).append(SP);
-                    sqlBuilder.append(PROJECT_COLUMN).append(SP).append(IN).append(SP).append(LP)
+                    sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PROJECT_COLUMN).append(SP).append(IN)
+                            .append(SP).append(LP)
                             .append(SELECT).append(SP).append(ID_COLUMN).append(SP)
                             .append(FROM).append(SP).append(PROJECTS_TABLE).append(SP)
                             .append(WHERE).append(SP).append(SPACE_COLUMN).append(SP).append(IN).append(SP).append(LP)
                             .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
                             .append(RP)
                             .append(RP).append(SP).append(OR).append(NL);
-                    sqlBuilder.append(PROJECT_COLUMN).append(SP).append(IN).append(SP).append(LP)
+                    sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PROJECT_COLUMN).append(SP).append(IN)
+                            .append(SP).append(LP)
                             .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
                             .append(RP).append(NL);
 
@@ -298,8 +308,8 @@ public class GlobalSearchCriteriaTranslator
                     final String sp = "sp";
                     final String exp = "exp";
                     final String samp = "samp";
-                    sqlBuilder.append(HAVING).append(SP);
-                    sqlBuilder.append(ID_COLUMN).append(SP).append(IN).append(SP).append(LP);
+                    sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(SP).append(IN)
+                            .append(SP).append(LP);
                     sqlBuilder.append(SELECT).append(SP).append(d).append(PERIOD).append(ID_COLUMN).append(NL);
                     sqlBuilder.append(FROM).append(SP).append(TableMapper.DATA_SET.getEntitiesTable()).append(SP)
                             .append(d).append(NL);
@@ -349,6 +359,10 @@ public class GlobalSearchCriteriaTranslator
                     throw new IllegalArgumentException("Full text search does not support this table mapper: "
                             + tableMapper);
                 }
+            }
+            if (tableMapper != MATERIAL)
+            {
+                sqlBuilder.append(RP);
             }
         }
     }
@@ -661,6 +675,7 @@ public class GlobalSearchCriteriaTranslator
         {
             buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), tableMapper, args);
         }
+        translateAuthorisation(sqlBuilder, translationContext, tableMapper);
         sqlBuilder.append(NL);
     }
 
