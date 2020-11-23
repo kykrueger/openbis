@@ -634,7 +634,10 @@ public class GlobalSearchCriteriaTranslator
             }
         }
 
-        buildProjectAndSpacesJoin(sqlBuilder, tableMapper);
+        if (tableMapper == EXPERIMENT)
+        {
+            buildProjectAndSpacesJoin(sqlBuilder, tableMapper);
+        }
 
         if (tableMapper == MATERIAL)
         {
