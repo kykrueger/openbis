@@ -560,13 +560,13 @@ public class GlobalSearchCriteriaTranslator
         {
             sqlBuilder.append(prefix).append(getPermId(tableMapper)).append(SP)
                     .append(PERM_ID_COLUMN).append(COMMA).append(SP)
-                    .append(SQ).append(objectKindOrdinal).append(SQ).append(SP).append(OBJECT_KIND_ALIAS)
+                    .append(objectKindOrdinal).append(SP).append(OBJECT_KIND_ALIAS)
                     .append(COMMA).append(SP);
             buildTsRank(sqlBuilder, MAIN_TABLE_ALIAS, () -> buildCastingTsQueryPart(sqlBuilder, stringValue, args));
         } else
         {
             sqlBuilder.append(prefix).append(getPermId(tableMapper)).append(COMMA).append(SP)
-                    .append(SQ).append(objectKindOrdinal).append(SQ).append(SP).append(OBJECT_KIND_ALIAS)
+                    .append(objectKindOrdinal).append(SP).append(OBJECT_KIND_ALIAS)
                     .append(COMMA).append(SP);
             buildTsRank(sqlBuilder, PROPERTIES_TABLE_ALIAS, () -> buildTsQueryPart(sqlBuilder, stringValue, args));
 
@@ -783,7 +783,6 @@ public class GlobalSearchCriteriaTranslator
     private static void buildSelectIdentifier(final StringBuilder sqlBuilder, final TableMapper tableMapper,
             final boolean hasSpaces, final boolean hasProjects)
     {
-        sqlBuilder.append(UPPER).append(LP);
         switch (tableMapper)
         {
             case MATERIAL:
@@ -799,11 +798,11 @@ public class GlobalSearchCriteriaTranslator
             default:
             {
                 buildFullIdentifierConcatenationString(sqlBuilder, hasSpaces || hasProjects ? SPACE_TABLE_ALIAS : null,
-                        hasProjects ? PROJECT_TABLE_ALIAS : null, null, true);
+                        hasProjects ? PROJECT_TABLE_ALIAS : null, null, false);
                 break;
             }
         }
-        sqlBuilder.append(RP).append(SP).append(IDENTIFIER_ALIAS);
+        sqlBuilder.append(SP).append(IDENTIFIER_ALIAS);
     }
 
     private static void buildSampleMatch(final StringBuilder sqlBuilder, final String[] values,
