@@ -966,6 +966,7 @@ public class GlobalSearchTest extends AbstractTest
         c.withText().thatContains("simple male");
 
         final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.sortBy().score().desc();
         fo.withExperiment();
         fo.withMatch();
 

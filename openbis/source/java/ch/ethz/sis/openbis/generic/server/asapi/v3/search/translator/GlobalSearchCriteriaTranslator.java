@@ -554,18 +554,20 @@ public class GlobalSearchCriteriaTranslator
         }
         sqlBuilder.append(COMMA).append(SP);
 
+        final int objectKindOrdinal = tableMapper.ordinal();
+
         if (forAttributes)
         {
             sqlBuilder.append(prefix).append(getPermId(tableMapper)).append(SP)
                     .append(PERM_ID_COLUMN).append(COMMA).append(SP)
-                    .append(SQ).append(tableMapper).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA)
-                    .append(SP);
+                    .append(SQ).append(objectKindOrdinal).append(SQ).append(SP).append(OBJECT_KIND_ALIAS)
+                    .append(COMMA).append(SP);
             buildTsRank(sqlBuilder, MAIN_TABLE_ALIAS, () -> buildCastingTsQueryPart(sqlBuilder, stringValue, args));
         } else
         {
             sqlBuilder.append(prefix).append(getPermId(tableMapper)).append(COMMA).append(SP)
-                    .append(SQ).append(tableMapper).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA)
-                    .append(SP);
+                    .append(SQ).append(objectKindOrdinal).append(SQ).append(SP).append(OBJECT_KIND_ALIAS)
+                    .append(COMMA).append(SP);
             buildTsRank(sqlBuilder, PROPERTIES_TABLE_ALIAS, () -> buildTsQueryPart(sqlBuilder, stringValue, args));
 
             sqlBuilder.append(SP).append(PLUS).append(SP);
