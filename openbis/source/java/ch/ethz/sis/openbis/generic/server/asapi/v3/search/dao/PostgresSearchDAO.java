@@ -192,8 +192,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final TranslationContext translationContext = buildTranslationContext(userId, criterion,
                 idsColumnName, authorisationInformation, objectKinds, fetchOptions);
 
-        final Map<Long, Map<String, Object>> recordById = idsAndRanksResult.stream()
-                .collect(Collectors.toMap(fieldsMap -> (Long) fieldsMap.get(ID_COLUMN), Function.identity(),
+        final Map<String, Map<String, Object>> recordById = idsAndRanksResult.stream()
+                .collect(Collectors.toMap(fieldsMap -> (String) fieldsMap.get(PERM_ID_COLUMN), Function.identity(),
                         (existingFieldsMap, newFieldsMap) ->
                         {
                             throw new IllegalStateException(String.format(
@@ -202,7 +202,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                         }, LinkedHashMap::new)
                 );
 
-        final Set<Long> permIdSet = recordById.keySet();
+        final Set<String> permIdSet = recordById.keySet();
 
         // Detailed query to fetch all required information as a final result.
         final SelectQuery detailsSelectQuery = GlobalSearchCriteriaTranslator.translateToDetailsQuery(
@@ -212,7 +212,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
         // Adding ranks obtained from the first query to the result of the second one.
         otherDetailsResult.forEach(record -> record.put(RANK_ALIAS,
-                recordById.get((Long) record.get(ID_COLUMN)).get(RANK_ALIAS)));
+                recordById.get((String) record.get(PERM_ID_COLUMN)).get(RANK_ALIAS)));
 
         return new LinkedHashSet<>(otherDetailsResult);
     }
