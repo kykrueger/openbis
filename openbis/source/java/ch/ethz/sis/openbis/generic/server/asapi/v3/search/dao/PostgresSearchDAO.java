@@ -195,12 +195,15 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final Map<GlobalSearchObjectKind, Set<Long>> idSetByObjectKindMap = new EnumMap<>(GlobalSearchObjectKind.class);
         final Map<GlobalSearchObjectKind, Map<Long, Map<String, Object>>> objectKindToRecordByIdMap =
                 new EnumMap<>(GlobalSearchObjectKind.class);
+        final Map<GlobalSearchObjectKind, Map<Long, Integer>> objectKindToIndexByIdMap =
+                new EnumMap<>(GlobalSearchObjectKind.class);
 
         final GlobalSearchObjectKind[] objectKindValues = GlobalSearchObjectKind.values();
-        idsAndRanksResult.forEach(record ->
+        int i = 0;
+        for (Map<String, Object> stringObjectMap : idsAndRanksResult)
         {
-            final Long id = (Long) record.get(ID_COLUMN);
-            final Integer objectKindOrdinal = (Integer) record.get(OBJECT_KIND_ORDINAL_ALIAS);
+            final Long id = (Long) stringObjectMap.get(ID_COLUMN);
+            final Integer objectKindOrdinal = (Integer) stringObjectMap.get(OBJECT_KIND_ORDINAL_ALIAS);
             final GlobalSearchObjectKind objectKind = objectKindValues[objectKindOrdinal];
 
             final Set<Long> idSet = idSetByObjectKindMap.computeIfAbsent(objectKind, k -> new HashSet<>());
@@ -208,8 +211,14 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
             final Map<Long, Map<String, Object>> recordByIdMap = objectKindToRecordByIdMap.computeIfAbsent(objectKind,
                     k -> new HashMap<>());
-            recordByIdMap.put(id, record);
-        });
+            recordByIdMap.put(id, stringObjectMap);
+
+            final Map<Long, Integer> indexByIdMap = objectKindToIndexByIdMap.computeIfAbsent(objectKind,
+                    k -> new HashMap<>());
+            indexByIdMap.put(id, i);
+
+            i++;
+        }
 
         // Detailed query to fetch all required information as a final result.
         final SelectQuery detailsSelectQuery = GlobalSearchCriteriaTranslator.translateToDetailsQuery(
@@ -230,17 +239,29 @@ public class PostgresSearchDAO implements ISQLSearchDAO
             recordByIdMap.put(id, record);
         });
 
-        // Adding details to the original query and returning it as a result to preserve the order.
-        idsAndRanksResult.forEach(record ->
+        // Adding ranks obtained from the first query to the result of the second one.
+        detailsResult.forEach(record ->
         {
-            final int objectKindOrdinal = (Integer) record.get(OBJECT_KIND_ORDINAL_ALIAS);
-            final GlobalSearchObjectKind objectKind = objectKindValues[objectKindOrdinal];
-            final Map<Long, Map<String, Object>> detailedRecordByIdMap =
-                    objectKindToDetailedRecordByIdMap.get(objectKind);
-            final Map<String, Object> detailedRecord = detailedRecordByIdMap.get((Long) record.get(ID_COLUMN));
-            record.putAll(detailedRecord);
+            final GlobalSearchObjectKind objectKind = objectKindValues[(Integer) record.get(OBJECT_KIND_ORDINAL_ALIAS)];
+            final Map<Long, Map<String, Object>> detailedRecordByIdMap = objectKindToRecordByIdMap.get(objectKind);
+            record.put(RANK_ALIAS, detailedRecordByIdMap.get((Long) record.get(ID_COLUMN)).get(RANK_ALIAS));
         });
-        return idsAndRanksResult;
+
+        // Sorting final results in the same order as the short result.
+        detailsResult.sort((record1, record2) ->
+        {
+            final Long id1 = (Long) record1.get(ID_COLUMN);
+            final Integer objectKindOrdinal1 = (Integer) record1.get(OBJECT_KIND_ORDINAL_ALIAS);
+            final GlobalSearchObjectKind objectKind1 = objectKindValues[objectKindOrdinal1];
+
+            final Long id2 = (Long) record2.get(ID_COLUMN);
+            final Integer objectKindOrdinal2 = (Integer) record2.get(OBJECT_KIND_ORDINAL_ALIAS);
+            final GlobalSearchObjectKind objectKind2 = objectKindValues[objectKindOrdinal2];
+
+            return objectKindToIndexByIdMap.get(objectKind1).get(id1) -
+                    objectKindToIndexByIdMap.get(objectKind2).get(id2);
+        });
+        return detailsResult;
     }
 
     private static TranslationContext buildTranslationContext(final Long userId, final GlobalSearchCriteria criterion,
