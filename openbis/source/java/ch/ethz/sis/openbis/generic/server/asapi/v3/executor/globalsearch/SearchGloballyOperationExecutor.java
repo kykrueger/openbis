@@ -105,6 +105,11 @@ public class SearchGloballyOperationExecutor
                 authorisationInformation, criteria, null, objectKinds, fetchOptions);
         final Collection<Map<String, Object>> detailsRecords = globalSearchManager.searchForDetails(shortRecords,
                 userId, authorisationInformation, criteria, null, objectKinds, fetchOptions);
+
+        assert shortRecords.size() == detailsRecords.size()
+                : String.format("Sizes of short and detailed records should be equal. " +
+                "[shortRecords.size()=%d, detailsRecords.size()=%d]", shortRecords.size(), detailsRecords.size());
+
         final Collection<MatchingEntity> pagedMatchingEntities = globalSearchManager.map(detailsRecords,
                 fetchOptions.hasMatch());
 

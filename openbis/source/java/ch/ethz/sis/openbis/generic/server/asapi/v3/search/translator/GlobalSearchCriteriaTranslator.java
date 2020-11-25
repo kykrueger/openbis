@@ -515,14 +515,14 @@ public class GlobalSearchCriteriaTranslator
         // Fields
         buildDetailsSelect(sqlBuilder, translationContext, globalSearchTextCriterion, tableMapper, true);
         buildDetailsFrom(sqlBuilder, tableMapper, true);
-        buildDetailsWhere(sqlBuilder, translationContext, globalSearchTextCriterion, resultIds, true);
+        buildDetailsWhere(sqlBuilder, translationContext, globalSearchTextCriterion, resultIds, tableMapper, true);
 
         sqlBuilder.append(UNION_ALL).append(NL);
 
         // Properties
         buildDetailsSelect(sqlBuilder, translationContext, globalSearchTextCriterion, tableMapper, false);
         buildDetailsFrom(sqlBuilder, tableMapper, false);
-        buildDetailsWhere(sqlBuilder, translationContext, globalSearchTextCriterion, resultIds, false);
+        buildDetailsWhere(sqlBuilder, translationContext, globalSearchTextCriterion, resultIds, tableMapper, false);
     }
 
     private static void buildShortSelect(final StringBuilder sqlBuilder, final TranslationContext translationContext,
@@ -1115,7 +1115,8 @@ public class GlobalSearchCriteriaTranslator
     }
 
     private static void buildDetailsWhere(final StringBuilder sqlBuilder, final TranslationContext translationContext,
-            final GlobalSearchTextCriteria criterion, final Collection<Long> resultIds, final boolean forAttributes)
+            final GlobalSearchTextCriteria criterion, final Collection<Long> resultIds, final TableMapper tableMapper,
+            final boolean forAttributes)
     {
         final List<Object> args = translationContext.getArgs();
         sqlBuilder.append(WHERE).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD)
@@ -1129,7 +1130,7 @@ public class GlobalSearchCriteriaTranslator
             buildAttributesMatchCondition(sqlBuilder, criterion, args);
         } else
         {
-            buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), translationContext.getTableMapper(), args);
+            buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), tableMapper, args);
         }
         sqlBuilder.append(RP).append(NL);
     }

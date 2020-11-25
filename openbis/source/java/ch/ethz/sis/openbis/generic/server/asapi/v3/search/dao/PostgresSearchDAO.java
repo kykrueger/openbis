@@ -235,8 +235,10 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         {
             final int objectKindOrdinal = (Integer) record.get(OBJECT_KIND_ORDINAL_ALIAS);
             final GlobalSearchObjectKind objectKind = objectKindValues[objectKindOrdinal];
-            final Map<Long, Map<String, Object>> recordsByIdMap = objectKindToDetailedRecordByIdMap.get(objectKind);
-            record.putAll(recordsByIdMap.get((Long) record.get(ID_COLUMN)));
+            final Map<Long, Map<String, Object>> detailedRecordByIdMap =
+                    objectKindToDetailedRecordByIdMap.get(objectKind);
+            final Map<String, Object> detailedRecord = detailedRecordByIdMap.get((Long) record.get(ID_COLUMN));
+            record.putAll(detailedRecord);
         });
         return idsAndRanksResult;
     }
