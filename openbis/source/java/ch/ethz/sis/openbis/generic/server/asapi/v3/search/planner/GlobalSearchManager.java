@@ -36,7 +36,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
     static
     {
         ALIAS_BY_FIELD_NAME.put(SCORE, RANK_ALIAS);
-        ALIAS_BY_FIELD_NAME.put(OBJECT_KIND, OBJECT_KIND_ALIAS);
+        ALIAS_BY_FIELD_NAME.put(OBJECT_KIND, OBJECT_KIND_ORDINAL_ALIAS);
         ALIAS_BY_FIELD_NAME.put(OBJECT_PERM_ID, OBJECT_PERM_ID);
         ALIAS_BY_FIELD_NAME.put(OBJECT_IDENTIFIER, ID_COLUMN);
     }
@@ -154,7 +154,8 @@ public class GlobalSearchManager implements IGlobalSearchManager
     {
         final MatchingEntity matchingEntity = new MatchingEntity();
         matchingEntity.setCode((String) fieldsMap.get(CODE_COLUMN));
-        final EntityKind entityKind = EntityKind.valueOf((String) fieldsMap.get(OBJECT_KIND_ALIAS));
+        final EntityKind entityKind = EntityKind.valueOf(
+                GlobalSearchObjectKind.values()[(Integer) fieldsMap.get(OBJECT_KIND_ORDINAL_ALIAS)].toString());
         matchingEntity.setEntityKind(entityKind);
         matchingEntity.setId((Long) fieldsMap.get(ID_COLUMN));
         matchingEntity.setPermId((String) fieldsMap.get(PERM_ID_COLUMN));

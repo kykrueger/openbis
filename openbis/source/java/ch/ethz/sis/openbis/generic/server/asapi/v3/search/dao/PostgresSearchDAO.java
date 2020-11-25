@@ -183,7 +183,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     }
 
     @Override
-    public Set<Map<String, Object>> queryDBWithNonRecursiveCriteria(
+    public Collection<Map<String, Object>> queryDBWithNonRecursiveCriteria(
             final Collection<Map<String, Object>> idsAndRanksResult, final Long userId,
             final GlobalSearchCriteria criterion, final String idsColumnName,
             final AuthorisationInformation authorisationInformation, final Set<GlobalSearchObjectKind> objectKinds,
@@ -192,29 +192,53 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final TranslationContext translationContext = buildTranslationContext(userId, criterion,
                 idsColumnName, authorisationInformation, objectKinds, fetchOptions);
 
-        final Map<String, Map<String, Object>> recordById = idsAndRanksResult.stream()
-                .collect(Collectors.toMap(fieldsMap -> (String) fieldsMap.get(PERM_ID_COLUMN), Function.identity(),
-                        (existingFieldsMap, newFieldsMap) ->
-                        {
-                            throw new IllegalStateException(String.format(
-                                    "Result with the same key found. [existingFieldsMap=%s, newFieldsMap=%s]",
-                                    existingFieldsMap, newFieldsMap));
-                        }, LinkedHashMap::new)
-                );
+        final Map<GlobalSearchObjectKind, Set<Long>> idSetByObjectKindMap = new EnumMap<>(GlobalSearchObjectKind.class);
+        final Map<GlobalSearchObjectKind, Map<Long, Map<String, Object>>> objectKindToRecordByIdMap =
+                new EnumMap<>(GlobalSearchObjectKind.class);
 
-        final Set<String> permIdSet = recordById.keySet();
+        final GlobalSearchObjectKind[] objectKindValues = GlobalSearchObjectKind.values();
+        idsAndRanksResult.forEach(record ->
+        {
+            final Long id = (Long) record.get(ID_COLUMN);
+            final Integer objectKindOrdinal = (Integer) record.get(OBJECT_KIND_ORDINAL_ALIAS);
+            final GlobalSearchObjectKind objectKind = objectKindValues[objectKindOrdinal];
+
+            final Set<Long> idSet = idSetByObjectKindMap.computeIfAbsent(objectKind, k -> new HashSet<>());
+            idSet.add(id);
+
+            final Map<Long, Map<String, Object>> recordByIdMap = objectKindToRecordByIdMap.computeIfAbsent(objectKind,
+                    k -> new HashMap<>());
+            recordByIdMap.put(id, record);
+        });
 
         // Detailed query to fetch all required information as a final result.
         final SelectQuery detailsSelectQuery = GlobalSearchCriteriaTranslator.translateToDetailsQuery(
-                translationContext, permIdSet);
-        final List<Map<String, Object>> otherDetailsResult = sqlExecutor.execute(detailsSelectQuery.getQuery(),
+                translationContext, idSetByObjectKindMap);
+        final List<Map<String, Object>> detailsResult = sqlExecutor.execute(detailsSelectQuery.getQuery(),
                 detailsSelectQuery.getArgs());
 
-        // Adding ranks obtained from the first query to the result of the second one.
-        otherDetailsResult.forEach(record -> record.put(RANK_ALIAS,
-                recordById.get((String) record.get(PERM_ID_COLUMN)).get(RANK_ALIAS)));
+        final Map<GlobalSearchObjectKind, Map<Long, Map<String, Object>>> objectKindToDetailedRecordByIdMap =
+                new EnumMap<>(GlobalSearchObjectKind.class);
+        detailsResult.forEach(record ->
+        {
+            final Long id = (Long) record.get(ID_COLUMN);
+            final Integer objectKindOrdinal = (Integer) record.get(OBJECT_KIND_ORDINAL_ALIAS);
+            final GlobalSearchObjectKind objectKind = objectKindValues[objectKindOrdinal];
 
-        return new LinkedHashSet<>(otherDetailsResult);
+            final Map<Long, Map<String, Object>> recordByIdMap = objectKindToDetailedRecordByIdMap
+                    .computeIfAbsent(objectKind, k -> new HashMap<>());
+            recordByIdMap.put(id, record);
+        });
+
+        // Adding details to the original query and returning it as a result to preserve the order.
+        idsAndRanksResult.forEach(record ->
+        {
+            final int objectKindOrdinal = (Integer) record.get(OBJECT_KIND_ORDINAL_ALIAS);
+            final GlobalSearchObjectKind objectKind = objectKindValues[objectKindOrdinal];
+            final Map<Long, Map<String, Object>> recordsByIdMap = objectKindToDetailedRecordByIdMap.get(objectKind);
+            record.putAll(recordsByIdMap.get((Long) record.get(ID_COLUMN)));
+        });
+        return idsAndRanksResult;
     }
 
     private static TranslationContext buildTranslationContext(final Long userId, final GlobalSearchCriteria criterion,

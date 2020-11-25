@@ -53,8 +53,8 @@ public interface ISQLSearchDAO
      *
      * @param userId ID of the user who makes the query.
      * @param criterion the global text search criterion to search by.
-     * @param idsColumnName name of the column to select by, if {@code null} {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}
-     *     is used.
+     * @param idsColumnName name of the column to select by, if {@code null}
+     *     {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN} is used.
      * @param authorisationInformation user authorisation information.
      * @param objectKinds object kinds to be included in this search.
      * @param fetchOptions global search fetch options.
@@ -68,17 +68,18 @@ public interface ISQLSearchDAO
      * Queries the DB only with non recursive global text search criteria.
      *
      *
-     * @param idsAndRanksResult the result of calling {@link #queryDBForIdsAndRanksWithNonRecursiveCriteria(Long, GlobalSearchCriteria, String, AuthorisationInformation, Set, GlobalSearchObjectFetchOptions)} before.
+     * @param idsAndRanksResult the result of calling {@link #queryDBForIdsAndRanksWithNonRecursiveCriteria(Long,
+     * GlobalSearchCriteria, String, AuthorisationInformation, Set, GlobalSearchObjectFetchOptions)} before.
      * @param userId ID of the user who makes the query.
      * @param criterion the global text search criterion to search by.
-     * @param idsColumnName name of the column to select by, if {@code null} {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}
-     *     is used.
+     * @param idsColumnName name of the column to select by, if {@code null}
+     *     {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN} is used.
      * @param authorisationInformation user authorisation information.
      * @param objectKinds object kinds to be included in this search.
      * @param fetchOptions global search fetch options.
-     * @return set of numbers which represent the IDs of the scpecified ID column name.
+     * @return set of numbers which represent the IDs of the specified ID column name.
      */
-    Set<Map<String, Object>> queryDBWithNonRecursiveCriteria(Collection<Map<String, Object>> idsAndRanksResult,
+    Collection<Map<String, Object>> queryDBWithNonRecursiveCriteria(Collection<Map<String, Object>> idsAndRanksResult,
             Long userId, GlobalSearchCriteria criterion, String idsColumnName,
             AuthorisationInformation authorisationInformation, final Set<GlobalSearchObjectKind> objectKinds,
             GlobalSearchObjectFetchOptions fetchOptions);
