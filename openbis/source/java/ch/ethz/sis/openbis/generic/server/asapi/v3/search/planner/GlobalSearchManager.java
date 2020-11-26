@@ -357,7 +357,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
             final Span span = new Span();
             span.setStart(0);
             span.setEnd(codeMatchString.length());
-            propertyMatch.setSpans(Collections.singletonList(span));
+            propertyMatch.setSpans(new ArrayList<>(Collections.singletonList(span)));
             matches.add(propertyMatch);
         }
     }
