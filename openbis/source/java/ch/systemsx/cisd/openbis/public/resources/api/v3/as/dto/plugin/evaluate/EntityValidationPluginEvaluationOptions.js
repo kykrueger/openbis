@@ -26,6 +26,12 @@ define(["stjs", "as/dto/plugin/evaluate/PluginEvaluationOptions"], function (
       prototype.setNew = function (isNew) {
         this.isNew = isNew;
       };
+      prototype.getIsNew = function () {
+        return this.isNew;
+      };
+      prototype.setIsNew = function (isNew) {
+        this.isNew = isNew;
+      };
     },
     {
       objectId: "IObjectId",

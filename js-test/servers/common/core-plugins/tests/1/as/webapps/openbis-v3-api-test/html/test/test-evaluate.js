@@ -57,7 +57,7 @@ define([
           creation.setName(c.generateId("plugin"));
           creation.setPluginType(c.PluginType.ENTITY_VALIDATION);
           creation.setScript(
-            "def validate(entity, isNew):\n  requestValidation(entity)\n  return 'testError'"
+            "def validate(entity, isNew):\n  requestValidation(entity)\n  if isNew:\n    return 'testError'\n  else:\n    return None"
           );
 
           return $.when(
@@ -70,6 +70,7 @@ define([
             } else {
               options.setPluginScript(creation.getScript());
             }
+            options.setNew(true);
             options.setObjectId(sampleId);
 
             return $.when(
