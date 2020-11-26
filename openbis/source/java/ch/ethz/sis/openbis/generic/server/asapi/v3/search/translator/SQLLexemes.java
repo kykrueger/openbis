@@ -35,6 +35,10 @@ public class SQLLexemes
 
     public static final String SUM = "SUM";
 
+    public static final String COUNT = "COUNT";
+
+    public static final String OVER = "OVER";
+
     public static final String ARRAY_POSITION = "array_position";
 
     public static final String DATE_TRUNC = "date_trunc";

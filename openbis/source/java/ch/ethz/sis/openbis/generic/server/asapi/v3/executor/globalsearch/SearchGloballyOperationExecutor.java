@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.SCORE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.FULL_COUNT_ALIAS;
 
 /**
  * @author pkupczyk
@@ -103,8 +104,9 @@ public class SearchGloballyOperationExecutor
         // There results from the manager should already be filtered.
         final Collection<Map<String, Object>> shortRecords = globalSearchManager.searchForIDs(userId,
                 authorisationInformation, criteria, null, objectKinds, fetchOptions);
-        final Collection<Map<String, Object>> detailsRecords = globalSearchManager.searchForDetails(shortRecords,
-                userId, authorisationInformation, criteria, null, objectKinds, fetchOptions);
+        final Collection<Map<String, Object>> detailsRecords = shortRecords.isEmpty() ? Collections.emptyList() :
+                globalSearchManager.searchForDetails(shortRecords, userId, authorisationInformation, criteria, null,
+                        objectKinds, fetchOptions);
 
         final Collection<MatchingEntity> pagedMatchingEntities = globalSearchManager.map(detailsRecords,
                 fetchOptions.hasMatch());
@@ -125,9 +127,9 @@ public class SearchGloballyOperationExecutor
         // Sorting and paging parents and children in a "conventional" way.
         new SortAndPage().nest(objectResults, criteria, fetchOptions);
 
-        final SearchResult<GlobalSearchObject> searchResult =
-                new SearchResult<>(objectResults, shortRecords.size());
-        return getOperationResult(searchResult);
+        final int totalCount = shortRecords.isEmpty() ? 0
+                : (int) (long) shortRecords.iterator().next().get(FULL_COUNT_ALIAS);
+        return getOperationResult(new SearchResult<>(objectResults, totalCount));
     }
 
     private static Set<GlobalSearchObjectKind> getObjectKinds(final GlobalSearchCriteria globalSearchCriteria)

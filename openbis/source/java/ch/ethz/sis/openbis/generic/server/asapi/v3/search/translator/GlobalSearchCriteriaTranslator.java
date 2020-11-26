@@ -53,6 +53,8 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String PERM_ID_MATCH_ALIAS = "perm_id_match";
 
+    public static final String FULL_COUNT_ALIAS = "full_count";
+
     public static final String SAMPLE_IDENTIFIER_MATCH_ALIAS = "sample_identifier_match";
 
     public static final String MATERIAL_MATCH_ALIAS = "material_match";
@@ -163,7 +165,8 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(RP);
 
         final String prefixSql = SELECT + SP + ID_COLUMN + COMMA + SP + PERM_ID_COLUMN + COMMA + SP +
-                OBJECT_KIND_ORDINAL_ALIAS + COMMA + SP + RANK_ALIAS + COMMA + SP + IDENTIFIER_ALIAS + NL +
+                OBJECT_KIND_ORDINAL_ALIAS + COMMA + SP + RANK_ALIAS + COMMA + SP + IDENTIFIER_ALIAS + COMMA + SP +
+                COUNT + LP + ASTERISK + RP + SP + OVER + LP + RP + SP + FULL_COUNT_ALIAS + NL +
                 FROM + SP + LP + NL +
                         SELECT + SP + PROJECT_COLUMN + COMMA + SP + SPACE_COLUMN + COMMA + SP + ID_COLUMN + COMMA + SP +
                                 PERM_ID_COLUMN + SP + PERM_ID_COLUMN + COMMA + SP + OBJECT_KIND_ORDINAL_ALIAS + COMMA +
