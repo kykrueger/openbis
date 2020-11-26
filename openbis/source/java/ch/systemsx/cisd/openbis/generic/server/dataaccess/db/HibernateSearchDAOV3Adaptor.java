@@ -124,11 +124,18 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
         final GlobalSearchObjectFetchOptions fetchOptions = new GlobalSearchObjectFetchOptions();
         fetchOptions.withMatch();
-        Collection<Map<String, Object>> newResults = getGlobalSearchManager().searchForIDs(personPE.getId(),
+        final Collection<Map<String, Object>> newShortResults = getGlobalSearchManager().searchForIDs(personPE.getId(),
                 getAuthorisationInformation(personPE),
                 globalSearchCriteria,
                 ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
                 Collections.singleton(getObjectKind(searchableEntity)), fetchOptions, false);
+
+        final Collection<Map<String, Object>> newResults = getGlobalSearchManager().searchForDetails(newShortResults,
+                personPE.getId(),
+                getAuthorisationInformation(personPE),
+                globalSearchCriteria,
+                ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
+                Collections.singleton(getObjectKind(searchableEntity)), fetchOptions);
 
         Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true);
 

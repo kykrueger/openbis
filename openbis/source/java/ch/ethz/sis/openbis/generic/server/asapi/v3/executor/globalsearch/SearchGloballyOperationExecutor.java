@@ -166,31 +166,6 @@ public class SearchGloballyOperationExecutor
         return objectKinds.isEmpty() ? EnumSet.allOf(GlobalSearchObjectKind.class) : objectKinds;
     }
 
-    private List<Map<String, Object>> sortAndPage(final Collection<Map<String, Object>> results,
-            final FetchOptions<GlobalSearchObject> fo)
-    {
-        final SortOptions<GlobalSearchObject> sortOptions;
-        if (fo.getSortBy() != null)
-        {
-            sortOptions = fo.getSortBy();
-        } else
-        {
-            final GlobalSearchObjectSortOptions defaultSortOptions = new GlobalSearchObjectSortOptions();
-            final SortOrder sortOrder = new SortOrder();
-            sortOrder.desc();
-            defaultSortOptions.getSortings().add(new Sorting(SCORE, sortOrder));
-            sortOptions = defaultSortOptions;
-        }
-
-        final List<Map<String, Object>> sortedResults = globalSearchManager.sortRecords(results, sortOptions);
-
-        final Integer fromRecord = fo.getFrom();
-        final Integer recordsCount = fo.getCount();
-        final boolean hasPaging = fromRecord != null && recordsCount != null;
-        return hasPaging ? sortedResults.subList(fromRecord, Math.min(fromRecord + recordsCount, results.size()))
-                : sortedResults;
-    }
-
     @Override
     protected Class<? extends SearchObjectsOperation<GlobalSearchCriteria, GlobalSearchObjectFetchOptions>> getOperationClass()
     {
