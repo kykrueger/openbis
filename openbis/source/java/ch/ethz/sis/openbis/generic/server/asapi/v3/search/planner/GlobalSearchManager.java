@@ -56,16 +56,16 @@ public class GlobalSearchManager implements IGlobalSearchManager
     public Collection<Map<String, Object>> searchForIDs(final Long userId,
             final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria,
             final String idsColumnName, final Set<GlobalSearchObjectKind> objectKinds,
-            final GlobalSearchObjectFetchOptions fetchOptions)
+            final GlobalSearchObjectFetchOptions fetchOptions, final boolean onlyTotalCount)
     {
         final List<Map<String, Object>> mainCriteriaIntermediateResults =
                 searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(
-                userId, criteria, idsColumnName, authorisationInformation, objectKinds, fetchOptions);
+                userId, criteria, idsColumnName, authorisationInformation, objectKinds, fetchOptions, onlyTotalCount);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
         return containsValues(mainCriteriaIntermediateResults)
-                ? mainCriteriaIntermediateResults : Collections.emptySet();
+                ? mainCriteriaIntermediateResults : Collections.emptyList();
     }
 
     @Override

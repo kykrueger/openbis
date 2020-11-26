@@ -34,7 +34,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCr
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.AbstractSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DataSetSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.GlobalSearchManager;
@@ -129,7 +128,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 getAuthorisationInformation(personPE),
                 globalSearchCriteria,
                 ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
-                Collections.singleton(getObjectKind(searchableEntity)), fetchOptions);
+                Collections.singleton(getObjectKind(searchableEntity)), fetchOptions, false);
 
         Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true);
 

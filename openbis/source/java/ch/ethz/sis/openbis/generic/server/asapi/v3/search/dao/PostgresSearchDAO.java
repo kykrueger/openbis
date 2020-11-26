@@ -172,13 +172,14 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     public List<Map<String, Object>> queryDBForIdsAndRanksWithNonRecursiveCriteria(final Long userId,
             final GlobalSearchCriteria criterion, final String idsColumnName,
             final AuthorisationInformation authorisationInformation, final Set<GlobalSearchObjectKind> objectKinds,
-            final GlobalSearchObjectFetchOptions fetchOptions)
+            final GlobalSearchObjectFetchOptions fetchOptions, final boolean onlyTotalCount)
     {
         final TranslationContext translationContext = buildTranslationContext(userId, criterion,
                 idsColumnName, authorisationInformation, objectKinds, fetchOptions);
 
         // Short query to narrow down the result set and calculate ranks.
-        final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translateToShortQuery(translationContext);
+        final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translateToShortQuery(translationContext,
+                onlyTotalCount);
         return sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
     }
 

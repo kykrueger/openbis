@@ -540,6 +540,21 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithPagingOffsetTooLarge()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContains("simple male");
+
+        final GlobalSearchObjectFetchOptions fo1 = new GlobalSearchObjectFetchOptions();
+        fo1.from(10).count(1);
+
+        final SearchResult<GlobalSearchObject> searchResult = search(TEST_USER, criteria, fo1);
+        final List<GlobalSearchObject> results = searchResult.getObjects();
+        assertEquals(searchResult.getTotalCount(), 5);
+        assertEquals(results.size(), 0);
+    }
+
+    @Test
     public void testSearchWithExperimentPermIdAndNothingFetched()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();

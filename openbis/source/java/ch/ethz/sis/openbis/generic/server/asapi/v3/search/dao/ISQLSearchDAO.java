@@ -58,11 +58,13 @@ public interface ISQLSearchDAO
      * @param authorisationInformation user authorisation information.
      * @param objectKinds object kinds to be included in this search.
      * @param fetchOptions global search fetch options.
+     * @param onlyTotalCount whether only total count should be returned.
      * @return list of result rows containing ID's, ranks and object kings.
      */
     List<Map<String, Object>> queryDBForIdsAndRanksWithNonRecursiveCriteria(Long userId, GlobalSearchCriteria criterion,
             String idsColumnName, AuthorisationInformation authorisationInformation,
-            Set<GlobalSearchObjectKind> objectKinds, GlobalSearchObjectFetchOptions fetchOptions);
+            Set<GlobalSearchObjectKind> objectKinds, GlobalSearchObjectFetchOptions fetchOptions,
+            boolean onlyTotalCount);
 
     /**
      * Queries the DB only with non recursive global text search criteria.

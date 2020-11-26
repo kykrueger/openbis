@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.SCORE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.FULL_COUNT_ALIAS;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.TOTAL_COUNT_ALIAS;
 
 /**
  * @author pkupczyk
@@ -103,7 +103,7 @@ public class SearchGloballyOperationExecutor
 
         // There results from the manager should already be filtered.
         final Collection<Map<String, Object>> shortRecords = globalSearchManager.searchForIDs(userId,
-                authorisationInformation, criteria, null, objectKinds, fetchOptions);
+                authorisationInformation, criteria, null, objectKinds, fetchOptions, false);
         final Collection<Map<String, Object>> detailsRecords = shortRecords.isEmpty() ? Collections.emptyList() :
                 globalSearchManager.searchForDetails(shortRecords, userId, authorisationInformation, criteria, null,
                         objectKinds, fetchOptions);
@@ -127,8 +127,11 @@ public class SearchGloballyOperationExecutor
         // Sorting and paging parents and children in a "conventional" way.
         new SortAndPage().nest(objectResults, criteria, fetchOptions);
 
-        final int totalCount = shortRecords.isEmpty() ? 0
-                : (int) (long) shortRecords.iterator().next().get(FULL_COUNT_ALIAS);
+        final Collection<Map<String, Object>> totalCountCollection = shortRecords.isEmpty()
+                ? globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, objectKinds,
+                        fetchOptions, true)
+                : shortRecords;
+        final int totalCount = (int) (long) totalCountCollection.iterator().next().get(TOTAL_COUNT_ALIAS);
         return getOperationResult(new SearchResult<>(objectResults, totalCount));
     }
 

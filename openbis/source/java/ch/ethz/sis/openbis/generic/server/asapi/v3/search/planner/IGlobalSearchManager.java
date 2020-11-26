@@ -42,11 +42,12 @@ public interface IGlobalSearchManager extends ISearchManager
      * {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}.
      * @param objectKinds object kinds to be included in the search.
      * @param fetchOptions whether match spans should be calculated.
+     * @param onlyTotalCount
      * @return set of IDs of found entities.
      */
     Collection<Map<String, Object>> searchForIDs(Long userId, AuthorisationInformation authorisationInformation,
             GlobalSearchCriteria criteria, String idsColumnName, Set<GlobalSearchObjectKind> objectKinds,
-            GlobalSearchObjectFetchOptions fetchOptions);
+            GlobalSearchObjectFetchOptions fetchOptions, final boolean onlyTotalCount);
 
     /**
      * Searches for entities using certain criteria.

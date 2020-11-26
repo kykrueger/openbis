@@ -53,7 +53,7 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String PERM_ID_MATCH_ALIAS = "perm_id_match";
 
-    public static final String FULL_COUNT_ALIAS = "full_count";
+    public static final String TOTAL_COUNT_ALIAS = "total_count";
 
     public static final String SAMPLE_IDENTIFIER_MATCH_ALIAS = "sample_identifier_match";
 
@@ -135,7 +135,8 @@ public class GlobalSearchCriteriaTranslator
                 .toString();
     }
 
-    public static SelectQuery translateToShortQuery(final TranslationContext translationContext)
+    public static SelectQuery translateToShortQuery(final TranslationContext translationContext,
+            final boolean onlyTotalCount)
     {
         if (translationContext.getCriteria() == null)
         {
@@ -164,14 +165,16 @@ public class GlobalSearchCriteriaTranslator
         }
         sqlBuilder.append(RP);
 
-        final String prefixSql = SELECT + SP + ID_COLUMN + COMMA + SP + PERM_ID_COLUMN + COMMA + SP +
+        final String prefixSelectContent = onlyTotalCount ? COUNT + LP + ASTERISK + RP + SP + TOTAL_COUNT_ALIAS
+                : ID_COLUMN + COMMA + SP + PERM_ID_COLUMN + COMMA + SP +
                 OBJECT_KIND_ORDINAL_ALIAS + COMMA + SP + RANK_ALIAS + COMMA + SP + IDENTIFIER_ALIAS + COMMA + SP +
-                COUNT + LP + ASTERISK + RP + SP + OVER + LP + RP + SP + FULL_COUNT_ALIAS + NL +
+                COUNT + LP + ASTERISK + RP + SP + OVER + LP + RP + SP + TOTAL_COUNT_ALIAS;
+        final String prefixSql = SELECT + SP + prefixSelectContent + NL +
                 FROM + SP + LP + NL +
-                        SELECT + SP + PROJECT_COLUMN + COMMA + SP + SPACE_COLUMN + COMMA + SP + ID_COLUMN + COMMA + SP +
-                                PERM_ID_COLUMN + SP + PERM_ID_COLUMN + COMMA + SP + OBJECT_KIND_ORDINAL_ALIAS + COMMA +
-                                SP + SUM + LP + RANK_ALIAS + RP + SP + RANK_ALIAS + COMMA + SP + IDENTIFIER_ALIAS + NL +
-                        FROM + SP + LP + NL;
+                SELECT + SP + PROJECT_COLUMN + COMMA + SP + SPACE_COLUMN + COMMA + SP + ID_COLUMN + COMMA + SP +
+                PERM_ID_COLUMN + SP + PERM_ID_COLUMN + COMMA + SP + OBJECT_KIND_ORDINAL_ALIAS + COMMA +
+                SP + SUM + LP + RANK_ALIAS + RP + SP + RANK_ALIAS + COMMA + SP + IDENTIFIER_ALIAS + NL +
+                FROM + SP + LP + NL;
 
         final StringBuilder suffixSqlBuilder = new StringBuilder();
         suffixSqlBuilder.append(RP).append(SP).append("q1").append(NL)
@@ -187,8 +190,11 @@ public class GlobalSearchCriteriaTranslator
 
         suffixSqlBuilder.append(RP).append(SP).append("q2").append(NL);
 
-        translateOrderBy(suffixSqlBuilder, translationContext);
-        translateLimitOffset(suffixSqlBuilder, translationContext);
+        if (!onlyTotalCount)
+        {
+            translateOrderBy(suffixSqlBuilder, translationContext);
+            translateLimitOffset(suffixSqlBuilder, translationContext);
+        }
 
         return new SelectQuery(prefixSql + sqlBuilder.toString() + suffixSqlBuilder.toString(),
                 translationContext.getArgs());
