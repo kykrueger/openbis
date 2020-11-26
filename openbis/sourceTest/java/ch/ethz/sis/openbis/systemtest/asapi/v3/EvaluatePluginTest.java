@@ -48,7 +48,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.systemtest.asapi.v3.EvaluatePluginTestResources.TestDynamicPropertyHotDeployedPlugin;
+import ch.ethz.sis.openbis.systemtest.asapi.v3.EvaluatePluginTestResources.TestEntityValidationHotDeployedPlugin;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.common.utilities.TestResources;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 
 /**
  * @author pkupczyk
@@ -223,6 +227,27 @@ public class EvaluatePluginTest extends AbstractTest
         assertEquals(result.getValue(), "testValue");
     }
 
+    @Test
+    public void testEvaluteDynamicPropertyPluginHotDeployed()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        EntityTypePermId objectTypeId = createTestObjectType(PROPERTY);
+        Sample object = createTestObject(objectTypeId, Collections.singletonMap(PROPERTY, "testHotDeployedValue"));
+
+        TestResources resources = new TestResources(getClass());
+
+        hotDeployPlugin(ScriptType.DYNAMIC_PROPERTY, TestDynamicPropertyHotDeployedPlugin.PLUGIN_NAME,
+                resources.getResourceFile("test-dynamic-property-plugin.jar"));
+
+        DynamicPropertyPluginEvaluationOptions options = new DynamicPropertyPluginEvaluationOptions();
+        options.setPluginId(new PluginPermId(TestDynamicPropertyHotDeployedPlugin.PLUGIN_NAME));
+        options.setObjectId(object.getPermId());
+
+        DynamicPropertyPluginEvaluationResult result = (DynamicPropertyPluginEvaluationResult) v3api.evaluatePlugin(sessionToken, options);
+        assertEquals(result.getValue(), "testHotDeployedValue");
+    }
+
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "Evaluation of entity validation plugin failed.*")
     public void testEvaluteEntityValidationPluginWithWrongScript()
     {
@@ -366,6 +391,28 @@ public class EvaluatePluginTest extends AbstractTest
         {
             assertEquals(result.getError(), null);
         }
+    }
+
+    @Test
+    public void testEvaluteEntityValidationPluginHotDeployed()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        EntityTypePermId objectTypeId = createTestObjectType(PROPERTY);
+        Sample object = createTestObject(objectTypeId, Collections.singletonMap(PROPERTY, "testHotDeployedError"));
+
+        TestResources resources = new TestResources(getClass());
+
+        hotDeployPlugin(ScriptType.ENTITY_VALIDATION, TestEntityValidationHotDeployedPlugin.PLUGIN_NAME,
+                resources.getResourceFile("test-entity-validation-plugin.jar"));
+
+        EntityValidationPluginEvaluationOptions options = new EntityValidationPluginEvaluationOptions();
+        options.setPluginId(new PluginPermId(TestEntityValidationHotDeployedPlugin.PLUGIN_NAME));
+        options.setObjectId(object.getPermId());
+
+        EntityValidationPluginEvaluationResult result = (EntityValidationPluginEvaluationResult) v3api.evaluatePlugin(sessionToken, options);
+        assertEquals(result.getError(), "testHotDeployedError");
+        assertEquals(result.getRequestedValidations(), Collections.singleton(object.getIdentifier()));
     }
 
     private EntityTypePermId createTestObjectType(String... propertyCodes)
