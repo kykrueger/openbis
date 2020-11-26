@@ -15,8 +15,12 @@ export default class ToolBrowserController extends BrowserController {
       openbis.searchPlugins(
         new openbis.PluginSearchCriteria(),
         new openbis.PluginFetchOptions()
+      ),
+      openbis.searchQueries(
+        new openbis.QuerySearchCriteria(),
+        new openbis.QueryFetchOptions()
       )
-    ]).then(([plugins]) => {
+    ]).then(([plugins, queries]) => {
       const dynamicPropertyPluginNodes = plugins
         .getObjects()
         .filter(
@@ -53,6 +57,19 @@ export default class ToolBrowserController extends BrowserController {
           }
         })
 
+      const queryNodes = queries.getObjects().map(query => {
+        return {
+          id: `query/${query.name}`,
+          text: query.name,
+          object: {
+            type: objectType.QUERY,
+            id: query.name
+          },
+          canMatchFilter: true,
+          canRemove: true
+        }
+      })
+
       let nodes = [
         {
           id: 'dynamicPropertyPlugins',
@@ -66,6 +83,13 @@ export default class ToolBrowserController extends BrowserController {
           text: 'Entity Validation Plugins',
           children: entityValidationPluginNodes,
           childrenType: objectType.NEW_ENTITY_VALIDATION_PLUGIN,
+          canAdd: true
+        },
+        {
+          id: 'queries',
+          text: 'Queries',
+          children: queryNodes,
+          childrenType: objectType.NEW_QUERY,
           canAdd: true
         }
       ]
@@ -110,6 +134,8 @@ export default class ToolBrowserController extends BrowserController {
       type === objectType.ENTITY_VALIDATION_PLUGIN
     ) {
       return this._prepareRemovePluginOperations(id, reason)
+    } else if (type === objectType.QUERY) {
+      return this._prepareRemoveQueryOperations(id, reason)
     } else {
       throw new Error('Unsupported type: ' + type)
     }
@@ -126,6 +152,14 @@ export default class ToolBrowserController extends BrowserController {
     ])
   }
 
+  _prepareRemoveQueryOperations(id, reason) {
+    const options = new openbis.QueryDeletionOptions()
+    options.setReason(reason)
+    return Promise.resolve([
+      new openbis.DeleteQueriesOperation([new openbis.QueryName(id)], options)
+    ])
+  }
+
   doGetObservedModifications() {
     return {
       [objectType.DYNAMIC_PROPERTY_PLUGIN]: [
@@ -135,7 +169,8 @@ export default class ToolBrowserController extends BrowserController {
       [objectType.ENTITY_VALIDATION_PLUGIN]: [
         objectOperation.CREATE,
         objectOperation.DELETE
-      ]
+      ],
+      [objectType.QUERY]: [objectOperation.CREATE, objectOperation.DELETE]
     }
   }
 }

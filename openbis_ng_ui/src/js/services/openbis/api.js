@@ -35,6 +35,10 @@ class Facade {
     return this.promise(this.v3.getPlugins(ids, fo))
   }
 
+  getQueries(ids, fo) {
+    return this.promise(this.v3.getQueries(ids, fo))
+  }
+
   getPropertyTypes(ids, fo) {
     return this.promise(this.v3.getPropertyTypes(ids, fo))
   }
@@ -65,6 +69,10 @@ class Facade {
 
   searchPlugins(criteria, fo) {
     return this.promise(this.v3.searchPlugins(criteria, fo))
+  }
+
+  searchQueries(criteria, fo) {
+    return this.promise(this.v3.searchQueries(criteria, fo))
   }
 
   searchMaterials(criteria, fo) {

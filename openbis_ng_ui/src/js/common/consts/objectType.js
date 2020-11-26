@@ -7,6 +7,7 @@ const NEW_USER = 'newUser'
 const NEW_USER_GROUP = 'newUserGroup'
 const NEW_DYNAMIC_PROPERTY_PLUGIN = 'newDynamicPropertyPlugin'
 const NEW_ENTITY_VALIDATION_PLUGIN = 'newEntityValidationPlugin'
+const NEW_QUERY = 'newQuery'
 
 const OBJECT_TYPE = 'objectType'
 const COLLECTION_TYPE = 'collectionType'
@@ -17,6 +18,7 @@ const USER = 'user'
 const USER_GROUP = 'userGroup'
 const DYNAMIC_PROPERTY_PLUGIN = 'dynamicPropertyPlugin'
 const ENTITY_VALIDATION_PLUGIN = 'entityValidationPlugin'
+const QUERY = 'query'
 
 const SEARCH = 'search'
 
@@ -30,6 +32,7 @@ export default {
   NEW_USER_GROUP,
   NEW_DYNAMIC_PROPERTY_PLUGIN,
   NEW_ENTITY_VALIDATION_PLUGIN,
+  NEW_QUERY,
   OBJECT_TYPE,
   COLLECTION_TYPE,
   DATA_SET_TYPE,
@@ -39,5 +42,6 @@ export default {
   USER_GROUP,
   DYNAMIC_PROPERTY_PLUGIN,
   ENTITY_VALIDATION_PLUGIN,
+  QUERY,
   SEARCH
 }

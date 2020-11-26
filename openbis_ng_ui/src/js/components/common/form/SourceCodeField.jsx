@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles'
 import { highlight, languages } from 'prismjs/components/prism-core.js'
 import 'prismjs/components/prism-clike.js'
 import 'prismjs/components/prism-python.js'
+import 'prismjs/components/prism-sql.js'
 import 'prismjs/themes/prism.css'
 import Editor from 'react-simple-code-editor'
 import InputLabel from '@material-ui/core/InputLabel'
@@ -129,7 +130,9 @@ class SourceCodeField extends React.PureComponent {
 
   renderView() {
     const { label, value, classes } = this.props
-    const html = { __html: highlight(value || '', languages.python) }
+    const html = {
+      __html: highlight(value || '', this.getLanguageDefinition())
+    }
 
     return (
       <FormFieldView
@@ -187,7 +190,7 @@ class SourceCodeField extends React.PureComponent {
           <Editor
             name={name}
             value={value || ''}
-            highlight={code => highlight(code, languages.python)}
+            highlight={code => highlight(code, this.getLanguageDefinition())}
             disabled={disabled}
             onValueChange={this.handleValueChange}
             onFocus={this.handleFocus}
@@ -196,6 +199,17 @@ class SourceCodeField extends React.PureComponent {
         </div>
       </FormFieldContainer>
     )
+  }
+
+  getLanguageDefinition() {
+    const { language } = this.props
+    if (language === 'python') {
+      return languages.python
+    } else if (language === 'sql') {
+      return languages.sql
+    } else {
+      throw new Error('Unsupported language: ' + language)
+    }
   }
 }
 

@@ -14,6 +14,7 @@ describe(ToolBrowserComponentTest.SUITE, () => {
 
 async function testLoad() {
   openbis.mockSearchPlugins([])
+  openbis.mockSearchQueries([])
 
   const browser = await common.mount()
 
@@ -23,7 +24,8 @@ async function testLoad() {
     },
     nodes: [
       { level: 0, text: 'Dynamic Property Plugins' },
-      { level: 0, text: 'Entity Validation Plugins' }
+      { level: 0, text: 'Entity Validation Plugins' },
+      { level: 0, text: 'Queries' }
     ]
   })
 }
