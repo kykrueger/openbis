@@ -148,6 +148,10 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
 
     protected static final String HOT_DEPLOYMENT_MANAGED_PROPERTY_PLUGINS_FOLDER = "sourceTest/hot-deployment/managed-property-plugins";
 
+    private static final long HOT_DEPLOYMENT_TIMEOUT = 30 * 10000000;
+
+    private static final long HOT_DEPLOYMENT_WATING_INTERVAL = 500;
+
     protected IDAOFactory daoFactory;
 
     protected ICommonServerForInternalUse commonServer;
@@ -173,9 +177,9 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         System.setProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY, SOURCE_TEST_CORE_PLUGINS);
         System.setProperty(Constants.ENABLED_MODULES_KEY, "test-.*");
 
-        initHotDeploymentFolder(HOT_DEPLOYMENT_DYNAMIC_PROPERTY_PLUGINS_FOLDER_KEY, HOT_DEPLOYMENT_DYNAMIC_PROPERTY_PLUGINS_FOLDER);
-        initHotDeploymentFolder(HOT_DEPLOYMENT_ENTITY_VALIDATION_PLUGINS_FOLDER_KEY, HOT_DEPLOYMENT_ENTITY_VALIDATION_PLUGINS_FOLDER);
-        initHotDeploymentFolder(HOT_DEPLOYMENT_MANAGED_PROPERTY_PLUGINS_FOLDER_KEY, HOT_DEPLOYMENT_MANAGED_PROPERTY_PLUGINS_FOLDER);
+        initHotDeploymentFolder(ScriptType.DYNAMIC_PROPERTY, HOT_DEPLOYMENT_DYNAMIC_PROPERTY_PLUGINS_FOLDER_KEY);
+        initHotDeploymentFolder(ScriptType.ENTITY_VALIDATION, HOT_DEPLOYMENT_ENTITY_VALIDATION_PLUGINS_FOLDER_KEY);
+        initHotDeploymentFolder(ScriptType.MANAGED_PROPERTY, HOT_DEPLOYMENT_MANAGED_PROPERTY_PLUGINS_FOLDER_KEY);
 
         TestInitializer.init();
     }
@@ -671,11 +675,9 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         return mergedResults.toArray(new Object[0][]);
     }
 
-    private void initHotDeploymentFolder(String propertyKey, String folderPath) throws IOException
+    private void initHotDeploymentFolder(ScriptType pluginType, String propertyKey) throws IOException
     {
-        System.setProperty(propertyKey, folderPath);
-
-        File folder = new File(folderPath);
+        File folder = getHotDeploymentPluginFolder(pluginType);
 
         if (folder.exists())
         {
@@ -684,63 +686,120 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         {
             folder.mkdirs();
         }
+
+        System.setProperty(propertyKey, folder.getPath());
     }
 
-    protected Script hotDeployPlugin(ScriptType pluginType, String pluginName, File pluginJarFile)
+    private File getHotDeploymentPluginFolder(ScriptType pluginType)
     {
-        File hotDeploymentFolder = null;
-
         if (pluginType == ScriptType.DYNAMIC_PROPERTY)
         {
-            hotDeploymentFolder = new File(HOT_DEPLOYMENT_DYNAMIC_PROPERTY_PLUGINS_FOLDER);
+            return new File(HOT_DEPLOYMENT_DYNAMIC_PROPERTY_PLUGINS_FOLDER);
         } else if (pluginType == ScriptType.ENTITY_VALIDATION)
         {
-            hotDeploymentFolder = new File(HOT_DEPLOYMENT_ENTITY_VALIDATION_PLUGINS_FOLDER);
+            return new File(HOT_DEPLOYMENT_ENTITY_VALIDATION_PLUGINS_FOLDER);
         } else if (pluginType == ScriptType.MANAGED_PROPERTY)
         {
-            hotDeploymentFolder = new File(HOT_DEPLOYMENT_MANAGED_PROPERTY_PLUGINS_FOLDER);
+            return new File(HOT_DEPLOYMENT_MANAGED_PROPERTY_PLUGINS_FOLDER);
         } else
         {
             throw new IllegalArgumentException("Unsupported plugin type: " + pluginType);
         }
+    }
 
+    protected Script hotDeployPlugin(ScriptType pluginType, String pluginName, File pluginJarFile)
+    {
         SessionContextDTO session = commonServer.tryAuthenticate(TEST_USER, PASSWORD);
 
-        List<Script> beforePlugins = commonServer.listScripts(session.getSessionToken(), pluginType, null);
+        Script beforePlugin = getPlugin(session.getSessionToken(), pluginType, pluginName);
 
-        if (beforePlugins.stream().anyMatch(p -> p.getName().equals(pluginName)))
+        if (beforePlugin != null)
         {
             throw new IllegalArgumentException(String.format("Plugin '%s' already exists", pluginName));
         }
 
         try
         {
-            Files.copy(pluginJarFile.toPath(), hotDeploymentFolder.toPath().resolve(pluginJarFile.getName()));
+            Files.copy(pluginJarFile.toPath(), getHotDeploymentPluginFolder(pluginType).toPath().resolve(pluginJarFile.getName()));
         } catch (IOException e)
         {
             throw new RuntimeException(
-                    String.format("Could not hot deploy plugin with type '%s', name '%s' and jar file '%s'", pluginType, pluginName, pluginJarFile));
+                    String.format("Could not hot deploy plugin with type '%s', name '%s' and jar file '%s'", pluginType, pluginName, pluginJarFile),
+                    e);
         }
 
-        long timeoutMillis = System.currentTimeMillis() + 30 * 1000;
+        long timeoutMillis = System.currentTimeMillis() + HOT_DEPLOYMENT_TIMEOUT;
 
         while (System.currentTimeMillis() < timeoutMillis)
         {
-            List<Script> afterPlugins = commonServer.listScripts(session.getSessionToken(), pluginType, null);
+            Script afterPlugin = getPlugin(session.getSessionToken(), pluginType, pluginName);
 
-            Optional<Script> plugin = afterPlugins.stream().filter(p -> p.getName().equals(pluginName)).findFirst();
-
-            if (plugin.isPresent())
+            if (afterPlugin != null)
             {
-                return plugin.get();
+                return afterPlugin;
             } else
             {
-                sleep(100);
+                sleep(HOT_DEPLOYMENT_WATING_INTERVAL);
             }
         }
 
         throw new RuntimeException(String.format("Timed out waiting for hot deployment of plugin with type '%s', name '%s' and jar file '%s'",
                 pluginType, pluginName, pluginJarFile));
+    }
+
+    protected void hotUndeployPlugin(ScriptType pluginType, String pluginName, String pluginJarName)
+    {
+        SessionContextDTO session = commonServer.tryAuthenticate(TEST_USER, PASSWORD);
+
+        try
+        {
+            File pluginJarFile = getHotDeploymentPluginFolder(pluginType).toPath().resolve(pluginJarName).toFile();
+
+            if (pluginJarFile.exists())
+            {
+                Files.delete(pluginJarFile.toPath());
+            }
+
+            Script plugin = getPlugin(session.getSessionToken(), pluginType, pluginName);
+
+            if (plugin != null)
+            {
+                // Hot deployed plugins get registered in the database by a separate thread. It makes them stay in the database even though the main
+                // test transaction is rolled back. To clean them up we need to do the same trick, i.e. create a separate thread that will clean up
+                // their entries for good. Without the separate thread the clean up would be rolled back.
+
+                Thread thread = new Thread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            commonServer.deleteScripts(session.getSessionToken(), TechId.createList(plugin.getId()));
+                        }
+                    });
+                thread.start();
+                thread.join();
+            }
+        } catch (Exception e)
+        {
+            throw new RuntimeException(
+                    String.format("Could not hot undeploy plugin with type '%s', name '%s' and jar name '%s'", pluginType, pluginName,
+                            pluginJarName),
+                    e);
+        }
+    }
+
+    private Script getPlugin(String sessionToken, ScriptType pluginType, String pluginName)
+    {
+        List<Script> plugins = commonServer.listScripts(sessionToken, pluginType, null);
+        Optional<Script> plugin = plugins.stream().filter(p -> p.getName().equals(pluginName)).findFirst();
+
+        if (plugin.isPresent())
+        {
+            return plugin.get();
+        } else
+        {
+            return null;
+        }
     }
 
 }

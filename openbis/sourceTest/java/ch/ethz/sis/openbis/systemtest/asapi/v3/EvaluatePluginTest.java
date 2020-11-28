@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -230,22 +231,27 @@ public class EvaluatePluginTest extends AbstractTest
     @Test
     public void testEvaluteDynamicPropertyPluginHotDeployed()
     {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        File pluginJar = new TestResources(getClass()).getResourceFile("test-dynamic-property-plugin.jar");
 
-        EntityTypePermId objectTypeId = createTestObjectType(PROPERTY);
-        Sample object = createTestObject(objectTypeId, Collections.singletonMap(PROPERTY, "testHotDeployedValue"));
+        try
+        {
+            String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        TestResources resources = new TestResources(getClass());
+            EntityTypePermId objectTypeId = createTestObjectType(PROPERTY);
+            Sample object = createTestObject(objectTypeId, Collections.singletonMap(PROPERTY, "testHotDeployedValue"));
 
-        hotDeployPlugin(ScriptType.DYNAMIC_PROPERTY, TestDynamicPropertyHotDeployedPlugin.PLUGIN_NAME,
-                resources.getResourceFile("test-dynamic-property-plugin.jar"));
+            hotDeployPlugin(ScriptType.DYNAMIC_PROPERTY, TestDynamicPropertyHotDeployedPlugin.PLUGIN_NAME, pluginJar);
 
-        DynamicPropertyPluginEvaluationOptions options = new DynamicPropertyPluginEvaluationOptions();
-        options.setPluginId(new PluginPermId(TestDynamicPropertyHotDeployedPlugin.PLUGIN_NAME));
-        options.setObjectId(object.getPermId());
+            DynamicPropertyPluginEvaluationOptions options = new DynamicPropertyPluginEvaluationOptions();
+            options.setPluginId(new PluginPermId(TestDynamicPropertyHotDeployedPlugin.PLUGIN_NAME));
+            options.setObjectId(object.getPermId());
 
-        DynamicPropertyPluginEvaluationResult result = (DynamicPropertyPluginEvaluationResult) v3api.evaluatePlugin(sessionToken, options);
-        assertEquals(result.getValue(), "testHotDeployedValue");
+            DynamicPropertyPluginEvaluationResult result = (DynamicPropertyPluginEvaluationResult) v3api.evaluatePlugin(sessionToken, options);
+            assertEquals(result.getValue(), "testHotDeployedValue");
+        } finally
+        {
+            hotUndeployPlugin(ScriptType.DYNAMIC_PROPERTY, TestDynamicPropertyHotDeployedPlugin.PLUGIN_NAME, pluginJar.getName());
+        }
     }
 
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "Evaluation of entity validation plugin failed.*")
@@ -396,23 +402,28 @@ public class EvaluatePluginTest extends AbstractTest
     @Test
     public void testEvaluteEntityValidationPluginHotDeployed()
     {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        File pluginJar = new TestResources(getClass()).getResourceFile("test-entity-validation-plugin.jar");
 
-        EntityTypePermId objectTypeId = createTestObjectType(PROPERTY);
-        Sample object = createTestObject(objectTypeId, Collections.singletonMap(PROPERTY, "testHotDeployedError"));
+        try
+        {
+            String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        TestResources resources = new TestResources(getClass());
+            EntityTypePermId objectTypeId = createTestObjectType(PROPERTY);
+            Sample object = createTestObject(objectTypeId, Collections.singletonMap(PROPERTY, "testHotDeployedError"));
 
-        hotDeployPlugin(ScriptType.ENTITY_VALIDATION, TestEntityValidationHotDeployedPlugin.PLUGIN_NAME,
-                resources.getResourceFile("test-entity-validation-plugin.jar"));
+            hotDeployPlugin(ScriptType.ENTITY_VALIDATION, TestEntityValidationHotDeployedPlugin.PLUGIN_NAME, pluginJar);
 
-        EntityValidationPluginEvaluationOptions options = new EntityValidationPluginEvaluationOptions();
-        options.setPluginId(new PluginPermId(TestEntityValidationHotDeployedPlugin.PLUGIN_NAME));
-        options.setObjectId(object.getPermId());
+            EntityValidationPluginEvaluationOptions options = new EntityValidationPluginEvaluationOptions();
+            options.setPluginId(new PluginPermId(TestEntityValidationHotDeployedPlugin.PLUGIN_NAME));
+            options.setObjectId(object.getPermId());
 
-        EntityValidationPluginEvaluationResult result = (EntityValidationPluginEvaluationResult) v3api.evaluatePlugin(sessionToken, options);
-        assertEquals(result.getError(), "testHotDeployedError");
-        assertEquals(result.getRequestedValidations(), Collections.singleton(object.getIdentifier()));
+            EntityValidationPluginEvaluationResult result = (EntityValidationPluginEvaluationResult) v3api.evaluatePlugin(sessionToken, options);
+            assertEquals(result.getError(), "testHotDeployedError");
+            assertEquals(result.getRequestedValidations(), Collections.singleton(object.getIdentifier()));
+        } finally
+        {
+            hotUndeployPlugin(ScriptType.ENTITY_VALIDATION, TestEntityValidationHotDeployedPlugin.PLUGIN_NAME, pluginJar.getName());
+        }
     }
 
     private EntityTypePermId createTestObjectType(String... propertyCodes)
