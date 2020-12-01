@@ -141,7 +141,7 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
         containerCriterion.withOperator(criteria.getOperator());
         containerCriterion.setCriteria(mainCriteria);
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(
                 userId, containerCriterion, tableMapper, idsColumnName, authorisationInformation);
 
         final Collection<Set<Long>> nestedCriteriaIntermediateResults;
@@ -185,7 +185,7 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         {
             final DummyCompositeSearchCriterion containerCriterion =
                     new DummyCompositeSearchCriterion(criteria, finalSearchOperator);
-            final Set<Long> mainCriteriaNotFilteredResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
+            final Set<Long> mainCriteriaNotFilteredResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
                     containerCriterion, tableMapper, idsColumnName, authorisationInformation);
             return filterIDsByUserRights(userId, authorisationInformation, mainCriteriaNotFilteredResults);
         } else

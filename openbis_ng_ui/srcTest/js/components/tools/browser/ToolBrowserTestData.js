@@ -32,9 +32,13 @@ testEntityValidationJythonPlugin.setPluginType(
   openbis.PluginType.ENTITY_VALIDATION
 )
 
+const testQuery = new openbis.Query()
+testQuery.setName('TEST_QUERY')
+
 export default {
   testDynamicPropertyJythonPlugin,
   testDynamicPropertyPredeployedPlugin,
   testManagedPropertyJythonPlugin,
-  testEntityValidationJythonPlugin
+  testEntityValidationJythonPlugin,
+  testQuery
 }

@@ -56,10 +56,10 @@ async function testChange(plugin) {
             ? plugin.getEntityKinds()[0]
             : null,
         options: [
-          { label: 'MATERIAL' },
-          { label: 'EXPERIMENT' },
-          { label: 'SAMPLE' },
-          { label: 'DATA_SET' }
+          { value: 'MATERIAL' },
+          { value: 'EXPERIMENT' },
+          { value: 'SAMPLE' },
+          { value: 'DATA_SET' }
         ],
         enabled: false,
         mode: 'edit'

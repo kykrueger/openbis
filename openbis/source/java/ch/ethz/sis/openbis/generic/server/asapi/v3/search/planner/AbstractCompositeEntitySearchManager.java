@@ -94,7 +94,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
             containerCriterion.withOperator(finalSearchOperator);
             containerCriterion.setCriteria(mainCriteria);
-            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion,
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, containerCriterion,
                     tableMapper, idsColumnName, authorisationInformation);
         } else
         {
@@ -227,7 +227,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         final AbstractCompositeSearchCriteria criteria = createEmptyCriteria();
         final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
         containerCriterion.setCriteria(Collections.singletonList(criteria));
-        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper, idsColumnName,
+        return getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, containerCriterion, tableMapper, idsColumnName,
                 authorisationInformation);
     }
 

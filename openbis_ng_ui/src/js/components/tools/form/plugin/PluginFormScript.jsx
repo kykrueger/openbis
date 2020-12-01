@@ -87,6 +87,7 @@ class PluginFormScript extends React.PureComponent {
       <div className={classes.field}>
         <SourceCodeField
           reference={this.references.script}
+          language='python'
           label='Script'
           name='script'
           mandatory={true}

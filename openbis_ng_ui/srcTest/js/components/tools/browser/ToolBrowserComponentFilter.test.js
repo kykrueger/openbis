@@ -18,7 +18,8 @@ async function testFilter() {
     testDynamicPropertyJythonPlugin,
     testDynamicPropertyPredeployedPlugin,
     testManagedPropertyJythonPlugin,
-    testEntityValidationJythonPlugin
+    testEntityValidationJythonPlugin,
+    testQuery
   } = ToolBrowserTestData
 
   openbis.mockSearchPlugins([
@@ -27,6 +28,7 @@ async function testFilter() {
     testManagedPropertyJythonPlugin,
     testEntityValidationJythonPlugin
   ])
+  openbis.mockSearchQueries([testQuery])
 
   const browser = await common.mount()
 
@@ -57,7 +59,9 @@ async function testFilter() {
       { level: 1, text: testDynamicPropertyJythonPlugin.name },
       { level: 1, text: testDynamicPropertyPredeployedPlugin.name },
       { level: 0, text: 'Entity Validation Plugins' },
-      { level: 1, text: testEntityValidationJythonPlugin.name }
+      { level: 1, text: testEntityValidationJythonPlugin.name },
+      { level: 0, text: 'Queries' },
+      { level: 1, text: testQuery.name }
     ]
   })
 }

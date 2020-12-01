@@ -12,6 +12,7 @@ import CreateMaterialTypesOperation from 'as/dto/material/create/CreateMaterialT
 import CreatePersonsOperation from 'as/dto/person/create/CreatePersonsOperation'
 import CreatePluginsOperation from 'as/dto/plugin/create/CreatePluginsOperation'
 import CreatePropertyTypesOperation from 'as/dto/property/create/CreatePropertyTypesOperation'
+import CreateQueriesOperation from 'as/dto/query/create/CreateQueriesOperation'
 import CreateRoleAssignmentsOperation from 'as/dto/roleassignment/create/CreateRoleAssignmentsOperation'
 import CreateSampleTypesOperation from 'as/dto/sample/create/CreateSampleTypesOperation'
 import CreateVocabulariesOperation from 'as/dto/vocabulary/create/CreateVocabulariesOperation'
@@ -33,6 +34,7 @@ import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExper
 import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
 import DeletePluginsOperation from 'as/dto/plugin/delete/DeletePluginsOperation'
 import DeletePropertyTypesOperation from 'as/dto/property/delete/DeletePropertyTypesOperation'
+import DeleteQueriesOperation from 'as/dto/query/delete/DeleteQueriesOperation'
 import DeleteRoleAssignmentsOperation from 'as/dto/roleassignment/delete/DeleteRoleAssignmentsOperation'
 import DeleteSampleTypesOperation from 'as/dto/sample/delete/DeleteSampleTypesOperation'
 import DeleteVocabulariesOperation from 'as/dto/vocabulary/delete/DeleteVocabulariesOperation'
@@ -63,13 +65,13 @@ import PersonSearchCriteria from 'as/dto/person/search/PersonSearchCriteria'
 import PersonUpdate from 'as/dto/person/update/PersonUpdate'
 import Plugin from 'as/dto/plugin/Plugin'
 import PluginCreation from 'as/dto/plugin/create/PluginCreation'
-import PluginUpdate from 'as/dto/plugin/update/PluginUpdate'
 import PluginDeletionOptions from 'as/dto/plugin/delete/PluginDeletionOptions'
 import PluginFetchOptions from 'as/dto/plugin/fetchoptions/PluginFetchOptions'
 import PluginKind from 'as/dto/plugin/PluginKind'
 import PluginPermId from 'as/dto/plugin/id/PluginPermId'
 import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
 import PluginType from 'as/dto/plugin/PluginType'
+import PluginUpdate from 'as/dto/plugin/update/PluginUpdate'
 import Project from 'as/dto/project/Project'
 import ProjectFetchOptions from 'as/dto/project/fetchoptions/ProjectFetchOptions'
 import ProjectIdentifier from 'as/dto/project/id/ProjectIdentifier'
@@ -86,6 +88,16 @@ import PropertyTypeFetchOptions from 'as/dto/property/fetchoptions/PropertyTypeF
 import PropertyTypePermId from 'as/dto/property/id/PropertyTypePermId'
 import PropertyTypeSearchCriteria from 'as/dto/property/search/PropertyTypeSearchCriteria'
 import PropertyTypeUpdate from 'as/dto/property/update/PropertyTypeUpdate'
+import Query from 'as/dto/query/Query'
+import QueryCreation from 'as/dto/query/create/QueryCreation'
+import QueryDatabaseName from 'as/dto/query/id/QueryDatabaseName'
+import QueryDeletionOptions from 'as/dto/query/delete/QueryDeletionOptions'
+import QueryFetchOptions from 'as/dto/query/fetchoptions/QueryFetchOptions'
+import QueryName from 'as/dto/query/id/QueryName'
+import QuerySearchCriteria from 'as/dto/query/search/QuerySearchCriteria'
+import QueryTechId from 'as/dto/query/id/QueryTechId'
+import QueryType from 'as/dto/query/QueryType'
+import QueryUpdate from 'as/dto/query/update/QueryUpdate'
 import Role from 'as/dto/roleassignment/Role'
 import RoleAssignment from 'as/dto/roleassignment/RoleAssignment'
 import RoleAssignmentCreation from 'as/dto/roleassignment/create/RoleAssignmentCreation'
@@ -117,6 +129,7 @@ import UpdateMaterialTypesOperation from 'as/dto/material/update/UpdateMaterialT
 import UpdatePersonsOperation from 'as/dto/person/update/UpdatePersonsOperation'
 import UpdatePluginsOperation from 'as/dto/plugin/update/UpdatePluginsOperation'
 import UpdatePropertyTypesOperation from 'as/dto/property/update/UpdatePropertyTypesOperation'
+import UpdateQueriesOperation from 'as/dto/query/update/UpdateQueriesOperation'
 import UpdateSampleTypesOperation from 'as/dto/sample/update/UpdateSampleTypesOperation'
 import UpdateVocabulariesOperation from 'as/dto/vocabulary/update/UpdateVocabulariesOperation'
 import UpdateVocabularyTermsOperation from 'as/dto/vocabulary/update/UpdateVocabularyTermsOperation'
@@ -135,7 +148,6 @@ import VocabularyTermSearchCriteria from 'as/dto/vocabulary/search/VocabularyTer
 import VocabularyTermUpdate from 'as/dto/vocabulary/update/VocabularyTermUpdate'
 import VocabularyUpdate from 'as/dto/vocabulary/update/VocabularyUpdate'
 import WebAppSettingCreation from 'as/dto/webapp/create/WebAppSettingCreation'
-
 const dto = {
   AuthorizationGroup,
   AuthorizationGroupCreation,
@@ -151,6 +163,7 @@ const dto = {
   CreatePersonsOperation,
   CreatePluginsOperation,
   CreatePropertyTypesOperation,
+  CreateQueriesOperation,
   CreateRoleAssignmentsOperation,
   CreateSampleTypesOperation,
   CreateVocabulariesOperation,
@@ -172,6 +185,7 @@ const dto = {
   DeleteMaterialTypesOperation,
   DeletePluginsOperation,
   DeletePropertyTypesOperation,
+  DeleteQueriesOperation,
   DeleteRoleAssignmentsOperation,
   DeleteSampleTypesOperation,
   DeleteVocabulariesOperation,
@@ -202,13 +216,13 @@ const dto = {
   PersonUpdate,
   Plugin,
   PluginCreation,
-  PluginUpdate,
   PluginDeletionOptions,
   PluginFetchOptions,
   PluginKind,
   PluginPermId,
   PluginSearchCriteria,
   PluginType,
+  PluginUpdate,
   Project,
   ProjectFetchOptions,
   ProjectIdentifier,
@@ -225,6 +239,16 @@ const dto = {
   PropertyTypePermId,
   PropertyTypeSearchCriteria,
   PropertyTypeUpdate,
+  Query,
+  QueryCreation,
+  QueryDatabaseName,
+  QueryDeletionOptions,
+  QueryFetchOptions,
+  QueryName,
+  QuerySearchCriteria,
+  QueryTechId,
+  QueryType,
+  QueryUpdate,
   Role,
   RoleAssignment,
   RoleAssignmentCreation,
@@ -256,6 +280,7 @@ const dto = {
   UpdatePersonsOperation,
   UpdatePluginsOperation,
   UpdatePropertyTypesOperation,
+  UpdateQueriesOperation,
   UpdateSampleTypesOperation,
   UpdateVocabulariesOperation,
   UpdateVocabularyTermsOperation,
