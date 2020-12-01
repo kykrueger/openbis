@@ -673,7 +673,7 @@ public class GlobalSearchCriteriaTranslator
     {
         final List<Object> args = translationContext.getArgs();
 
-        sqlBuilder.append(WHERE).append(SP);
+        sqlBuilder.append(WHERE).append(SP).append(LP);
         if (forAttributes)
         {
             sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD)
@@ -684,6 +684,7 @@ public class GlobalSearchCriteriaTranslator
         {
             buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), tableMapper, args);
         }
+        sqlBuilder.append(RP);
         translateAuthorisation(sqlBuilder, translationContext, tableMapper);
         sqlBuilder.append(NL);
     }
