@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.QueryDatabase;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryDatabaseFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleLevel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
@@ -75,6 +76,7 @@ public class QueryDatabaseTranslator extends AbstractCachingTranslator<DatabaseD
     {
         QueryDatabase database = new QueryDatabase();
         database.setFetchOptions(new QueryDatabaseFetchOptions());
+        database.setPermId(new QueryDatabaseName(databaseDefinition.getKey()));
         database.setName(databaseDefinition.getKey());
         database.setLabel(databaseDefinition.getLabel());
 

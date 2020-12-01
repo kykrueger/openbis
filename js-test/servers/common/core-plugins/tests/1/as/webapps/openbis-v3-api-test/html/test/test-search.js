@@ -2674,6 +2674,31 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchQueryDatabases() withId", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fSearch = function(facade) {
+				var criteria = new c.QueryDatabaseSearchCriteria();
+				var fo = new c.QueryDatabaseFetchOptions();
+				fo.withSpace();
+
+				criteria.withId().thatEquals(new c.QueryDatabaseName("openbisDB"));
+				return facade.searchQueryDatabases(criteria, fo);
+			}
+
+			var fCheck = function(facade, databases) {
+				c.assertEqual(databases.length, 1);
+				c.assertEqual(databases[0].getPermId().getName(), "openbisDB", "PermId");
+				c.assertEqual(databases[0].getName(), "openbisDB", "Name");
+				c.assertEqual(databases[0].getLabel(), "openBIS meta data", "Label");
+				c.assertEqual(databases[0].getCreatorMinimalRole(), c.Role.OBSERVER, "CreatorMinimalRole");
+				c.assertEqual(databases[0].getCreatorMinimalRoleLevel(), c.RoleLevel.INSTANCE, "CreatorMinimalRoleLevel");
+				c.assertEqual(databases[0].getSpace(), null, "Space");
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
+
 		QUnit.test("searchSamples() withProperty", function(assert) {
 			var c = new common(assert, openbis);
 

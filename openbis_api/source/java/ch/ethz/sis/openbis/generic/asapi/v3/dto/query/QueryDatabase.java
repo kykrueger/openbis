@@ -15,8 +15,10 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.query;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISpaceHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryDatabaseFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleLevel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
@@ -30,12 +32,15 @@ import java.io.Serializable;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.query.QueryDatabase")
-public class QueryDatabase implements Serializable, ISpaceHolder
+public class QueryDatabase implements Serializable, IPermIdHolder, ISpaceHolder
 {
     private static final long serialVersionUID = 1L;
 
     @JsonProperty
     private QueryDatabaseFetchOptions fetchOptions;
+
+    @JsonProperty
+    private QueryDatabaseName permId;
 
     @JsonProperty
     private String name;
@@ -63,6 +68,20 @@ public class QueryDatabase implements Serializable, ISpaceHolder
     public void setFetchOptions(QueryDatabaseFetchOptions fetchOptions)
     {
         this.fetchOptions = fetchOptions;
+    }
+
+    // Method automatically generated with DtoGenerator
+    @JsonIgnore
+    @Override
+    public QueryDatabaseName getPermId()
+    {
+        return permId;
+    }
+
+    // Method automatically generated with DtoGenerator
+    public void setPermId(QueryDatabaseName permId)
+    {
+        this.permId = permId;
     }
 
     // Method automatically generated with DtoGenerator

@@ -719,6 +719,27 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);
 		});
 
+		QUnit.test("getQueryDatabases()", function(assert) {
+			var c = new common(assert, openbis);
+			var fo = new c.QueryDatabaseFetchOptions();
+			var fechOptionsTestConfig = getConfigForFetchOptions(fo);
+
+			var fCreate = function(facade) {
+				return Promise.resolve([ new c.QueryDatabaseName("openbisDB"), new c.QueryDatabaseName("test-query-database") ]);
+			}
+
+			var fGet = function(facade, techIds) {
+				testFetchOptionsAssignation(c, fo, fechOptionsTestConfig);
+				return facade.getQueryDatabases(techIds, fo);
+			}
+
+			var fGetEmptyFetchOptions = function(facade, techIds) {
+				return facade.getQueryDatabases(techIds, new c.QueryDatabaseFetchOptions());
+			}
+
+			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);
+		});
+
 		QUnit.test("getExperimentTypes()", function(assert) {
 			var c = new common(assert, openbis);
 			var fo = new c.ExperimentTypeFetchOptions();

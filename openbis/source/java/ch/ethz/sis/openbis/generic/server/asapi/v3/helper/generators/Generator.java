@@ -96,6 +96,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.QueryType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryDatabaseFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleLevel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
@@ -830,6 +831,7 @@ public class Generator extends AbstractGenerator
     {
         DtoGenerator gen = new DtoGenerator("query", "QueryDatabase", QueryDatabaseFetchOptions.class);
 
+        addPermId(gen, QueryDatabaseName.class);
         gen.addSimpleField(String.class, "name");
         gen.addSimpleField(String.class, "label");
         addSpace(gen);

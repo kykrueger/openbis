@@ -53,6 +53,7 @@ public class GetQueryDatabaseTest extends AbstractTest
         assertEquals(1, map.size());
 
         QueryDatabase database = map.get(id);
+        assertEquals(database.getPermId(), new QueryDatabaseName("test-database"));
         assertEquals(database.getName(), "test-database");
         assertEquals(database.getLabel(), "Test Database");
         assertEquals(database.getCreatorMinimalRole(), Role.POWER_USER);
@@ -78,6 +79,7 @@ public class GetQueryDatabaseTest extends AbstractTest
         assertEquals(1, map.size());
 
         QueryDatabase database = map.get(id1);
+        assertEquals(database.getPermId(), new QueryDatabaseName("1"));
         assertEquals(database.getName(), "1");
         assertEquals(database.getLabel(), "openBIS meta data");
         assertEquals(database.getCreatorMinimalRole(), Role.OBSERVER);
@@ -103,6 +105,7 @@ public class GetQueryDatabaseTest extends AbstractTest
         assertEquals(1, map.size());
 
         QueryDatabase database = map.get(id1);
+        assertEquals(database.getPermId(), new QueryDatabaseName("1"));
         assertEquals(database.getName(), "1");
         assertEquals(database.getLabel(), "openBIS meta data");
         assertEquals(database.getCreatorMinimalRole(), Role.OBSERVER);
@@ -145,6 +148,7 @@ public class GetQueryDatabaseTest extends AbstractTest
         assertEquals(1, map.size());
 
         QueryDatabase database = map.get(id);
+        assertEquals(database.getPermId(), new QueryDatabaseName("test-database"));
         assertEquals(database.getName(), "test-database");
         assertEquals(database.getLabel(), "Test Database");
         assertEquals(database.getCreatorMinimalRole(), Role.POWER_USER);
@@ -169,6 +173,7 @@ public class GetQueryDatabaseTest extends AbstractTest
         assertEquals(1, map.size());
 
         QueryDatabase database = map.get(id);
+        assertEquals(database.getPermId(), new QueryDatabaseName("test-database"));
         assertEquals(database.getName(), "test-database");
         assertEquals(database.getLabel(), "Test Database");
         assertEquals(database.getCreatorMinimalRole(), Role.POWER_USER);
