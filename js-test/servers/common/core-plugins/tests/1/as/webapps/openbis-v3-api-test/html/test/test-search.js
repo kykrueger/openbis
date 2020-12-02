@@ -2681,6 +2681,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var criteria = new c.QueryDatabaseSearchCriteria();
 				var fo = new c.QueryDatabaseFetchOptions();
 				fo.withSpace();
+				fo.sortBy().name().asc();
 
 				criteria.withId().thatEquals(new c.QueryDatabaseName("openbisDB"));
 				return facade.searchQueryDatabases(criteria, fo);

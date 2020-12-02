@@ -16,7 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.QueryDatabase;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -26,7 +29,19 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 @JsonObject("as.dto.query.fetchoptions.QueryDatabaseSortOptions")
 public class QueryDatabaseSortOptions extends SortOptions<QueryDatabase>
 {
-
     private static final long serialVersionUID = 1L;
+
+    @JsonIgnore
+    public static final String NAME = "NAME";
+
+    public SortOrder name()
+    {
+        return getOrCreateSorting(NAME);
+    }
+
+    public SortOrder getName()
+    {
+        return getSorting(NAME);
+    }
 
 }
