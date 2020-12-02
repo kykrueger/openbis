@@ -2758,6 +2758,31 @@ public class SearchSampleTest extends AbstractSampleTest
         testSearch(TEST_USER, criteria, "/MP:B03", "/CISD/B1B3:B03", "/CISD/B1B3:B01");
     }
 
+    @Test
+    public void testSearchWithNegation()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withOrOperator();
+        criteria.withProperty("$NAME").thatContains("P1-A2");
+
+        final SampleSearchCriteria codeSubcriteria = criteria.withSubcriteria().withAndOperator();
+        codeSubcriteria.withCode().thatContains("P1-A2");
+        codeSubcriteria.withSubcriteria().negate().withCode().thatEquals("CP1-A2");
+
+        final SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withType();
+        fetchOptions.withExperiment().withProperties();
+        fetchOptions.withProperties();
+
+        // When
+        final List<Sample> samples = v3api.searchSamples(sessionToken, criteria, fetchOptions).getObjects();
+
+        // Then
+        assertSampleIdentifiers(samples, "/CISD/RP1-A2X");
+    }
+
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)
     {
         String sessionToken = v3api.login(user, PASSWORD);

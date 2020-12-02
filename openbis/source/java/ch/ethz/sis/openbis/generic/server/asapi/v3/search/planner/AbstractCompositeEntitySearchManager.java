@@ -19,6 +19,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.relationship.IGetRelationshipIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -50,7 +52,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final CRITERIA criteria, final SearchOperator searchOperator, final String idsColumnName,
             final TableMapper tableMapper)
     {
-        final AbstractCompositeSearchCriteria emptyCriteria = createEmptyCriteria();
+        final AbstractCompositeSearchCriteria emptyCriteria = createEmptyCriteria(false);
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass =
                 getParentsSearchCriteriaClass();
         final Class<? extends ISearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
@@ -67,11 +69,23 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             throw new RuntimeException("Either both or none of parent/child search criteria should be null.");
         }
 
+        final boolean negated;
+        if (criteria instanceof SampleSearchCriteria)
+        {
+            negated = ((SampleSearchCriteria) criteria).isNegated();
+        } else if (criteria instanceof ExperimentSearchCriteria)
+        {
+            negated = ((ExperimentSearchCriteria) criteria).isNegated();
+        } else
+        {
+            negated = false;
+        }
+
         final CompositeEntityCriteriaVo criteriaVo = new CompositeEntityCriteriaVo(mainCriteria,
                 getCriteria(criteria, parentsSearchCriteriaClass),
                 getCriteria(criteria, childrenSearchCriteriaClass),
                 Collections.emptyList(), getCriteria(criteria, emptyCriteria.getClass()),
-                (searchOperator == null) ? criteria.getOperator() : searchOperator);
+                (searchOperator == null) ? criteria.getOperator() : searchOperator, negated);
 
         return doSearchForIDs(userId, criteriaVo, idsColumnName, tableMapper, authorisationInformation);
     }
@@ -86,16 +100,17 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         final Collection<? extends AbstractCompositeSearchCriteria> nestedCriteria = criteriaVo.getNestedCriteria();
         final Collection<ISearchCriteria> mainCriteria = criteriaVo.getMainCriteria();
         final SearchOperator finalSearchOperator = criteriaVo.getSearchOperator();
+        final boolean negated = criteriaVo.isNegated();
 
         final Set<Long> mainCriteriaIntermediateResults;
         if (!mainCriteria.isEmpty())
         {
             // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
-            final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
+            final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria(negated);
             containerCriterion.withOperator(finalSearchOperator);
             containerCriterion.setCriteria(mainCriteria);
-            mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, containerCriterion,
-                    tableMapper, idsColumnName, authorisationInformation);
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
+                    containerCriterion, tableMapper, idsColumnName, authorisationInformation);
         } else
         {
             mainCriteriaIntermediateResults = null;
@@ -224,8 +239,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final String idsColumnName,
             final TableMapper tableMapper)
     {
-        final AbstractCompositeSearchCriteria criteria = createEmptyCriteria();
-        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
+        final AbstractCompositeSearchCriteria criteria = createEmptyCriteria(false);
+        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria(false);
         containerCriterion.setCriteria(Collections.singletonList(criteria));
         return getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, containerCriterion, tableMapper, idsColumnName,
                 authorisationInformation);
@@ -251,13 +266,14 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         private final Collection<? extends ISearchCriteria> containerCriteria;
         private final Collection<? extends AbstractCompositeSearchCriteria> nestedCriteria;
         private final SearchOperator searchOperator;
+        private final boolean negated;
 
         public CompositeEntityCriteriaVo(final Collection<ISearchCriteria> mainCriteria,
                 final Collection<? extends ISearchCriteria> parentsCriteria,
                 final Collection<? extends ISearchCriteria> childrenCriteria,
                 final Collection<? extends ISearchCriteria> containerCriteria,
                 final Collection<? extends AbstractCompositeSearchCriteria> nestedCriteria,
-                final SearchOperator searchOperator)
+                final SearchOperator searchOperator, final boolean negated)
         {
             this.mainCriteria = mainCriteria;
             this.parentsCriteria = parentsCriteria;
@@ -265,6 +281,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             this.containerCriteria = containerCriteria;
             this.nestedCriteria = nestedCriteria;
             this.searchOperator = searchOperator;
+            this.negated = negated;
         }
 
         public Collection<ISearchCriteria> getMainCriteria()
@@ -297,6 +314,10 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             return searchOperator;
         }
 
+        public boolean isNegated()
+        {
+            return negated;
+        }
     }
 
 }

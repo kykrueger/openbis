@@ -54,6 +54,7 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
     {
         OPERATION_LOG.info("QUERY: " + sqlQuery);
+        // TODO: add log level check.
         OPERATION_LOG.debug("ARGS: " + Arrays.deepToString(args.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();

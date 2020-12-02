@@ -34,7 +34,7 @@ import java.util.Set;
 
 /**
  * Manages detailed search with complex sample search criteria.
- * 
+ *
  * @author Viktor Kovtun
  */
 public class SampleSearchManager extends AbstractCompositeEntitySearchManager<SampleSearchCriteria, Sample, Long>
@@ -70,9 +70,14 @@ public class SampleSearchManager extends AbstractCompositeEntitySearchManager<Sa
     }
 
     @Override
-    protected SampleSearchCriteria createEmptyCriteria()
+    protected SampleSearchCriteria createEmptyCriteria(final boolean negated)
     {
-        return new SampleSearchCriteria();
+        final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
+        if (negated)
+        {
+            sampleSearchCriteria.negate();
+        }
+        return sampleSearchCriteria;
     }
 
     @Override

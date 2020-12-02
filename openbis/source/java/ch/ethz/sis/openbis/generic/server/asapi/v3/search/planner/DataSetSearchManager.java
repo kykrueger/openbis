@@ -69,7 +69,7 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
     }
 
     @Override
-    protected DataSetSearchCriteria createEmptyCriteria()
+    protected DataSetSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new DataSetSearchCriteria();
     }
@@ -126,7 +126,7 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
                 ).collect(Collectors.toList());
 
         final CompositeEntityCriteriaVo criteriaVo = new CompositeEntityCriteriaVo(newMainCriteria, newParentsCriteria,
-                newChildrenCriteria, newContainerCriteria, nestedCriteria, criteria.getOperator());
+                newChildrenCriteria, newContainerCriteria, nestedCriteria, criteria.getOperator(), false);
 
         return super.doSearchForIDs(userId, criteriaVo, idsColumnName, TableMapper.DATA_SET, authorisationInformation);
     }

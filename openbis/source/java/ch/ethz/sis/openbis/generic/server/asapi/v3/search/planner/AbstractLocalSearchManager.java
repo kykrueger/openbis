@@ -132,13 +132,11 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
     protected Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
             final AbstractCompositeSearchCriteria criteria, final String idsColumnName, final TableMapper tableMapper)
     {
-        final AbstractCompositeSearchCriteria emptyCriteria = createEmptyCriteria();
+        final AbstractCompositeSearchCriteria emptyCriteria = createEmptyCriteria(false);
         final List<CRITERIA> nestedCriteria = (List<CRITERIA>) getCriteria(criteria, emptyCriteria.getClass());
         final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, emptyCriteria.getClass());
 
-//        final CriteriaVo criteriaVo = new CriteriaVo(mainCriteria, nestedCriteria, criteria.getOperator());
-
-        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
+        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria(false);
         containerCriterion.withOperator(criteria.getOperator());
         containerCriterion.setCriteria(mainCriteria);
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(
@@ -194,7 +192,7 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         }
     }
 
-    protected abstract AbstractCompositeSearchCriteria createEmptyCriteria();
+    protected abstract AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated);
 
     /**
      * Queries the DB to return all entity IDs.
@@ -209,42 +207,11 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
             final String idsColumnName,
             final TableMapper tableMapper)
     {
-        final AbstractCompositeSearchCriteria criteria = createEmptyCriteria();
-        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
+        final AbstractCompositeSearchCriteria criteria = createEmptyCriteria(false);
+        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria(false);
         containerCriterion.setCriteria(Collections.singletonList(criteria));
         return getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, containerCriterion, tableMapper,
                 idsColumnName, authorisationInformation);
     }
-
-//    protected class CriteriaVo
-//    {
-//        private final Collection<ISearchCriteria> mainCriteria;
-//        private final Collection<CRITERIA> nestedCriteria;
-//        private final SearchOperator searchOperator;
-//
-//        public CriteriaVo(final Collection<ISearchCriteria> mainCriteria,
-//                final Collection<CRITERIA> nestedCriteria, final SearchOperator searchOperator)
-//        {
-//            this.mainCriteria = mainCriteria;
-//            this.nestedCriteria = nestedCriteria;
-//            this.searchOperator = searchOperator;
-//        }
-//
-//        public Collection<ISearchCriteria> getMainCriteria()
-//        {
-//            return mainCriteria;
-//        }
-//
-//        public Collection<CRITERIA> getNestedCriteria()
-//        {
-//            return nestedCriteria;
-//        }
-//
-//        public SearchOperator getSearchOperator()
-//        {
-//            return searchOperator;
-//        }
-//
-//    }
 
 }

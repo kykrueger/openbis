@@ -52,4 +52,20 @@ public class SampleSearchCriteria extends AbstractSampleSearchCriteria<SampleSea
         return with(new SampleSearchCriteria());
     }
 
+    public SampleSearchCriteria negate()
+    {
+        return (SampleSearchCriteria) super.negate();
+    }
+
+    @Override
+    public boolean isNegated()
+    {
+        return super.isNegated();
+    }
+
+    @Override
+    public String toString()
+    {
+        return super.toString();
+    }
 }

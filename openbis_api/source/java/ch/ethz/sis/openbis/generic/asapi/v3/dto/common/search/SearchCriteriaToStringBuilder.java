@@ -36,6 +36,8 @@ public class SearchCriteriaToStringBuilder implements Serializable
 
     private Collection<ISearchCriteria> criteria;
 
+    private boolean negated;
+
     public SearchCriteriaToStringBuilder setName(String name)
     {
         this.name = name;
@@ -54,10 +56,21 @@ public class SearchCriteriaToStringBuilder implements Serializable
         return this;
     }
 
+    public SearchCriteriaToStringBuilder setNegated(final boolean negated)
+    {
+        this.negated = negated;
+        return this;
+    }
+
     public String toString(String anIndentation)
     {
         StringBuilder sb = new StringBuilder();
         String indentation = anIndentation;
+
+        if (negated)
+        {
+            sb.append("NEGATED ");
+        }
 
         if (indentation.isEmpty())
         {

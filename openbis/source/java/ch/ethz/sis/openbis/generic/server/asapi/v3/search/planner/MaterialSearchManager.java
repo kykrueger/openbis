@@ -36,7 +36,7 @@ import java.util.Set;
 
 /**
  * Manages detailed search with material search criteria.
- * 
+ *
  * @author Viktor Kovtun
  */
 public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<MaterialSearchCriteria, Material, Long>
@@ -61,7 +61,7 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
     }
 
     @Override
-    protected MaterialSearchCriteria createEmptyCriteria()
+    protected MaterialSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new MaterialSearchCriteria();
     }

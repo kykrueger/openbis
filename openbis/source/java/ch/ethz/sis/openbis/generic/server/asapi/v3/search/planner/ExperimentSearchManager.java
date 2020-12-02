@@ -45,7 +45,7 @@ public class ExperimentSearchManager extends AbstractLocalSearchManager<Experime
     }
 
     @Override
-    protected AbstractCompositeSearchCriteria createEmptyCriteria()
+    protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new ExperimentSearchCriteria();
     }
