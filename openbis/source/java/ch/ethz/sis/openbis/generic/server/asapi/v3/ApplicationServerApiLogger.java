@@ -147,13 +147,17 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignme
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.QueryDatabase;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.QueryCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.delete.QueryDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.QueryExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.SqlExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryDatabaseFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryDatabaseId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryTechId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QueryDatabaseSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QuerySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update.QueryUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.Rights;
@@ -728,6 +732,14 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public Map<IQueryDatabaseId, QueryDatabase> getQueryDatabases(String sessionToken, List<? extends IQueryDatabaseId> queryDatabaseIds,
+            QueryDatabaseFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-query-databases", "QUERY_DATABASE_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(queryDatabaseIds), fetchOptions);
+        return null;
+    }
+
+    @Override
     public SearchResult<Space> searchSpaces(String sessionToken, SpaceSearchCriteria searchCriteria, SpaceFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-spaces", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
@@ -859,6 +871,14 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public SearchResult<Query> searchQueries(String sessionToken, QuerySearchCriteria searchCriteria, QueryFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-queries", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
+    @Override
+    public SearchResult<QueryDatabase> searchQueryDatabases(String sessionToken, QueryDatabaseSearchCriteria searchCriteria,
+            QueryDatabaseFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-query-databases", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
         return null;
     }
 

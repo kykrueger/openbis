@@ -136,6 +136,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.PropertyAssignmentSearchCriteria = dtos.PropertyAssignmentSearchCriteria;
 		this.SemanticAnnotationSearchCriteria = dtos.SemanticAnnotationSearchCriteria;
 		this.QuerySearchCriteria = dtos.QuerySearchCriteria;
+		this.QueryDatabaseSearchCriteria = dtos.QueryDatabaseSearchCriteria;
 		this.SpaceFetchOptions = dtos.SpaceFetchOptions;
 		this.ProjectFetchOptions = dtos.ProjectFetchOptions;
 		this.ExperimentFetchOptions = dtos.ExperimentFetchOptions;
@@ -158,6 +159,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.PropertyAssignmentFetchOptions = dtos.PropertyAssignmentFetchOptions;
 		this.SemanticAnnotationFetchOptions = dtos.SemanticAnnotationFetchOptions;
 		this.QueryFetchOptions = dtos.QueryFetchOptions;
+		this.QueryDatabaseFetchOptions = dtos.QueryDatabaseFetchOptions;
 		this.DeletionFetchOptions = dtos.DeletionFetchOptions;
 		this.DeletionSearchCriteria = dtos.DeletionSearchCriteria;
 		this.CustomASServiceSearchCriteria = dtos.CustomASServiceSearchCriteria;
@@ -290,6 +292,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.GetSemanticAnnotationsOperation = dtos.GetSemanticAnnotationsOperation;
 		this.GetOperationExecutionsOperation = dtos.GetOperationExecutionsOperation;
 		this.GetQueriesOperation = dtos.GetQueriesOperation;
+		this.GetQueryDatabasesOperation = dtos.GetQueryDatabasesOperation;
 
 		this.SearchSpacesOperation = dtos.SearchSpacesOperation;
 		this.SearchProjectsOperation = dtos.SearchProjectsOperation;
@@ -323,6 +326,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.SearchPropertyAssignmentsOperation = dtos.SearchPropertyAssignmentsOperation;
 		this.SearchSemanticAnnotationsOperation = dtos.SearchSemanticAnnotationsOperation;
 		this.SearchQueriesOperation = dtos.SearchQueriesOperation;
+		this.SearchQueryDatabasesOperation = dtos.SearchQueryDatabasesOperation;
 
 		this.DeleteSpacesOperation = dtos.DeleteSpacesOperation;
 		this.DeleteProjectsOperation = dtos.DeleteProjectsOperation;

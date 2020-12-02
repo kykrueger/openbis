@@ -2437,3 +2437,17 @@ Plugin Evaluation Options
 Plugin Evaluation Result
 set New
 set Plugin Script
+get Creator Minimal Role
+get Creator Minimal Role Level
+get Query Databases
+Get Query Databases Operation
+Get Query Databases Operation Result
+Query Database
+Query Database Fetch Options
+Query Database Search Criteria
+Query Database Sort Options
+search Query Databases
+Search Query Databases Operation
+Search Query Databases Operation Result
+set Creator Minimal Role
+set Creator Minimal Role Level

@@ -146,13 +146,17 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignme
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.QueryDatabase;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.QueryCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.delete.QueryDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.QueryExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.SqlExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryDatabaseFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryDatabaseId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryTechId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QueryDatabaseSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QuerySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update.QueryUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.Rights;
@@ -1131,6 +1135,22 @@ public interface IApplicationServerApi extends IRpcService
     public Map<IQueryId, Query> getQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryFetchOptions fetchOptions);
 
     /**
+     * Gets query databases for the provided {@code IQueryDatabaseId} ids. A result map contains an entry for a given id only if a query database for
+     * that id has been found and that query database can be accessed by the user.
+     * <p>
+     * By default the returned query databases contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code QueryDatabaseFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: depends on a query database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
+    public Map<IQueryDatabaseId, QueryDatabase> getQueryDatabases(String sessionToken, List<? extends IQueryDatabaseId> queryDatabaseIds,
+            QueryDatabaseFetchOptions fetchOptions);
+
+    /**
      * Searches for spaces basing on the provided {@code SpaceSearchCriteria}.
      * <p>
      * By default the returned spaces contain only basic information. Any additional information to be fetched has to be explicitly requested via
@@ -1618,6 +1638,21 @@ public interface IApplicationServerApi extends IRpcService
      * @throws UserFailureException in case of any problems
      */
     public SearchResult<Query> searchQueries(String sessionToken, QuerySearchCriteria searchCriteria, QueryFetchOptions fetchOptions);
+
+    /**
+     * Searches for query databases basing on the provided {@code QueryDatabaseSearchCriteria}.
+     * <p>
+     * By default the returned query databases contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code QueryDatabaseFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: depends on a query database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
+    public SearchResult<QueryDatabase> searchQueryDatabases(String sessionToken, QueryDatabaseSearchCriteria searchCriteria,
+            QueryDatabaseFetchOptions fetchOptions);
 
     /**
      * Permanently deletes spaces with the provided {@code ISpaceId} ids. Additional deletion options (e.g. deletion reason) can be set via

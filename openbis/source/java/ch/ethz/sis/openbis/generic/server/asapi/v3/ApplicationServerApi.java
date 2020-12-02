@@ -282,6 +282,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.SearchPropertyTy
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.UpdatePropertyTypesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.QueryDatabase;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.CreateQueriesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.CreateQueriesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.QueryCreation;
@@ -293,14 +294,21 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.ExecuteSqlOperatio
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.ExecuteSqlOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.QueryExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.SqlExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryDatabaseFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.get.GetQueriesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.get.GetQueriesOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.get.GetQueryDatabasesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.get.GetQueryDatabasesOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryDatabaseId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryTechId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QueryDatabaseSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QuerySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.SearchQueriesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.SearchQueriesOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.SearchQueryDatabasesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.SearchQueryDatabasesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update.QueryUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update.UpdateQueriesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.Rights;
@@ -1050,6 +1058,15 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
 
     @Override
     @Transactional(readOnly = true)
+    public Map<IQueryDatabaseId, QueryDatabase> getQueryDatabases(String sessionToken, List<? extends IQueryDatabaseId> queryDatabaseIds,
+            QueryDatabaseFetchOptions fetchOptions)
+    {
+        GetQueryDatabasesOperationResult result = executeOperation(sessionToken, new GetQueryDatabasesOperation(queryDatabaseIds, fetchOptions));
+        return result.getObjectMap();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public SearchResult<Space> searchSpaces(String sessionToken, SpaceSearchCriteria searchCriteria, SpaceFetchOptions fetchOptions)
     {
         SearchSpacesOperationResult result = executeOperation(sessionToken, new SearchSpacesOperation(searchCriteria, fetchOptions));
@@ -1632,6 +1649,15 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public SearchResult<Query> searchQueries(String sessionToken, QuerySearchCriteria searchCriteria, QueryFetchOptions fetchOptions)
     {
         SearchQueriesOperationResult result = executeOperation(sessionToken, new SearchQueriesOperation(searchCriteria, fetchOptions));
+        return result.getSearchResult();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SearchResult<QueryDatabase> searchQueryDatabases(String sessionToken, QueryDatabaseSearchCriteria searchCriteria,
+            QueryDatabaseFetchOptions fetchOptions)
+    {
+        SearchQueryDatabasesOperationResult result = executeOperation(sessionToken, new SearchQueryDatabasesOperation(searchCriteria, fetchOptions));
         return result.getSearchResult();
     }
 

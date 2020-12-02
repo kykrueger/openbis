@@ -118,7 +118,9 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IDeleteQueries
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IExecuteQueryOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IExecuteSqlOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IGetQueriesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IGetQueryDatabasesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.ISearchQueriesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.ISearchQueryDatabasesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IUpdateQueriesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.rights.IGetRightsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.ICreateRoleAssignmentsOperationExecutor;
@@ -465,6 +467,9 @@ public class OperationsExecutor implements IOperationsExecutor
     private IGetQueriesOperationExecutor getQueriesExecutor;
 
     @Autowired
+    private IGetQueryDatabasesOperationExecutor getQueryDatabasesExecutor;
+
+    @Autowired
     private IGetServerInformationOperationExecutor getServerInformationExecutor;
 
     @Autowired
@@ -562,6 +567,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ISearchQueriesOperationExecutor searchQueriesExecutor;
+
+    @Autowired
+    private ISearchQueryDatabasesOperationExecutor searchQueryDatabasesExecutor;
 
     @Autowired
     private IExecuteCustomASServiceOperationExecutor executeCustomASServiceExecutor;
@@ -719,6 +727,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchPropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(searchPropertyAssignmentsExecutor.execute(context, operations));
         resultMap.putAll(searchQueriesExecutor.execute(context, operations));
+        resultMap.putAll(searchQueryDatabasesExecutor.execute(context, operations));
     }
 
     private void executeGets(List<? extends IOperation> operations,
@@ -747,6 +756,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(getOperationExecutionsExecutor.execute(context, operations));
         resultMap.putAll(getSemanticAnnotationsExecutor.execute(context, operations));
         resultMap.putAll(getQueriesExecutor.execute(context, operations));
+        resultMap.putAll(getQueryDatabasesExecutor.execute(context, operations));
         resultMap.putAll(getServerInformationExecutor.execute(context, operations));
     }
 

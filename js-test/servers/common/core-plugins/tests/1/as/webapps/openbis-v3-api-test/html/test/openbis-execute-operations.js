@@ -352,6 +352,10 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeGetOperation(new c.GetQueriesOperation(ids, fetchOptions));
 		}
 
+		this.getQueryDatabases = function(ids, fetchOptions) {
+			return this._executeGetOperation(new c.GetQueryDatabasesOperation(ids, fetchOptions));
+		}
+
 		this.searchSpaces = function(criteria, fetchOptions) {
 			return this._executeSearchOperation(new c.SearchSpacesOperation(criteria, fetchOptions));
 		}
@@ -474,6 +478,10 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 
 		this.searchQueries = function(criteria, fetchOptions) {
 			return this._executeSearchOperation(new c.SearchQueriesOperation(criteria, fetchOptions));
+		}
+
+		this.searchQueryDatabases = function(criteria, fetchOptions) {
+			return this._executeSearchOperation(new c.SearchQueryDatabasesOperation(criteria, fetchOptions));
 		}
 
 		this.deleteSpaces = function(ids, deletionOptions) {
