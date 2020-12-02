@@ -196,7 +196,7 @@ var JupyterUtil = new function() {
 		content.push(this.getMarkdownCell("Creates the result dataset"));
 		content.push(this.getCodeCell([
 		                     "ds_new = o.new_dataset(\n",
-		                     "type='ANALYZED_DATA',\n",
+		                     "type='ANALYSIS_NOTEBOOK',\n",
 		                     ownerSettings,
 		                     "parents=resultDatasetParents,\n",
 		                     "files = [fileName, fileName + '.html'],\n",
