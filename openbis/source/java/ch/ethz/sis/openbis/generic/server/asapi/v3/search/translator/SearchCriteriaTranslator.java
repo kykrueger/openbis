@@ -140,7 +140,7 @@ public class SearchCriteriaTranslator
         final Collection<ISearchCriteria> criteria = translationContext.getCriteria();
         if (isSearchAllCriteria(criteria))
         {
-            return WHERE + SP + TRUE;
+            return appendNegation(TRUE, translationContext.getParentCriterion());
         } else
         {
             final String logicalOperator = translationContext.getOperator().toString();
@@ -166,20 +166,7 @@ public class SearchCriteriaTranslator
 
     private static String appendNegation(final String condition, final AbstractCompositeSearchCriteria parentCriterion)
     {
-        final boolean negated;
-        if (parentCriterion instanceof SampleSearchCriteria)
-        {
-            final SampleSearchCriteria sampleSearchCriteria = (SampleSearchCriteria) parentCriterion;
-            negated = sampleSearchCriteria.isNegated();
-        } else if (parentCriterion instanceof ExperimentSearchCriteria)
-        {
-            final ExperimentSearchCriteria experimentSearchCriteria = (ExperimentSearchCriteria) parentCriterion;
-            negated = experimentSearchCriteria.isNegated();
-        } else
-        {
-            negated = false;
-        }
-        return WHERE + SP + (negated ? NOT + LP + condition + RP : condition);
+        return WHERE + SP + (parentCriterion.isNegated() ? NOT + LP + condition + RP : condition);
     }
 
     /**

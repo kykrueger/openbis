@@ -45,12 +45,6 @@ public class ExperimentSearchManager extends AbstractLocalSearchManager<Experime
     }
 
     @Override
-    protected boolean isNegated(final ExperimentSearchCriteria criteria)
-    {
-        return criteria.isNegated();
-    }
-
-    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         final ExperimentSearchCriteria experimentSearchCriteria = new ExperimentSearchCriteria();

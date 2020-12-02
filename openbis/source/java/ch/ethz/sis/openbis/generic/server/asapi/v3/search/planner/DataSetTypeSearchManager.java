@@ -45,12 +45,6 @@ public class DataSetTypeSearchManager extends AbstractLocalSearchManager<DataSet
     }
 
     @Override
-    protected boolean isNegated(final DataSetTypeSearchCriteria criteria)
-    {
-        return false;
-    }
-
-    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new DataSetTypeSearchCriteria();

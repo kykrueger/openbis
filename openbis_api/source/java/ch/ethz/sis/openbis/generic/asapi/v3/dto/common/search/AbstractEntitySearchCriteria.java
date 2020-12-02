@@ -152,7 +152,7 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
 
     public abstract AbstractEntitySearchCriteria<ID> withAndOperator();
 
-    protected boolean isNegated()
+    public boolean isNegated()
     {
         return negated;
     }

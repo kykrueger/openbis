@@ -47,12 +47,6 @@ public class StorageFormatSearchManager extends AbstractLocalSearchManager<Stora
     }
 
     @Override
-    protected boolean isNegated(final StorageFormatSearchCriteria criteria)
-    {
-        return false;
-    }
-
-    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new StorageFormatSearchCriteria();

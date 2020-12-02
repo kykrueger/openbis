@@ -89,7 +89,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
         criteria.withCodes().thatIn(Arrays.asList("20081105092259000-18", "20081105092259000-19"));
         testSearch(TEST_USER, criteria, "20081105092259000-18", "20081105092259000-19");
     }
-    
+
     @Test
     public void testSearchTwoDataSetsWithCodeAndId()
     {
@@ -1623,6 +1623,20 @@ public class SearchDataSetTest extends AbstractDataSetTest
 
         assertAccessLog(
                 "search-data-sets  SEARCH_CRITERIA:\n'DATASET\n    with attribute 'code' equal to '20081105092259000-18'\n'\nFETCH_OPTIONS:\n'DataSet\n    with Experiment\n    with Sample\n'");
+    }
+
+    @Test
+    public void testNegation()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+        criteria.withContainer();
+
+        final DataSetSearchCriteria subcriteria = criteria.withSubcriteria().negate().withOrOperator();
+        subcriteria.withCode().thatContains("-");
+        subcriteria.withCode().thatStartsWith("COMPONENT_3A");
+        subcriteria.withCode().thatEquals("COMPONENT_1B");
+
+        testSearch(TEST_USER, criteria, "CONTAINER_1", "CONTAINER_2", "COMPONENT_1A", "COMPONENT_2A");
     }
 
     private List<DataSet> search(final String sessionToken, final DataSetSearchCriteria criteria,

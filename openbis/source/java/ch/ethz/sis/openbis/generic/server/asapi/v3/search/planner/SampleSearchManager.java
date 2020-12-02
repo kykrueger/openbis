@@ -47,12 +47,6 @@ public class SampleSearchManager extends AbstractCompositeEntitySearchManager<Sa
     }
 
     @Override
-    protected boolean isNegated(final SampleSearchCriteria criteria)
-    {
-        return criteria.isNegated();
-    }
-
-    @Override
     protected Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass()
     {
         return SampleParentsSearchCriteria.class;

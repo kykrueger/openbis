@@ -46,12 +46,6 @@ public class SemanticAnnotationSearchManager extends
     }
 
     @Override
-    protected boolean isNegated(final SemanticAnnotationSearchCriteria criteria)
-    {
-        return false;
-    }
-
-    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new SemanticAnnotationSearchCriteria();

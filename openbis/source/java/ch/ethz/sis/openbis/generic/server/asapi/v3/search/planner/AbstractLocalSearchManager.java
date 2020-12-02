@@ -132,11 +132,11 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
     protected Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
             final AbstractCompositeSearchCriteria criteria, final String idsColumnName, final TableMapper tableMapper)
     {
-        final AbstractCompositeSearchCriteria emptyCriterion = createEmptyCriteria(isNegated((CRITERIA) criteria));
+        final AbstractCompositeSearchCriteria emptyCriterion = createEmptyCriteria(criteria.isNegated());
         final List<CRITERIA> nestedCriteria = (List<CRITERIA>) getCriteria(criteria, emptyCriterion.getClass());
         final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, emptyCriterion.getClass());
 
-        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria(isNegated((CRITERIA) criteria));
+        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria(criteria.isNegated());
         containerCriterion.withOperator(criteria.getOperator());
         containerCriterion.setCriteria(mainCriteria);
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(
@@ -173,8 +173,6 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
 
         return filterIDsByUserRights(userId, authorisationInformation, resultBeforeFiltering);
     }
-
-    protected abstract boolean isNegated(final CRITERIA criteria);
 
     protected Set<Long> searchForIDsByCriteriaCollection(final Long userId,
             final AuthorisationInformation authorisationInformation, final Collection<ISearchCriteria> criteria,

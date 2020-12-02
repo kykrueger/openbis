@@ -58,12 +58,6 @@ public class SampleSearchCriteria extends AbstractSampleSearchCriteria<SampleSea
     }
 
     @Override
-    public boolean isNegated()
-    {
-        return super.isNegated();
-    }
-
-    @Override
     public String toString()
     {
         return super.toString();

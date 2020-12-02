@@ -47,12 +47,6 @@ public class EntityTypeSearchManager extends AbstractLocalSearchManager<EntityTy
     }
 
     @Override
-    protected boolean isNegated(final EntityTypeSearchCriteria criteria)
-    {
-        return false;
-    }
-
-    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new EntityTypeSearchCriteria();

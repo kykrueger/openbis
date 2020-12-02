@@ -73,12 +73,6 @@ public class ExperimentSearchCriteria extends AbstractEntitySearchCriteria<IExpe
     }
 
     @Override
-    public boolean isNegated()
-    {
-        return super.isNegated();
-    }
-
-    @Override
     protected SearchCriteriaToStringBuilder createBuilder()
     {
         SearchCriteriaToStringBuilder builder = super.createBuilder();
