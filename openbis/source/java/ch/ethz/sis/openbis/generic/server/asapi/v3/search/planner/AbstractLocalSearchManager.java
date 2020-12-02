@@ -212,8 +212,8 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         final AbstractCompositeSearchCriteria criteria = createEmptyCriteria();
         final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
         containerCriterion.setCriteria(Collections.singletonList(criteria));
-        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper, idsColumnName,
-                authorisationInformation);
+        return getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, containerCriterion, tableMapper,
+                idsColumnName, authorisationInformation);
     }
 
 //    protected class CriteriaVo
