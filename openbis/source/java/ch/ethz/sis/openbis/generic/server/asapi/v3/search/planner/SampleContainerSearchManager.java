@@ -47,6 +47,12 @@ public class SampleContainerSearchManager extends AbstractLocalSearchManager<Sam
     }
 
     @Override
+    protected boolean isNegated(final SampleContainerSearchCriteria criteria)
+    {
+        return false;
+    }
+
+    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new SampleContainerSearchCriteria();

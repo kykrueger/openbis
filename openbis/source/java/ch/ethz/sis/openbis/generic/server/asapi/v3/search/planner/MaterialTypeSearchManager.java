@@ -47,6 +47,12 @@ public class MaterialTypeSearchManager extends AbstractLocalSearchManager<Materi
     }
 
     @Override
+    protected boolean isNegated(final MaterialTypeSearchCriteria criteria)
+    {
+        return false;
+    }
+
+    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new MaterialTypeSearchCriteria();

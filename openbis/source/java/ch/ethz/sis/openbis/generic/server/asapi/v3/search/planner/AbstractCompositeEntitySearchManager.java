@@ -69,23 +69,11 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             throw new RuntimeException("Either both or none of parent/child search criteria should be null.");
         }
 
-        final boolean negated;
-        if (criteria instanceof SampleSearchCriteria)
-        {
-            negated = ((SampleSearchCriteria) criteria).isNegated();
-        } else if (criteria instanceof ExperimentSearchCriteria)
-        {
-            negated = ((ExperimentSearchCriteria) criteria).isNegated();
-        } else
-        {
-            negated = false;
-        }
-
         final CompositeEntityCriteriaVo criteriaVo = new CompositeEntityCriteriaVo(mainCriteria,
                 getCriteria(criteria, parentsSearchCriteriaClass),
                 getCriteria(criteria, childrenSearchCriteriaClass),
                 Collections.emptyList(), getCriteria(criteria, emptyCriteria.getClass()),
-                (searchOperator == null) ? criteria.getOperator() : searchOperator, negated);
+                (searchOperator == null) ? criteria.getOperator() : searchOperator, isNegated(criteria));
 
         return doSearchForIDs(userId, criteriaVo, idsColumnName, tableMapper, authorisationInformation);
     }

@@ -42,6 +42,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearch
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
@@ -159,16 +160,26 @@ public class SearchCriteriaTranslator
 
             final String condition = resultSqlBuilder.substring(separator.length());
             final AbstractCompositeSearchCriteria parentCriterion = translationContext.getParentCriterion();
-            if (parentCriterion instanceof SampleSearchCriteria)
-            {
-                final SampleSearchCriteria sampleSearchCriteria = (SampleSearchCriteria) parentCriterion;
-                if (sampleSearchCriteria.isNegated())
-                {
-                    return WHERE + SP + NOT + LP + condition + RP;
-                }
-            }
-            return WHERE + SP + condition;
+            return appendNegation(condition, parentCriterion);
         }
+    }
+
+    private static String appendNegation(final String condition, final AbstractCompositeSearchCriteria parentCriterion)
+    {
+        final boolean negated;
+        if (parentCriterion instanceof SampleSearchCriteria)
+        {
+            final SampleSearchCriteria sampleSearchCriteria = (SampleSearchCriteria) parentCriterion;
+            negated = sampleSearchCriteria.isNegated();
+        } else if (parentCriterion instanceof ExperimentSearchCriteria)
+        {
+            final ExperimentSearchCriteria experimentSearchCriteria = (ExperimentSearchCriteria) parentCriterion;
+            negated = experimentSearchCriteria.isNegated();
+        } else
+        {
+            negated = false;
+        }
+        return WHERE + SP + (negated ? NOT + LP + condition + RP : condition);
     }
 
     /**

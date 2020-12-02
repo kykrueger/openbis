@@ -1554,6 +1554,16 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 "/CISD/NEMO/EXP11");
     }
 
+    @Test
+    public void testSearchWithNegation()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
+        criteria.withProperty("DESCRIPTION").thatContains("esc");
+        criteria.withSubcriteria().negate().withProperty("DESCRIPTION").thatContains("esc1");
+
+        testSearch(TEST_USER, criteria, "/CISD/NOE/EXP-TEST-2");
+    }
+
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
             final double realValue)
     {

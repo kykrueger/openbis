@@ -49,6 +49,12 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
     }
 
     @Override
+    protected boolean isNegated(final MaterialSearchCriteria criteria)
+    {
+        return false;
+    }
+
+    @Override
     protected Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass()
     {
         return SampleParentsSearchCriteria.class;

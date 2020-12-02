@@ -51,6 +51,12 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
         super(searchDAO, authProvider, idsMapper);
     }
 
+    @Override
+    protected boolean isNegated(final DataSetSearchCriteria criteria)
+    {
+        return false;
+    }
+
     protected Class<? extends AbstractCompositeSearchCriteria> getContainerSearchCriteriaClass()
     {
         return DataSetContainerSearchCriteria.class;

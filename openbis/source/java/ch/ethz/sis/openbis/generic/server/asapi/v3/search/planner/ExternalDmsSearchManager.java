@@ -46,6 +46,12 @@ public class ExternalDmsSearchManager extends AbstractLocalSearchManager<Externa
     }
 
     @Override
+    protected boolean isNegated(final ExternalDmsSearchCriteria criteria)
+    {
+        return false;
+    }
+
+    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new ExternalDmsSearchCriteria();

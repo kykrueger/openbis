@@ -45,6 +45,12 @@ public class ProjectSearchManager extends AbstractLocalSearchManager<ProjectSear
     }
 
     @Override
+    protected boolean isNegated(final ProjectSearchCriteria criteria)
+    {
+        return false;
+    }
+
+    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new ProjectSearchCriteria();

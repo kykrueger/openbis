@@ -45,6 +45,12 @@ public class PropertyTypeSearchManager extends AbstractLocalSearchManager<Proper
     }
 
     @Override
+    protected boolean isNegated(final PropertyTypeSearchCriteria criteria)
+    {
+        return false;
+    }
+
+    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new PropertyTypeSearchCriteria();

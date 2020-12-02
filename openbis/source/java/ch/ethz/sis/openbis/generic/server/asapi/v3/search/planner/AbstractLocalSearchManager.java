@@ -132,11 +132,11 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
     protected Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
             final AbstractCompositeSearchCriteria criteria, final String idsColumnName, final TableMapper tableMapper)
     {
-        final AbstractCompositeSearchCriteria emptyCriteria = createEmptyCriteria(false);
-        final List<CRITERIA> nestedCriteria = (List<CRITERIA>) getCriteria(criteria, emptyCriteria.getClass());
-        final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, emptyCriteria.getClass());
+        final AbstractCompositeSearchCriteria emptyCriterion = createEmptyCriteria(isNegated((CRITERIA) criteria));
+        final List<CRITERIA> nestedCriteria = (List<CRITERIA>) getCriteria(criteria, emptyCriterion.getClass());
+        final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, emptyCriterion.getClass());
 
-        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria(false);
+        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria(isNegated((CRITERIA) criteria));
         containerCriterion.withOperator(criteria.getOperator());
         containerCriterion.setCriteria(mainCriteria);
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(
@@ -146,7 +146,7 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         if (!nestedCriteria.isEmpty())
         {
             nestedCriteriaIntermediateResults = nestedCriteria.stream().map(nestedCriterion ->
-                    searchForIDs(userId, authorisationInformation, nestedCriterion, null, idsColumnName))
+                    searchForIDs(userId, authorisationInformation, nestedCriterion, emptyCriterion, idsColumnName))
                     .collect(Collectors.toList());
         } else
         {
@@ -173,6 +173,8 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
 
         return filterIDsByUserRights(userId, authorisationInformation, resultBeforeFiltering);
     }
+
+    protected abstract boolean isNegated(final CRITERIA criteria);
 
     protected Set<Long> searchForIDsByCriteriaCollection(final Long userId,
             final AuthorisationInformation authorisationInformation, final Collection<ISearchCriteria> criteria,

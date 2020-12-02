@@ -46,6 +46,12 @@ public class SpaceSearchManager extends AbstractLocalSearchManager<SpaceSearchCr
     }
 
     @Override
+    protected boolean isNegated(final SpaceSearchCriteria criteria)
+    {
+        return false;
+    }
+
+    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new SpaceSearchCriteria();

@@ -46,6 +46,12 @@ public class ContentCopySearchManager extends AbstractLocalSearchManager<Content
     }
 
     @Override
+    protected boolean isNegated(final ContentCopySearchCriteria criteria)
+    {
+        return false;
+    }
+
+    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new ContentCopySearchCriteria();

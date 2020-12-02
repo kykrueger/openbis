@@ -51,6 +51,12 @@ public class LinkedDataSetKindSearchManager extends AbstractLocalSearchManager<L
     }
 
     @Override
+    protected boolean isNegated(final LinkedDataSearchCriteria criteria)
+    {
+        return false;
+    }
+
+    @Override
     protected AbstractCompositeSearchCriteria createEmptyCriteria(final boolean negated)
     {
         return new LinkedDataSearchCriteria();
