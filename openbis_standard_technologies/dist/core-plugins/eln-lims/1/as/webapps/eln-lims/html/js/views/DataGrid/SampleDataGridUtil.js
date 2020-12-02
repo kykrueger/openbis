@@ -496,27 +496,33 @@ var SampleDataGridUtil = new function() {
 			}
 			
 			var criteriaToSend = $.extend(true, {}, criteria);
-			
+
 			if(options && options.searchOperator && options.search) {
 				criteriaToSend.logicalOperator = options.searchOperator;
-				if(criteriaToSend.logicalOperator === "OR") {
-					criteriaToSend.rules = {};
-					fetchOptions.sort = { 
-							type : "Attribute",
-							name : "fetchedFieldsScore",
-							direction : "asc"
-					}
+			    var filter = options.search.toLowerCase().split(/[ ,]+/); //Split by regular space or comma
+
+				if(criteriaToSend.logicalOperator === "AND") {
+                    for(var fIdx = 0; fIdx < filter.length; fIdx++) {
+                        var fKeyword = filter[fIdx];
+                        criteriaToSend.rules[Util.guid()] = { type : "All", name : "", value : fKeyword };
+                    }
+				} else if(criteriaToSend.logicalOperator === "OR") { // Using sub criteria
+				    criteriaToSend.rules = {};
+				    criteriaToSend.subCriteria = {};
+
+				    for(var fIdx = 0; fIdx < filter.length; fIdx++) {
+                        var subCriteria = $.extend(true, {}, criteria);
+                        delete subCriteria.cached;
+                        delete subCriteria.cachedSearch;
+                        subCriteria.logicalOperator = "AND";
+                        var fKeyword = filter[fIdx];
+                        subCriteria.rules[Util.guid()] = { type : "All", name : "", value : fKeyword };
+                        criteriaToSend.subCriteria[Util.guid()] = subCriteria;
+                    }
+
 				}
 			}
-			
-			if(options && options.search) {
-				var filter = options.search.toLowerCase().split(/[ ,]+/); //Split by regular space or comma
-				for(var fIdx = 0; fIdx < filter.length; fIdx++) {
-					var fKeyword = filter[fIdx];
-					criteriaToSend.rules[Util.guid()] = { type : "All", name : "", value : fKeyword };
-				}
-			}
-			
+
 			if(options && options.sortProperty && options.sortDirection) {
 				fetchOptions.sort = { 
 						type : null,
