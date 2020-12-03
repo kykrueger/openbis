@@ -2758,6 +2758,21 @@ public class SearchSampleTest extends AbstractSampleTest
         testSearch(TEST_USER, criteria, "/MP:B03", "/CISD/B1B3:B03", "/CISD/B1B3:B01");
     }
 
+    @Test
+    public void testNestedLogicalOperatorsWithExperiment()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+        final SampleSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withExperiment().withType().withCode().thatEquals("COMPOUND_HCS");
+        subcriteria1.withExperiment().withProject().withId().thatEquals(new ProjectIdentifier("/TEST-SPACE/NOE"));
+
+        final SampleSearchCriteria subcriteria2 = criteria.withSubcriteria().withOrOperator();
+        subcriteria2.withExperiment().withProject().withCode().thatEquals("NOE");
+        subcriteria2.withCode().thatEquals("RP1-A2X");
+
+        testSearch(TEST_USER, criteria, "/CISD/CP-TEST-2", "/TEST-SPACE/CP-TEST-4");
+    }
+
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)
     {
         String sessionToken = v3api.login(user, PASSWORD);
