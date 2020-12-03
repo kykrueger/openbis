@@ -2773,6 +2773,24 @@ public class SearchSampleTest extends AbstractSampleTest
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-2", "/TEST-SPACE/CP-TEST-4");
     }
 
+    /**
+     * (parentsWithID = "/CISD/MP002-1" OR childrenWithID = "200811050946559-980") AND (withParents AND withChildren)
+     */
+    @Test
+    public void testNestedLogicalOperatorsWithParentsAndChildren()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+        final SampleSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withParents().withId().thatEquals(new SampleIdentifier("/CISD/MP002-1"));
+        subcriteria1.withChildren().withId().thatEquals(new SamplePermId("200811050946559-980"));
+
+        final SampleSearchCriteria subcriteria2 = criteria.withSubcriteria().withAndOperator();
+        subcriteria2.withParents();
+        subcriteria2.withChildren();
+
+        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/CL-3V:A02");
+    }
+
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)
     {
         String sessionToken = v3api.login(user, PASSWORD);
