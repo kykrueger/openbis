@@ -55,6 +55,13 @@ def isValidStoragePositionToInsertUpdate(context, parameters):
     storageBoxName = sampleProperties.get("$STORAGE_POSITION.STORAGE_BOX_NAME");
     storageBoxSize = sampleProperties.get("$STORAGE_POSITION.STORAGE_BOX_SIZE");
     storageBoxPosition = sampleProperties.get("$STORAGE_POSITION.STORAGE_BOX_POSITION");
+
+    if "," in storageBoxPosition:
+        raise UserFailureException("Box positions are not separated by ',' but just a white space.");
+
+    if "-" in storageBoxPosition:
+        raise UserFailureException("Box positions can't contain ranges '-' .");
+
     storageUser = sampleProperties.get("$STORAGE_POSITION.STORAGE_USER");
 
     # 1. Obtain Storage to retrieve Storage Validation Level

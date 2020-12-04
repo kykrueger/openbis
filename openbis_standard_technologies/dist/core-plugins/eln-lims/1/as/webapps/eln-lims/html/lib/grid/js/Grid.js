@@ -658,11 +658,11 @@ $.extend(Grid.prototype, {
 			if(isDynamic) {
 				var $and = $(thisGrid.panel).find(".repeater-search-operator-and");
 				$and.empty();
-				$and.append("Table AND");
+				$and.append("AND");
 				
 				var $or = $(thisGrid.panel).find(".repeater-search-operator-or");
 				$or.empty();
-				$or.append("Global OR");
+				$or.append("OR");
 			}
 			
 			if(isDynamic) {
