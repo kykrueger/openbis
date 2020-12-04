@@ -165,7 +165,12 @@ function GridView(gridModel) {
 						}).bind(this, sample));
 					}
 
-					var storageBoxId = Util.guid();
+                    var rowLabel = posX;
+                    if(this._gridModel.useLettersOnRows) {
+                        rowLabel = Util.getLetterForNumber(rowLabel);
+                    }
+                    var storageBoxId = this._gridModel.gridId + "-" + rowLabel + "-" + posY + "-storage-box-" + i;
+
 					var labelContainer = $("<div>", { class: "storageBox", id : storageBoxId }).text(labels[i].displayName);
 					if (sample) {
 						var tooltip = PrintUtil.getTable(sample, false, optSampleTitle, 'inspectorWhiteFont', 
