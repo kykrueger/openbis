@@ -16,18 +16,19 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.delete.PersonDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractDeleteEntityExecutor;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author pkupczyk
@@ -66,12 +67,14 @@ public class DeletePersonExecutor extends AbstractDeleteEntityExecutor<Void, IPe
     {
         for (PersonPE person : persons)
         {
-            if (person.equals(context.getSession().tryGetPerson()))
+            if (person.equals(context.getSession().tryGetPerson()) || person.equals(context.getSession().tryGetCreatorPerson()))
             {
                 throw new UserFailureException("You cannot remove your own user.");
             }
+
             daoFactory.getPersonDAO().delete(person);
         }
+
         return null;
     }
 

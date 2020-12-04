@@ -16,6 +16,18 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
+import java.util.Collections;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.testng.annotations.Test;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.AuthorizationGroup;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.create.AuthorizationGroupCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions;
@@ -33,14 +45,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.fetchoptions.Role
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.id.IRoleAssignmentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.id.RoleAssignmentTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.test.context.transaction.TestTransaction;
-import org.testng.annotations.Test;
-
-import java.util.Collections;
-
-import static org.testng.Assert.*;
 
 /**
  * @author pkupczyk
@@ -64,6 +70,47 @@ public class DeletePersonTest extends AbstractTest
 
         Person afterPerson = getPerson(sessionToken, personId);
         assertNull(afterPerson);
+    }
+
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*You cannot remove your own user.*")
+    public void testDeleteYourself()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        IPersonId personId = new PersonPermId(TEST_USER);
+
+        PersonDeletionOptions options = new PersonDeletionOptions();
+        options.setReason("testing");
+
+        v3api.deletePersons(sessionToken, Collections.singletonList(personId), options);
+    }
+
+    @Test
+    public void testDeleteYourselfOnBehalfOf()
+    {
+        String sessionToken = v3api.loginAs(TEST_USER, PASSWORD, TEST_INSTANCE_ETLSERVER);
+
+        PersonDeletionOptions options = new PersonDeletionOptions();
+        options.setReason("testing");
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.deletePersons(sessionToken, Collections.singletonList(new PersonPermId(TEST_USER)), options);
+                }
+            }, "You cannot remove your own user");
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // shall behave as if TEST_INSTANCE_ETLSERVER user was trying to delete itself
+                    v3api.deletePersons(sessionToken, Collections.singletonList(new PersonPermId(TEST_INSTANCE_ETLSERVER)), options);
+                }
+            }, "You cannot remove your own user");
     }
 
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*Deletion options cannot be null.*")
