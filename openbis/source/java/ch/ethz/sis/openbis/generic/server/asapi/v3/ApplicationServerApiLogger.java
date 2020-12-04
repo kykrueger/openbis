@@ -112,6 +112,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.search.OperationExecut
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.update.OperationExecutionUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.delete.PersonDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
@@ -1015,6 +1016,12 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public void deleteQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryDeletionOptions deletionOptions)
     {
         logAccess(sessionToken, "delete-queries", "QUERY_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(queryIds), deletionOptions);
+    }
+
+    @Override
+    public void deletePersons(String sessionToken, List<? extends IPersonId> personIds, PersonDeletionOptions deletionOptions)
+    {
+        logAccess(sessionToken, "delete-persons", "PERSON_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(personIds), deletionOptions);
     }
 
     @Override

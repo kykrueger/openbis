@@ -214,6 +214,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.CreatePersonsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.CreatePersonsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.delete.DeletePersonsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.delete.PersonDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.get.GetPersonsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.get.GetPersonsOperationResult;
@@ -1394,6 +1396,12 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public void deleteQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryDeletionOptions deletionOptions)
     {
         executeOperation(sessionToken, new DeleteQueriesOperation(queryIds, deletionOptions));
+    }
+
+    @Override
+    public void deletePersons(String sessionToken, List<? extends IPersonId> personIds, PersonDeletionOptions deletionOptions)
+    {
+        executeOperation(sessionToken, new DeletePersonsOperation(personIds, deletionOptions));
     }
 
     @Override
