@@ -111,6 +111,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.search.OperationExecut
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.update.OperationExecutionUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.delete.PersonDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
@@ -253,8 +254,8 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
  * V3 application server API. Detailed documentation on how to use the API together code examples in both Java and Javascript can be found at "openBIS
  * V3 API" openBIS WIKI page.
  * <p>
- * The required access rights of the methods are the default ones. They can be configured with a capability-role map.
- * For more details see "Installation and Administrator Guide of the openBIS Server" openBIS WIKI page.
+ * The required access rights of the methods are the default ones. They can be configured with a capability-role map. For more details see
+ * "Installation and Administrator Guide of the openBIS Server" openBIS WIKI page.
  * 
  * @author pkupczyk
  */
@@ -781,8 +782,8 @@ public interface IApplicationServerApi extends IRpcService
     public void updateQueries(String sessionToken, List<QueryUpdate> queryUpdates);
 
     /**
-     * Gets authorization rights for the provided {@link IObjectId} ids. A result map contains an entry for a given id 
-     * only if an object for that id has been found and that object can be accessed by the user.
+     * Gets authorization rights for the provided {@link IObjectId} ids. A result map contains an entry for a given id only if an object for that id
+     * has been found and that object can be accessed by the user.
      * 
      * @throws UserFailureException in case of any problems
      */
@@ -1905,6 +1906,17 @@ public interface IApplicationServerApi extends IRpcService
      * @throws UserFailureException in case of any problems
      */
     public void deleteQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryDeletionOptions deletionOptions);
+
+    /**
+     * Permanently deletes persons with the provided {@code IPersonId} ids. Additional deletion options (e.g. deletion reason) can be set via
+     * {@code PersonDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     *
+     * @throws UserFailureException in case of any problems
+     */
+    public void deletePersons(String sessionToken, List<? extends IPersonId> personIds, PersonDeletionOptions deletionOptions);
 
     /**
      * Searches for deletions basing on the provided {@code DeletionSearchCriteria}.

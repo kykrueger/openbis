@@ -16,25 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IObjectAuthorizationExecutor;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.delete.IDeleteObjectsOperationExecutor;
 
 /**
  * @author pkupczyk
  */
-public interface IPersonAuthorizationExecutor extends IObjectAuthorizationExecutor
+public interface IDeletePersonsOperationExecutor extends IDeleteObjectsOperationExecutor
 {
 
-    void canGet(IOperationContext context);
-
-    void canCreate(IOperationContext context);
-    
-    void canDeactivate(IOperationContext context);
-
-    void canActivate(IOperationContext context);
-    
-    void canUpdateHomeSpace(IOperationContext context, SpacePE newHomeSpace);
-
-    void canDelete(IOperationContext context);
 }

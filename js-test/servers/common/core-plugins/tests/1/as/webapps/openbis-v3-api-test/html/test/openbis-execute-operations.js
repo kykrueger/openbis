@@ -568,6 +568,10 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeDeleteOperation(new c.DeleteQueriesOperation(ids, deletionOptions));
 		}
 
+		this.deletePersons = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeletePersonsOperation(ids, deletionOptions));
+		}
+
 		this.searchDeletions = function(criteria, fetchOptions) {
 			return this._executeSearchOperation(new c.SearchDeletionsOperation(criteria, fetchOptions));
 		}

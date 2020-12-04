@@ -93,6 +93,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.internal.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.search.ISearchOperationExecutionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.update.IUpdateOperationExecutionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.ICreatePersonsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.IDeletePersonsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.IGetPersonsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.ISearchPersonsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.IUpdatePersonsOperationExecutor;
@@ -249,6 +250,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IDeleteQueriesOperationExecutor deleteQueriesExecutor;
+
+    @Autowired
+    private IDeletePersonsOperationExecutor deletePersonsExecutor;
 
     @Autowired
     private ICreateSpacesOperationExecutor createSpacesExecutor;
@@ -847,6 +851,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(deleteVocabularyTermsExecutor.execute(context, operations));
         resultMap.putAll(deleteVocabulariesExecutor.execute(context, operations));
         resultMap.putAll(deleteOperationExecutionsExecutor.execute(context, operations));
+        resultMap.putAll(deletePersonsExecutor.execute(context, operations));
     }
 
     protected void clearCurrentSession()

@@ -1882,6 +1882,17 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
+		this.deletePersons = function(ids, deletionOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "deletePersons",
+					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
+				}
+			});
+		}
+
 		this.searchDeletions = function(criteria, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({

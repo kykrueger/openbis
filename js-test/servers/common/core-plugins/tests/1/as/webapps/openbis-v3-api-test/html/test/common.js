@@ -87,6 +87,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.RoleAssignmentDeletionOptions = dtos.RoleAssignmentDeletionOptions;
 		this.SemanticAnnotationDeletionOptions = dtos.SemanticAnnotationDeletionOptions;
 		this.QueryDeletionOptions = dtos.QueryDeletionOptions;
+		this.PersonDeletionOptions = dtos.PersonDeletionOptions;
 		this.PersonPermId = dtos.PersonPermId;
 		this.Me = dtos.Me;
 		this.EntityTypePermId = dtos.EntityTypePermId;
@@ -349,6 +350,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.DeleteOperationExecutionsOperation = dtos.DeleteOperationExecutionsOperation;
 		this.DeleteSemanticAnnotationsOperation = dtos.DeleteSemanticAnnotationsOperation;
 		this.DeleteQueriesOperation = dtos.DeleteQueriesOperation;
+		this.DeletePersonsOperation = dtos.DeletePersonsOperation;
 
 		this.RevertDeletionsOperation = dtos.RevertDeletionsOperation;
 		this.ConfirmDeletionsOperation = dtos.ConfirmDeletionsOperation;
@@ -1053,6 +1055,13 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			var options = new dtos.QueryDeletionOptions();
 			options.setReason("test reason");
 			return facade.deleteQueries([ id ], options);
+		}.bind(this);
+
+		this.deletePerson = function(facade, id) {
+			var c = this;
+			var options = new dtos.PersonDeletionOptions();
+			options.setReason("test reason");
+			return facade.deletePersons([ id ], options);
 		}.bind(this);
 
 		this.getObjectProperty = function(object, propertyName) {
