@@ -2774,9 +2774,6 @@ public class SearchSampleTest extends AbstractSampleTest
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-2", "/TEST-SPACE/CP-TEST-4");
     }
 
-    /**
-     * (parentsWithID = "/CISD/MP002-1" OR childrenWithID = "200811050946559-980") AND (withParents AND withChildren)
-     */
     @Test
     public void testNestedLogicalOperatorsWithParentsAndChildren()
     {
@@ -2805,7 +2802,7 @@ public class SearchSampleTest extends AbstractSampleTest
         subcriteria2.withExperiment();
         subcriteria2.withType().withCode().thatStartsWith("MASTER");
 
-        criteria.withSubcriteria().withPermId().thatEndsWith("6");
+        criteria.withPermId().thatEndsWith("6");
 
         testSearch(TEST_USER, criteria, "/TEST-SPACE/EV-INVALID", "/CISD/3V-125", "/CISD/DP2-A");
     }
