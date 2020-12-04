@@ -36,7 +36,7 @@ import java.util.Set;
 
 /**
  * Manages detailed search with material search criteria.
- * 
+ *
  * @author Viktor Kovtun
  */
 public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<MaterialSearchCriteria, Material, Long>
@@ -86,7 +86,7 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
             // Search by modifier is not supported but the result should be empty.
             return Collections.emptySet();
         }
-        return doSearchForIDs(userId, authorisationInformation, criteria, null, idsColumnName, TableMapper.MATERIAL);
+        return doSearchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.MATERIAL);
     }
 
     @Override
