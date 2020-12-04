@@ -725,7 +725,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fechOptionsTestConfig = getConfigForFetchOptions(fo);
 
 			var fCreate = function(facade) {
-				return Promise.resolve([ new c.QueryDatabaseName("openbisDB"), new c.QueryDatabaseName("test-query-database") ]);
+				var dfd = $.Deferred();
+				dfd.resolve([ new c.QueryDatabaseName("openbisDB"), new c.QueryDatabaseName("test-query-database") ]);
+				return dfd.promise();
 			}
 
 			var fGet = function(facade, techIds) {
