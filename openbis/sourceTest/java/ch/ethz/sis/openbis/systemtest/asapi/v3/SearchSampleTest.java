@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -2789,6 +2790,24 @@ public class SearchSampleTest extends AbstractSampleTest
         subcriteria2.withChildren();
 
         testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/CL-3V:A02");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsWithParentsExperimentAndPermID()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        final SampleParentsSearchCriteria subcriteria1 = criteria.withParents().withOrOperator();
+        subcriteria1.withCode().thatContains("-");
+        subcriteria1.withCode().thatStartsWith("C");
+
+        final SampleParentsSearchCriteria subcriteria2 = criteria.withParents().withOrOperator();
+        subcriteria2.withExperiment();
+        subcriteria2.withType().withCode().thatStartsWith("MASTER");
+
+        criteria.withSubcriteria().withPermId().thatEndsWith("6");
+
+        testSearch(TEST_USER, criteria, "/TEST-SPACE/EV-INVALID", "/CISD/3V-125", "/CISD/DP2-A");
     }
 
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)
