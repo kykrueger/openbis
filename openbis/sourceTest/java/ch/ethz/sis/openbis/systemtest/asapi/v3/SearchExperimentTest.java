@@ -1552,6 +1552,23 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 "/CISD/NEMO/EXP11");
     }
 
+    @Test
+    public void testNestedLogicalOperatorsMultipleNesting()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
+
+        final ExperimentSearchCriteria subCriteria1 = criteria.withSubcriteria().withOrOperator();
+        subCriteria1.withSubcriteria().withSubcriteria().withCode().thatStartsWith("EXP-");
+        subCriteria1.withSubcriteria().withSubcriteria().withSubcriteria().withSubcriteria().withCode().thatStartsWith("EXP1");
+
+        final ExperimentSearchCriteria subCriteria2 = criteria.withSubcriteria().withOrOperator();
+        subCriteria2.withSubcriteria().withCode().thatEndsWith("E");
+        subCriteria2.withSubcriteria().withSubcriteria().withCode().thatEndsWith("1");
+
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE", "/CISD/NEMO/EXP-TEST-1",
+                "/CISD/NEMO/EXP11");
+    }
+
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
             final double realValue)
     {
