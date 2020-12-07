@@ -1646,6 +1646,27 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testNestedLogicalOperatorsWithParentsAndChildrenMultipleNesting()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        final DataSetSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withSubcriteria().withParents().withCode().thatStartsWith("20081105092259000-");
+        subcriteria1.withSubcriteria().withSubcriteria().withParents().withCode().thatStartsWith("20081105092259900-");
+        subcriteria1.withSubcriteria().withSubcriteria().withSubcriteria().withParents().withCode()
+                .thatStartsWith("20110509092359990-");
+        subcriteria1.withSubcriteria().withSubcriteria().withSubcriteria().withSubcriteria().withParents().withCode()
+                .thatStartsWith("20081105092159");
+
+        final DataSetSearchCriteria subcriteria2 = criteria.withSubcriteria().withOrOperator();
+        subcriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withSubcriteria().withSubcriteria()
+                .withChildren().withCode().thatEndsWith("2");
+        subcriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withChildren().withCode().thatEndsWith("AB");
+
+        testSearch(TEST_INSTANCE_ETLSERVER, criteria, "20081105092259900-0", "20081105092259900-1");
+    }
+
+    @Test
     public void testLogging()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
