@@ -1610,6 +1610,24 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testNestedLogicalOperatorsMultipleNesting()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        final DataSetSearchCriteria subCriteria1 = criteria.withSubcriteria().withOrOperator();
+        subCriteria1.withSubcriteria().withCode().thatStartsWith("2008");
+        subCriteria1.withSubcriteria().withSubcriteria().withCode().thatStartsWith("CON");
+
+        final DataSetSearchCriteria subCriteria2 = criteria.withSubcriteria().withOrOperator();
+        subCriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withCode().thatEndsWith("1");
+        subCriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withSubcriteria().withCode()
+                .thatEndsWith("A");
+
+        testSearch(TEST_USER, criteria, "CONTAINER_1", "20081105092259000-21", "20081105092159111-1", "CONTAINER_3A",
+                "20081105092259900-1");
+    }
+
+    @Test
     public void testNestedLogicalOperatorsWithParentsAndChildren()
     {
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
