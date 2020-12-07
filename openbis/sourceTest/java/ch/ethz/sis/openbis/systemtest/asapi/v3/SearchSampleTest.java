@@ -2739,8 +2739,8 @@ public class SearchSampleTest extends AbstractSampleTest
 
         v3api.searchSamples(sessionToken, c, fo);
 
-        assertAccessLog(
-                "search-samples  SEARCH_CRITERIA:\n'SAMPLE\n    with attribute 'code' equal to 'RP1-A2X'\n'\nFETCH_OPTIONS:\n'Sample\n    with Project\n    with Space\n'");
+        assertAccessLog("search-samples  SEARCH_CRITERIA:\n'SAMPLE\n    with attribute 'code' equal to 'RP1-A2X'\n'\n"
+                + "FETCH_OPTIONS:\n'Sample\n    with Project\n    with Space\n'");
     }
 
     @Test
@@ -2805,6 +2805,40 @@ public class SearchSampleTest extends AbstractSampleTest
         criteria.withPermId().thatEndsWith("6");
 
         testSearch(TEST_USER, criteria, "/TEST-SPACE/EV-INVALID", "/CISD/3V-125", "/CISD/DP2-A");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsMultipleNestingWithParents()
+    {
+        final String[] expectedIdentifiers = {"/CISD/CP1-B1", "/CISD/CP2-A1", "/CISD/CP1-A2", "/CISD/CP-TEST-1",
+                "/CISD/CP1-A1", "/CISD/RP1-B1X", "/CISD/RP1-A2X", "/CISD/DP1-B", "/CISD/DP2-A", "/CISD/DP1-A",
+                "/CISD/3VCP5", "/CISD/3VCP6", "/CISD/3V-126", "/CISD/3VCP7", "/TEST-SPACE/EV-INVALID", "/CISD/3VCP8",
+                "/CISD/3V-125", "/CISD/RP2-A1X"};
+
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria().withOrOperator();
+        criteria1.withParents().withCode().thatContains("-");
+        criteria1.withParents().withCode().thatStartsWith("C");
+        testSearch(TEST_USER, criteria1, expectedIdentifiers);
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        final SampleSearchCriteria subcriteria2 = criteria2.withSubcriteria().withOrOperator();
+        subcriteria2.withSubcriteria().withParents().withCode().thatContains("-");
+        subcriteria2.withSubcriteria().withSubcriteria().withParents().withCode().thatStartsWith("C");
+        testSearch(TEST_USER, criteria2, expectedIdentifiers);
+
+        final SampleSearchCriteria criteria3 = new SampleSearchCriteria().withOrOperator();
+        final SampleSearchCriteria subcriteria3 = criteria3.withSubcriteria();
+        subcriteria3.withParents().withOrOperator().withExperiment();
+        subcriteria3.withParents().withOrOperator().withType().withCode().thatStartsWith("MASTER");
+        criteria3.withPermId().thatEndsWith("6");
+        testSearch(TEST_USER, criteria3, 74);
+
+        final SampleSearchCriteria criteria4 = new SampleSearchCriteria().withOrOperator();
+        final SampleSearchCriteria subcriteria4 = criteria4.withSubcriteria().withSubcriteria().withSubcriteria();
+        subcriteria4.withParents().withOrOperator().withExperiment();
+        subcriteria4.withParents().withOrOperator().withType().withCode().thatStartsWith("MASTER");
+        criteria4.withPermId().thatEndsWith("6");
+        testSearch(TEST_USER, criteria4, 74);
     }
 
     @Test
