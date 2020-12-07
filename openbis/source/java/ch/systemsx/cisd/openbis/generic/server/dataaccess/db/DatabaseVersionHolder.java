@@ -17,7 +17,7 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 /**
- * A static class which holds the database version.
+ * A static class which holds the database version and the version of its indices.
  *
  * @author Christian Ribeaud
  */
@@ -26,14 +26,28 @@ public final class DatabaseVersionHolder
     /** Current version of the database. */
     private static final String DATABASE_VERSION = "187";
 
+    /** Current version of the database INDICES. */
+    private static final String DATABASE_INDICES_VERSION = "1";
+
     private DatabaseVersionHolder()
     {
         // Can not be instantiated
     }
 
-    /** Returns the current version of the database. */
-    public final static String getDatabaseVersion()
+    /**
+     * Returns the current version of the database.
+     */
+    public static String getDatabaseVersion()
     {
         return DATABASE_VERSION;
     }
+
+    /**
+     * Returns the current version of the database indices.
+     */
+    public static String getDatabaseIndicesVersion()
+    {
+        return DATABASE_INDICES_VERSION;
+    }
+
 }
