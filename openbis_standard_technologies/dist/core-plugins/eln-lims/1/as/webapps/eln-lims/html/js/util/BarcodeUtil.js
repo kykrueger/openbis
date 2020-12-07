@@ -317,7 +317,7 @@ var BarcodeUtil = new function() {
                         mainController.openbisV3.updateSamples([ sample ]).done(function(result) {
                             Util.unblockUI();
                             Util.showInfo("Barcode Updated", function() {
-                                mainController.changeView('showViewSamplePageFromPermId', entity.permId);
+                                mainController.refreshView();
                         }, true);
                     }).fail(function(result) {
                         Util.showFailedServerCallError(result);
