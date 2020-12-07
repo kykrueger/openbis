@@ -2874,6 +2874,18 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testMultipleNestingWithChildren()
+    {
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withParents().withCode().thatEquals("MP002-1");
+        testSearch(TEST_USER, criteria1, "/CISD/3V-125", "/CISD/3V-126");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withChildren().withId().thatEquals(new SampleIdentifier("/CISD/3VCP6"));
+        testSearch(TEST_USER, criteria2, "/CISD/3V-125", "/CISD/CL-3V:A02");
+    }
+
+    @Test
     public void testNestedLogicalOperatorsWithContainers()
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
