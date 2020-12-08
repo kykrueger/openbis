@@ -93,7 +93,7 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 			
 			
 			var extraOptions = [];
-			extraOptions.push({ name : "Delete selected", action : function(selected) {
+			extraOptions.push({ name : "Delete (Selected Objects)", action : function(selected) {
 				var grid = _this._dataGridController._grid;
 				var selected = grid.getSelected();
 				if(selected != undefined && selected.length == 0){
@@ -138,6 +138,25 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 					
 				}
 			}});
+
+			if(profile.mainMenu.showBarcodes) {
+                extraOptions.push({ name : "Generate Barcodes (Selected Objects)", action : function(selected) {
+                    document.title = "Barcodes Generator";
+			        var barcodesGeneratorViews = mainController._getNewViewModel(true, true, false);
+
+			        var selectedBarcodes = [];
+			        for(var sIdx = 0; sIdx < selected.length; sIdx++) {
+                        if(selected[sIdx].properties["$BARCODE"]) {
+                            selectedBarcodes.push(selected[sIdx].properties["$BARCODE"]);
+                        } else {
+                            selectedBarcodes.push(selected[sIdx].permId);
+                        }
+			        }
+
+			        BarcodeUtil.preGenerateBarcodes(barcodesGeneratorViews, selectedBarcodes);
+			        this.currentView = null;
+                }});
+			}
 			
 			this._dataGridController.init(this._sampleTableView.getTableContainer(), extraOptions);
 	}
