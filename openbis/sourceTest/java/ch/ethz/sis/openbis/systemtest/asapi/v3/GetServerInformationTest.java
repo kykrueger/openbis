@@ -47,7 +47,6 @@ public class GetServerInformationTest extends AbstractTest
         assertEquals(result.get("enabled-technologies"), "test-.*");
         assertEquals(result.get("project-samples-enabled"), "false");
         assertEquals(result.get("openbis-version"), BuildAndEnvironmentInfo.INSTANCE.getVersion());
-        assertNotEquals(result.get("openbis-version"), "UNKNOWN");
 
         v3api.logout(sessionToken);
     }
