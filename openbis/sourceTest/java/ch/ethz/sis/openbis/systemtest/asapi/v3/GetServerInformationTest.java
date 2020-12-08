@@ -17,14 +17,13 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
-import ch.systemsx.cisd.common.test.AssertionUtil;
-import ch.systemsx.cisd.openbis.BuildAndEnvironmentInfo;
 import org.testng.annotations.Test;
+
+import ch.systemsx.cisd.openbis.BuildAndEnvironmentInfo;
 
 /**
  * @author Franz-Josef Elmer
@@ -48,6 +47,7 @@ public class GetServerInformationTest extends AbstractTest
         assertEquals(result.get("enabled-technologies"), "test-.*");
         assertEquals(result.get("project-samples-enabled"), "false");
         assertEquals(result.get("openbis-version"), BuildAndEnvironmentInfo.INSTANCE.getVersion());
+        assertNotEquals(result.get("openbis-version"), "UNKNOWN");
 
         v3api.logout(sessionToken);
     }
