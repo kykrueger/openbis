@@ -136,13 +136,19 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         final List<CRITERIA> nestedCriteria = (List<CRITERIA>) getCriteria(criteria, emptyCriteria.getClass());
         final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, emptyCriteria.getClass());
 
-//        final CriteriaVo criteriaVo = new CriteriaVo(mainCriteria, nestedCriteria, criteria.getOperator());
-
         final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
         containerCriterion.withOperator(criteria.getOperator());
         containerCriterion.setCriteria(mainCriteria);
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(
-                userId, containerCriterion, tableMapper, idsColumnName, authorisationInformation);
+
+        final Set<Long> mainCriteriaIntermediateResults;
+        if (!mainCriteria.isEmpty())
+        {
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(
+                    userId, containerCriterion, tableMapper, idsColumnName, authorisationInformation);
+        } else
+        {
+            mainCriteriaIntermediateResults = null;
+        }
 
         final Collection<Set<Long>> nestedCriteriaIntermediateResults;
         if (!nestedCriteria.isEmpty())
@@ -166,7 +172,8 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         } else if (mainCriteria.isEmpty() && nestedCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.
-            resultBeforeFiltering = getAllIds(userId, authorisationInformation, idsColumnName, tableMapper);
+            resultBeforeFiltering = getAllIds(userId, authorisationInformation, idsColumnName, tableMapper,
+                    containerCriterion);
         } else
         {
             // If we don't have results and criteria are not empty, there are no results.
@@ -204,47 +211,17 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
      * @param authorisationInformation user authorisation information.
      * @param idsColumnName the name of the column, whose values to be returned.
      * @param tableMapper the table mapper to be used during translation.
+     * @param containerCriterion container criterion which can be ignored or reused in overridden methods.
      */
     protected Set<Long> getAllIds(final Long userId, final AuthorisationInformation authorisationInformation,
-            final String idsColumnName,
-            final TableMapper tableMapper)
+            final String idsColumnName, final TableMapper tableMapper,
+            final AbstractCompositeSearchCriteria containerCriterion)
     {
-        final AbstractCompositeSearchCriteria criteria = createEmptyCriteria();
-        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
-        containerCriterion.setCriteria(Collections.singletonList(criteria));
-        return getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, containerCriterion, tableMapper,
-                idsColumnName, authorisationInformation);
+        final AbstractCompositeSearchCriteria emptyCriteria = createEmptyCriteria();
+        final AbstractCompositeSearchCriteria emptyContainerCriterion = createEmptyCriteria();
+        emptyContainerCriterion.setCriteria(Collections.singletonList(emptyCriteria));
+        return getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, emptyContainerCriterion,
+                tableMapper, idsColumnName, authorisationInformation);
     }
-
-//    protected class CriteriaVo
-//    {
-//        private final Collection<ISearchCriteria> mainCriteria;
-//        private final Collection<CRITERIA> nestedCriteria;
-//        private final SearchOperator searchOperator;
-//
-//        public CriteriaVo(final Collection<ISearchCriteria> mainCriteria,
-//                final Collection<CRITERIA> nestedCriteria, final SearchOperator searchOperator)
-//        {
-//            this.mainCriteria = mainCriteria;
-//            this.nestedCriteria = nestedCriteria;
-//            this.searchOperator = searchOperator;
-//        }
-//
-//        public Collection<ISearchCriteria> getMainCriteria()
-//        {
-//            return mainCriteria;
-//        }
-//
-//        public Collection<CRITERIA> getNestedCriteria()
-//        {
-//            return nestedCriteria;
-//        }
-//
-//        public SearchOperator getSearchOperator()
-//        {
-//            return searchOperator;
-//        }
-//
-//    }
 
 }

@@ -47,8 +47,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     protected abstract Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass();
 
     protected Set<Long> doSearchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final CRITERIA criteria, final SearchOperator searchOperator, final String idsColumnName,
-            final TableMapper tableMapper)
+            final CRITERIA criteria, final String idsColumnName, final TableMapper tableMapper)
     {
         final AbstractCompositeSearchCriteria emptyCriteria = createEmptyCriteria();
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass =
@@ -70,8 +69,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         final CompositeEntityCriteriaVo criteriaVo = new CompositeEntityCriteriaVo(mainCriteria,
                 getCriteria(criteria, parentsSearchCriteriaClass),
                 getCriteria(criteria, childrenSearchCriteriaClass),
-                Collections.emptyList(), getCriteria(criteria, emptyCriteria.getClass()),
-                (searchOperator == null) ? criteria.getOperator() : searchOperator);
+                Collections.emptyList(), getCriteria(criteria, emptyCriteria.getClass()), criteria.getOperator());
 
         return doSearchForIDs(userId, criteriaVo, idsColumnName, tableMapper, authorisationInformation);
     }
@@ -94,8 +92,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
             containerCriterion.withOperator(finalSearchOperator);
             containerCriterion.setCriteria(mainCriteria);
-            mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, containerCriterion,
-                    tableMapper, idsColumnName, authorisationInformation);
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
+                    containerCriterion, tableMapper, idsColumnName, authorisationInformation);
         } else
         {
             mainCriteriaIntermediateResults = null;
@@ -147,7 +145,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         if (!nestedCriteria.isEmpty())
         {
             nestedCriteriaIntermediateResults = nestedCriteria.stream().map(criteria ->
-                    doSearchForIDs(userId, authorisationInformation, (CRITERIA) criteria, criteria.getOperator(),
+                    doSearchForIDs(userId, authorisationInformation, (CRITERIA) criteria,
                             idsColumnName, tableMapper))
                     .collect(Collectors.toList());
         } else
@@ -177,7 +175,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
                 && childRelationshipsCriteria.isEmpty() && nestedCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.
-            results = getAllIds(userId, authorisationInformation, idsColumnName, tableMapper);
+            results = getAllIds(userId, authorisationInformation, idsColumnName, tableMapper, null);
         } else
         {
             // If we don't have results and criteria are not empty, there are no results.
@@ -204,31 +202,11 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         final List<Set<Long>> relatedIds = relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria ->
         {
             final Set<Long> foundParentIds = doSearchForIDs(userId, authorisationInformation,
-                    (CRITERIA) entitySearchCriteria, operator, ColumnNames.ID_COLUMN, tableMapper);
+                    (CRITERIA) entitySearchCriteria, ColumnNames.ID_COLUMN, tableMapper);
             return foundParentIds.isEmpty() ? Stream.empty() : Stream.of(foundParentIds);
         }).collect(Collectors.toList());
 
         return mergeResults(operator, relatedIds);
-    }
-
-    /**
-     * Queries the DB to return all entity IDs.
-     *
-     * @return set of IDs of all entities.
-     * @param userId requesting user ID.
-     * @param authorisationInformation user authorisation information.
-     * @param idsColumnName the name of the column, whose values to be returned.
-     * @param tableMapper the table mapper to be used during translation.
-     */
-    protected Set<Long> getAllIds(final Long userId, final AuthorisationInformation authorisationInformation,
-            final String idsColumnName,
-            final TableMapper tableMapper)
-    {
-        final AbstractCompositeSearchCriteria criteria = createEmptyCriteria();
-        final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
-        containerCriterion.setCriteria(Collections.singletonList(criteria));
-        return getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, containerCriterion, tableMapper, idsColumnName,
-                authorisationInformation);
     }
 
     private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet, final TableMapper tableMapper,

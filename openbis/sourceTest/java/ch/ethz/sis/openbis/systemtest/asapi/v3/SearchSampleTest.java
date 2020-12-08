@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -2738,8 +2739,8 @@ public class SearchSampleTest extends AbstractSampleTest
 
         v3api.searchSamples(sessionToken, c, fo);
 
-        assertAccessLog(
-                "search-samples  SEARCH_CRITERIA:\n'SAMPLE\n    with attribute 'code' equal to 'RP1-A2X'\n'\nFETCH_OPTIONS:\n'Sample\n    with Project\n    with Space\n'");
+        assertAccessLog("search-samples  SEARCH_CRITERIA:\n'SAMPLE\n    with attribute 'code' equal to 'RP1-A2X'\n'\n"
+                + "FETCH_OPTIONS:\n'Sample\n    with Project\n    with Space\n'");
     }
 
     @Test
@@ -2756,6 +2757,164 @@ public class SearchSampleTest extends AbstractSampleTest
         subCriteria2.withIdentifier().thatEndsWith(":B01");
 
         testSearch(TEST_USER, criteria, "/MP:B03", "/CISD/B1B3:B03", "/CISD/B1B3:B01");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsMultipleNesting()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        final SampleSearchCriteria subCriteria1 = criteria.withSubcriteria().withOrOperator();
+        subCriteria1.withSubcriteria().withIdentifier().thatStartsWith("/MP:");
+        subCriteria1.withSubcriteria().withSubcriteria().withIdentifier().thatStartsWith("/CISD/B");
+
+        final SampleSearchCriteria subCriteria2 = criteria.withSubcriteria().withOrOperator();
+        subCriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withIdentifier().thatEndsWith(":B03");
+        subCriteria2.withIdentifier().thatEndsWith(":B01");
+
+        testSearch(TEST_USER, criteria, "/MP:B03", "/CISD/B1B3:B03", "/CISD/B1B3:B01");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsWithExperiment()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+        final SampleSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withExperiment().withType().withCode().thatEquals("COMPOUND_HCS");
+        subcriteria1.withExperiment().withProject().withId().thatEquals(new ProjectIdentifier("/TEST-SPACE/NOE"));
+
+        final SampleSearchCriteria subcriteria2 = criteria.withSubcriteria().withOrOperator();
+        subcriteria2.withExperiment().withProject().withCode().thatEquals("NOE");
+        subcriteria2.withCode().thatEquals("RP1-A2X");
+
+        testSearch(TEST_USER, criteria, "/CISD/CP-TEST-2", "/TEST-SPACE/CP-TEST-4");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsWithChildren()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+        final SampleSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withCode().thatEquals("3V-125");
+        subcriteria1.withCode().thatEquals("DP1-A");
+        subcriteria1.withCode().thatEquals("MP002-1");
+
+        final SampleSearchCriteria subcriteria2 = criteria.withSubcriteria().withOrOperator();
+        subcriteria2.withChildren().withCode().thatEndsWith("5");
+        subcriteria2.withChildren().withPermId().thatEndsWith("7");
+        testSearch(TEST_USER, criteria, "/CISD/MP002-1", "/CISD/MP002-1", "/CISD/3V-125", "/CISD/DP1-A");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsWithChildrenMultipleNesting()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+        final SampleSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withSubcriteria().withCode().thatEquals("3V-125");
+        subcriteria1.withCode().thatEquals("DP1-A");
+        subcriteria1.withCode().thatEquals("MP002-1");
+
+        final SampleSearchCriteria subcriteria2 = criteria.withSubcriteria().withOrOperator();
+        subcriteria2.withSubcriteria().withSubcriteria().withChildren().withCode().thatEndsWith("5");
+        subcriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withChildren().withPermId()
+                .thatEndsWith("7");
+        testSearch(TEST_USER, criteria, "/CISD/MP002-1", "/CISD/MP002-1", "/CISD/3V-125", "/CISD/DP1-A");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsWithParentsAndChildren()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+        final SampleSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withParents().withId().thatEquals(new SampleIdentifier("/CISD/MP002-1"));
+        subcriteria1.withChildren().withId().thatEquals(new SamplePermId("200811050946559-980"));
+
+        final SampleSearchCriteria subcriteria2 = criteria.withSubcriteria().withAndOperator();
+        subcriteria2.withParents();
+        subcriteria2.withChildren();
+
+        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/CL-3V:A02");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsWithParentsAndChildrenMultipleNesting()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+        final SampleSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withSubcriteria().withSubcriteria().withParents().withId()
+                .thatEquals(new SampleIdentifier("/CISD/MP002-1"));
+        subcriteria1.withSubcriteria().withChildren().withId().thatEquals(new SamplePermId("200811050946559-980"));
+
+        final SampleSearchCriteria subcriteria2 = criteria.withSubcriteria().withAndOperator();
+        subcriteria2.withSubcriteria().withParents();
+        subcriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withChildren();
+
+        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/CL-3V:A02");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsWithParentsExperimentAndPermID()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        final SampleParentsSearchCriteria subcriteria1 = criteria.withParents().withOrOperator();
+        subcriteria1.withCode().thatContains("-");
+        subcriteria1.withCode().thatStartsWith("C");
+
+        final SampleParentsSearchCriteria subcriteria2 = criteria.withParents().withOrOperator();
+        subcriteria2.withExperiment();
+        subcriteria2.withType().withCode().thatStartsWith("MASTER");
+
+        criteria.withPermId().thatEndsWith("6");
+
+        testSearch(TEST_USER, criteria, "/TEST-SPACE/EV-INVALID", "/CISD/3V-125", "/CISD/DP2-A");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsMultipleNestingWithParents()
+    {
+        final SampleSearchCriteria criteria3 = new SampleSearchCriteria().withOrOperator();
+        final SampleSearchCriteria subcriteria3 = criteria3.withSubcriteria();
+        subcriteria3.withParents().withOrOperator().withExperiment();
+        subcriteria3.withParents().withOrOperator().withType().withCode().thatStartsWith("MASTER");
+        criteria3.withPermId().thatEndsWith("6");
+        testSearch(TEST_USER, criteria3, 74);
+
+        final SampleSearchCriteria criteria4 = new SampleSearchCriteria().withOrOperator();
+        final SampleSearchCriteria subcriteria4 = criteria4.withSubcriteria().withSubcriteria().withSubcriteria();
+        subcriteria4.withParents().withOrOperator().withExperiment();
+        subcriteria4.withParents().withOrOperator().withType().withCode().thatStartsWith("MASTER");
+        criteria4.withPermId().thatEndsWith("6");
+        testSearch(TEST_USER, criteria4, 74);
+    }
+
+    @Test
+    public void testMultipleNestingWithChildren()
+    {
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withParents().withCode().thatEquals("MP002-1");
+        testSearch(TEST_USER, criteria1, "/CISD/3V-125", "/CISD/3V-126");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withChildren().withId().thatEquals(new SampleIdentifier("/CISD/3VCP6"));
+        testSearch(TEST_USER, criteria2, "/CISD/3V-125", "/CISD/CL-3V:A02");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsWithContainers()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        final SampleSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withContainer().withPermId().thatEquals("200811050927630-1003");
+        subcriteria1.withContainer().withCode().thatEquals("MP2-NO-CL");
+
+        final SampleSearchCriteria subcriteria2 = criteria.withSubcriteria().withOrOperator();
+        subcriteria2.withCode().thatStartsWith("C");
+        subcriteria2.withPermId().thatContains("-100");
+
+        testSearch(TEST_USER, criteria, "/CISD/MP1-MIXED:A01", "/CISD/MP1-MIXED:A02", "/CISD/MP1-MIXED:A03",
+                "/CISD/MP1-MIXED:B02", "/CISD/MP2-NO-CL:A01", "/CISD/MP2-NO-CL:C03");
     }
 
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)
