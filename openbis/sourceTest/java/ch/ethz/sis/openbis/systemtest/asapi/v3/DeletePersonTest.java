@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.AuthorizationGroup;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.create.AuthorizationGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.delete.AuthorizationGroupDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.IAuthorizationGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
@@ -171,12 +172,11 @@ public class DeletePersonTest extends AbstractTest
         assertNotNull(groupBefore);
         assertEquals(groupBefore.getUsers().get(0).getPermId(), personId);
 
-        // delete
-        PersonDeletionOptions options = new PersonDeletionOptions();
-        options.setReason("testing");
-        v3api.deletePersons(sessionToken, Collections.singletonList(personId), options);
+        // delete person
+        PersonDeletionOptions personOptions = new PersonDeletionOptions();
+        personOptions.setReason("testing");
+        v3api.deletePersons(sessionToken, Collections.singletonList(personId), personOptions);
 
-        // after
         Person personAfter = getPerson(sessionToken, personId);
         assertNull(personAfter);
 
@@ -186,6 +186,14 @@ public class DeletePersonTest extends AbstractTest
         AuthorizationGroup groupAfter = getGroup(sessionToken, groupId);
         assertNotNull(groupAfter);
         assertEquals(groupAfter.getUsers(), Collections.emptyList());
+
+        // delete group
+        AuthorizationGroupDeletionOptions groupOptions = new AuthorizationGroupDeletionOptions();
+        groupOptions.setReason("testing");
+        v3api.deleteAuthorizationGroups(sessionToken, Collections.singletonList(groupId), groupOptions);
+
+        groupAfter = getGroup(sessionToken, groupId);
+        assertNull(groupAfter);
 
         v3api.logout(sessionToken);
 
