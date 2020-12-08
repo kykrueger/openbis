@@ -153,17 +153,28 @@ class QueryFormParameters extends React.PureComponent {
       return null
     }
 
-    const { mode, classes } = this.props
+    const { dictionaries, mode, classes } = this.props
+
+    let options = []
+    if (dictionaries.queryDatabases) {
+      options = dictionaries.queryDatabases.map(queryDatabase => {
+        return {
+          label: queryDatabase.name,
+          value: queryDatabase.name
+        }
+      })
+    }
+
     return (
       <div className={classes.field}>
-        <TextField
+        <SelectField
           reference={this.references.databaseId}
           label='Database'
           name='databaseId'
-          mandatory={true}
           error={error}
           disabled={!enabled}
           value={value}
+          options={options}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

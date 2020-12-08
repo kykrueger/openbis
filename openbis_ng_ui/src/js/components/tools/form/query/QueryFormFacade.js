@@ -9,6 +9,14 @@ export default class QueryFormFacade {
     })
   }
 
+  async loadQueryDatabases() {
+    const result = await openbis.searchQueryDatabases(
+      new openbis.QueryDatabaseSearchCriteria(),
+      new openbis.QueryDatabaseFetchOptions()
+    )
+    return result.getObjects()
+  }
+
   async loadExperimentTypes() {
     const result = await openbis.searchExperimentTypes(
       new openbis.ExperimentTypeSearchCriteria(),

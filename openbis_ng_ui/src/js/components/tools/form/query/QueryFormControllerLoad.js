@@ -13,11 +13,13 @@ export default class QueryFormControllerLoad extends PageControllerLoad {
 
   async _loadDictionaries() {
     const [
+      queryDatabases,
       experimentTypes,
       sampleTypes,
       dataSetTypes,
       materialTypes
     ] = await Promise.all([
+      this.facade.loadQueryDatabases(),
       this.facade.loadExperimentTypes(),
       this.facade.loadSampleTypes(),
       this.facade.loadDataSetTypes(),
@@ -26,6 +28,7 @@ export default class QueryFormControllerLoad extends PageControllerLoad {
 
     await this.context.setState(() => ({
       dictionaries: {
+        queryDatabases,
         experimentTypes,
         sampleTypes,
         dataSetTypes,

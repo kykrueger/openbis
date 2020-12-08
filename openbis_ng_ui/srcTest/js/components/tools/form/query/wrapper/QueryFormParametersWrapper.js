@@ -22,8 +22,8 @@ export default class QueryFormParametersWrapper extends PageParametersPanelWrapp
   }
 
   getDatabase() {
-    return new TextFieldWrapper(
-      this.findComponent(TextField).filter({ name: 'databaseId' })
+    return new SelectFieldWrapper(
+      this.findComponent(SelectField).filter({ name: 'databaseId' })
     )
   }
 

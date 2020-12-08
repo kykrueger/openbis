@@ -75,6 +75,10 @@ class Facade {
     return this.promise(this.v3.searchQueries(criteria, fo))
   }
 
+  searchQueryDatabases(criteria, fo) {
+    return this.promise(this.v3.searchQueryDatabases(criteria, fo))
+  }
+
   searchMaterials(criteria, fo) {
     return this.promise(this.v3.searchMaterials(criteria, fo))
   }

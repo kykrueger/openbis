@@ -22,6 +22,12 @@ describe(QueryFormComponentTest.SUITE, () => {
 })
 
 async function testLoadNew() {
+  const { testDatabase, anotherDatabase } = QueryFormTestData
+
+  common.facade.loadQueryDatabases.mockReturnValue(
+    Promise.resolve([testDatabase, anotherDatabase])
+  )
+
   const form = await common.mountNew()
 
   form.expectJSON({
@@ -52,7 +58,15 @@ async function testLoadNew() {
         label: 'Database',
         value: null,
         enabled: true,
-        mode: 'edit'
+        mode: 'edit',
+        options: [
+          {
+            value: testDatabase.getName()
+          },
+          {
+            value: anotherDatabase.getName()
+          }
+        ]
       },
       queryType: {
         label: 'Query Type',
@@ -87,6 +101,12 @@ async function testLoadNew() {
 }
 
 async function testLoadExisting(query) {
+  const { testDatabase, anotherDatabase } = QueryFormTestData
+
+  common.facade.loadQueryDatabases.mockReturnValue(
+    Promise.resolve([testDatabase, anotherDatabase])
+  )
+
   const form = await common.mountExisting(query)
 
   form.expectJSON({

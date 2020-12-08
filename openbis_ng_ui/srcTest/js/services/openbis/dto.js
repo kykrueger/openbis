@@ -90,11 +90,14 @@ import PropertyTypeSearchCriteria from 'as/dto/property/search/PropertyTypeSearc
 import PropertyTypeUpdate from 'as/dto/property/update/PropertyTypeUpdate'
 import Query from 'as/dto/query/Query'
 import QueryCreation from 'as/dto/query/create/QueryCreation'
+import QueryDatabase from 'as/dto/query/QueryDatabase'
 import QueryDatabaseName from 'as/dto/query/id/QueryDatabaseName'
 import QueryDeletionOptions from 'as/dto/query/delete/QueryDeletionOptions'
 import QueryFetchOptions from 'as/dto/query/fetchoptions/QueryFetchOptions'
+import QueryDatabaseFetchOptions from 'as/dto/query/fetchoptions/QueryDatabaseFetchOptions'
 import QueryName from 'as/dto/query/id/QueryName'
 import QuerySearchCriteria from 'as/dto/query/search/QuerySearchCriteria'
+import QueryDatabaseSearchCriteria from 'as/dto/query/search/QueryDatabaseSearchCriteria'
 import QueryTechId from 'as/dto/query/id/QueryTechId'
 import QueryType from 'as/dto/query/QueryType'
 import QueryUpdate from 'as/dto/query/update/QueryUpdate'
@@ -241,11 +244,14 @@ const dto = {
   PropertyTypeUpdate,
   Query,
   QueryCreation,
+  QueryDatabase,
   QueryDatabaseName,
   QueryDeletionOptions,
   QueryFetchOptions,
+  QueryDatabaseFetchOptions,
   QueryName,
   QuerySearchCriteria,
+  QueryDatabaseSearchCriteria,
   QueryTechId,
   QueryType,
   QueryUpdate,

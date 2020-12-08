@@ -14,7 +14,11 @@ describe(QueryFormComponentTest.SUITE, () => {
 })
 
 async function testChange() {
-  const { sampleQuery } = QueryFormTestData
+  const { sampleQuery, testDatabase, anotherDatabase } = QueryFormTestData
+
+  common.facade.loadQueryDatabases.mockReturnValue(
+    Promise.resolve([testDatabase, anotherDatabase])
+  )
 
   const form = await common.mountExisting(sampleQuery)
 
@@ -27,7 +31,7 @@ async function testChange() {
   form.getParameters().getDescription().change('updated description')
   await form.update()
 
-  form.getParameters().getDatabase().change('updated database')
+  form.getParameters().getDatabase().change(testDatabase.getName())
   await form.update()
 
   form.getParameters().getQueryType().change(openbis.QueryType.GENERIC)
@@ -62,7 +66,7 @@ async function testChange() {
       },
       database: {
         label: 'Database',
-        value: 'updated database',
+        value: testDatabase.getName(),
         enabled: true,
         mode: 'edit'
       },
