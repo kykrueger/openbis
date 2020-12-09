@@ -21,6 +21,8 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.reflection.BeanUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
@@ -32,7 +34,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.IDataSourceFactory;
 /**
  * Creates a {@link DataSource} using {@link DatabaseConfigurationContext} and given properties. The database is migrated to the version specified by
  * {@link #VERSION_HOLDER_CLASS_KEY} property if specified.
- * 
+ *
  * @author Izabela Adamczyk
  */
 public class DefaultDataSourceFactory implements IDataSourceFactory

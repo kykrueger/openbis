@@ -42,7 +42,7 @@ import ch.systemsx.cisd.dbmigration.MassUploadFileType;
 
 /**
  * Implementation of {@link IDatabaseAdminDAO} for PostgreSQL.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
@@ -67,7 +67,7 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
 
     /**
      * Creates an instance.
-     * 
+     *
      * @param dataSource Data source able to create/drop the specified database.
      * @param scriptExecutor An executor for SQL scripts.
      * @param massUploader A class that can perform mass (batch) uploads into database tables.
@@ -148,8 +148,6 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
             }
         }
     }
-    
-    
 
     @Override
     public String getDatabaseServerVersion()
@@ -263,6 +261,29 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
         massUploader.performMassUpload(massUploadFiles);
         final Script finishScript = tryLoadScript(dumpFolder, "finish", version);
         scriptExecutor.execute(finishScript, false, null);
+    }
+
+    @Override
+    public void applyFullTextSearchScripts(final File dumpFolder, final String version)
+    {
+        final Script beforeScript = tryLoadScript(dumpFolder, "full-text-search-before", version);
+        final Script mainScript = tryLoadScript(dumpFolder, "full-text-search", version);
+        final Script afterScript = tryLoadScript(dumpFolder, "full-text-search-after", version);
+
+        operationLog.info("Executing full text search preparation script...");
+        scriptExecutor.execute(beforeScript, false, null);
+        operationLog.info("Finished executing full text search preparation script.");
+        try
+        {
+            operationLog.info("Executing full text search main script...");
+            scriptExecutor.execute(mainScript, false, null);
+            operationLog.info("Finished executing full text search main script.");
+        } finally
+        {
+            operationLog.info("Executing full text search cleanup script...");
+            scriptExecutor.execute(afterScript, false, null);
+            operationLog.info("Finished executing full text search cleanup script.");
+        }
     }
 
     private Script tryLoadScript(final File dumpFolder, String prefix, String version)

@@ -44,7 +44,7 @@ import ch.systemsx.cisd.dbmigration.MassUploadFileType;
 
 /**
  * Implementation of {@link IDatabaseAdminDAO} for H2.
- * 
+ *
  * @author Bernd Rinn
  */
 public class H2AdminDAO extends AbstractDatabaseAdminDAO
@@ -69,7 +69,7 @@ public class H2AdminDAO extends AbstractDatabaseAdminDAO
 
     /**
      * Creates an instance.
-     * 
+     *
      * @param dataSource Data source able to create/drop the specified database.
      * @param scriptExecutor An executor of SQL scripts within the new database.
      * @param massUploader A class that can perform mass (batch) uploads into database tables.
@@ -158,6 +158,12 @@ public class H2AdminDAO extends AbstractDatabaseAdminDAO
         massUploader.performMassUpload(massUploadFiles);
         final Script finishScript = tryLoadScript(dumpFolder, "finish", version);
         scriptExecutor.execute(finishScript, true, null);
+    }
+
+    @Override
+    public void applyFullTextSearchScripts(final File dumpFolder, final String version)
+    {
+        // No implementation.
     }
 
     private Script tryLoadScript(final File dumpFolder, String prefix, String version)

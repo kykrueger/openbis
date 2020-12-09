@@ -152,3 +152,15 @@ DROP TRIGGER IF EXISTS material_properties_tsvector_document ON material_propert
 CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON material_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
+
+-- Updating tables
+
+UPDATE samples_all SET id = id;
+UPDATE sample_properties SET id = id;
+UPDATE experiments_all SET id = id;
+UPDATE experiment_properties SET id = id;
+UPDATE data_all SET id = id;
+UPDATE data_set_properties SET id = id;
+UPDATE materials SET id = id;
+UPDATE material_properties SET id = id;
+UPDATE projects SET id = id;

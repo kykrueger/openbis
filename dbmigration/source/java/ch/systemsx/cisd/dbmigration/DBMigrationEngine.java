@@ -30,7 +30,7 @@ import ch.systemsx.cisd.dbmigration.java.IMigrationStepExecutor;
 
 /**
  * Class for creating and migrating a database.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public final class DBMigrationEngine
@@ -40,7 +40,7 @@ public final class DBMigrationEngine
 
     /**
      * Creates or migrates a database specified in the context for/to the specified version.
-     * 
+     *
      * @return the SQL script provider.
      */
     public final static ISqlScriptProvider createOrMigrateDatabaseAndGetScriptProvider(
@@ -58,6 +58,24 @@ public final class DBMigrationEngine
                 new DBMigrationEngine(migrationDAOFactory, sqlScriptProvider, context
                         .isCreateFromScratch());
         migrationEngine.migrateTo(databaseVersion);
+
+        // TODO: make this variable a parameter.
+        final String ftsDocumentVersion = "001";
+
+        // TODO: add logic for reading the version from file
+        final String ftsDocumentVersionFromFile = null;
+
+        if (ftsDocumentVersionFromFile == null || Integer.valueOf(ftsDocumentVersion) > Integer.valueOf(ftsDocumentVersionFromFile))
+        {
+            operationLog.info("Applying full text search scripts...");
+            migrationEngine.adminDAO.applyFullTextSearchScripts(
+                    migrationEngine.scriptProvider.getFtsScriptsFolder(ftsDocumentVersion), ftsDocumentVersion);
+            operationLog.info("Full text search scripts applied.");
+        } else
+        {
+            operationLog.info("Skipped application of full text search scripts.");
+        }
+
         /*
          * This triggers population of a lazily populated hashmap of error codes which requires locking and connection to the database. This can lead
          * to dead-locks in multi-threaded code.
@@ -82,7 +100,7 @@ public final class DBMigrationEngine
 
     /**
      * Creates an instance for the specified DAO factory and SQL script provider.
-     * 
+     *
      * @param shouldCreateFromScratch If <code>true</code> the database should be dropped and created from scratch.
      */
     public DBMigrationEngine(final IDAOFactory daoFactory, final ISqlScriptProvider scriptProvider,
@@ -99,7 +117,7 @@ public final class DBMigrationEngine
 
     /**
      * Create or migrate database to the specified version.
-     * 
+     *
      * @throws ConfigurationFailureException If creation/migration fails due to a missing script
      * @throws EnvironmentFailureException If creation/migration fails due to an inconsistent database.
      */

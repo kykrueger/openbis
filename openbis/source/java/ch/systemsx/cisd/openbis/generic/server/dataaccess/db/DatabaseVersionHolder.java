@@ -27,7 +27,7 @@ public final class DatabaseVersionHolder
     private static final String DATABASE_VERSION = "187";
 
     /** Current version of the database INDICES. */
-    private static final String DATABASE_INDICES_VERSION = "1";
+    private static final String DATABASE_FULL_TEXT_SEARCH_DOCUMENT_VERSION = "001";
 
     private DatabaseVersionHolder()
     {
@@ -45,9 +45,9 @@ public final class DatabaseVersionHolder
     /**
      * Returns the current version of the database indices.
      */
-    public static String getDatabaseIndicesVersion()
+    public static String getDatabaseFullTextSearchDocumentVersion()
     {
-        return DATABASE_INDICES_VERSION;
+        return DATABASE_FULL_TEXT_SEARCH_DOCUMENT_VERSION;
     }
 
 }
