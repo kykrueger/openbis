@@ -1,14 +1,16 @@
 -- Updating tables
 
-UPDATE samples_all SET id = id;
-UPDATE sample_properties SET id = id;
-UPDATE experiments_all SET id = id;
-UPDATE experiment_properties SET id = id;
-UPDATE data_all SET id = id;
-UPDATE data_set_properties SET id = id;
-UPDATE materials SET id = id;
-UPDATE material_properties SET id = id;
-UPDATE projects SET id = id;
+BEGIN;
+    UPDATE samples_all SET id = id;
+    UPDATE sample_properties SET id = id;
+    UPDATE experiments_all SET id = id;
+    UPDATE experiment_properties SET id = id;
+    UPDATE data_all SET id = id;
+    UPDATE data_set_properties SET id = id;
+    UPDATE materials SET id = id;
+    UPDATE material_properties SET id = id;
+    UPDATE projects SET id = id;
+COMMIT;
 
 -- Enabling triggers
 
