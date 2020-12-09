@@ -320,7 +320,11 @@ var BarcodeUtil = new function() {
         for(var eIdx = 0; eIdx < entities.length; eIdx++) {
             var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode', 'style' : 'min-width: 50%;' });
             $barcodeReaders.push($barcodeReader);
-            $barcodeReader.val(entities[eIdx].properties["$BARCODE"]);
+            if(entities[eIdx].properties["$BARCODE"]) {
+                $barcodeReader.val(entities[eIdx].properties["$BARCODE"]);
+            } else {
+                $barcodeReader.val(entities[eIdx].permId);
+            }
         }
 
         $btnAccept.click(function(event) {
@@ -401,12 +405,19 @@ var BarcodeUtil = new function() {
         $window.append($('<legend>').append("Update Barcode"));
         $window.append($('<br>'));
         $window.append(FormUtil.getInfoText("A valid barcode need to have " + MIN_BARCODE_LENGTH + " or more characters."));
-        $window.append(FormUtil.getWarningText("An empty barcode will delete the current barcode."));
+        $window.append(FormUtil.getInfoText("If a custom barcode is not given the permId is always used as default barcode."));
+        $window.append(FormUtil.getWarningText("Empty the barcode to delete the current custom barcode."));
+
         $window.append($('<br>'));
         for(var eIdx = 0; eIdx < entities.length; eIdx++) {
-            $window.append($('<center>').append($barcodeReaders[eIdx]));
-            $window.append($('<br>'));
+            var $barcodeBlock = $("<div>");
+            $barcodeBlock.append($('<label>', { class : 'control-label' }).text(Util.getDisplayNameForEntity(entities[eIdx]) + ":"));
+            $barcodeBlock.append($('<br>'));
+            $barcodeBlock.append($barcodeReaders[eIdx]);
+            $barcodeBlock.append($('<br>'));
+            $window.append($barcodeBlock);
         }
+        $window.append($('<br>'));
         if(entities.length > 0) {
             $window.append($btnAccept).append('&nbsp;');
         }
