@@ -1,4 +1,4 @@
-CREATE FUNCTION escape_tsvector_string(value VARCHAR) RETURNS VARCHAR AS $$
+CREATE OR REPLACE FUNCTION escape_tsvector_string(value VARCHAR) RETURNS VARCHAR AS $$
 BEGIN
     RETURN REPLACE(
             REPLACE(
