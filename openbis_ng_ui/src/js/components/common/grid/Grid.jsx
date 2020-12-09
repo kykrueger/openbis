@@ -16,6 +16,10 @@ import selectors from '@src/js/store/selectors/selectors.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
+  tableHeaderAndBody: {
+    width: '100%',
+    overflow: 'auto'
+  },
   table: {
     borderCollapse: 'unset',
     marginTop: -theme.spacing(1)
@@ -105,29 +109,31 @@ class Grid extends React.PureComponent {
       <React.Fragment>
         {header && <Header>{header}</Header>}
         <div onClick={this.handleClickContainer}>
-          <Table classes={{ root: classes.table }}>
-            <GridHeader
-              columns={columns}
-              filters={filters}
-              sort={sort}
-              sortDirection={sortDirection}
-              onSortChange={this.controller.handleSortChange}
-              onFilterChange={this.controller.handleFilterChange}
-            />
-            <TableBody classes={{ root: classes.tableBody }}>
-              {currentRows.map(row => {
-                return (
-                  <GridRow
-                    key={row.id}
-                    columns={columns}
-                    row={row}
-                    selected={selectedRow ? selectedRow.id === row.id : false}
-                    onClick={this.controller.handleRowSelect}
-                  />
-                )
-              })}
-            </TableBody>
-          </Table>
+          <div className={classes.tableHeaderAndBody}>
+            <Table classes={{ root: classes.table }}>
+              <GridHeader
+                columns={columns}
+                filters={filters}
+                sort={sort}
+                sortDirection={sortDirection}
+                onSortChange={this.controller.handleSortChange}
+                onFilterChange={this.controller.handleFilterChange}
+              />
+              <TableBody classes={{ root: classes.tableBody }}>
+                {currentRows.map(row => {
+                  return (
+                    <GridRow
+                      key={row.id}
+                      columns={columns}
+                      row={row}
+                      selected={selectedRow ? selectedRow.id === row.id : false}
+                      onClick={this.controller.handleRowSelect}
+                    />
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
           <div className={classes.tableFooter}>
             <GridPaging
               count={sortedRows.length}
