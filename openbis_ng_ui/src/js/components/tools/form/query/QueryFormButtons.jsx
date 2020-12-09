@@ -1,5 +1,6 @@
 import React from 'react'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
+import Button from '@src/js/components/common/form/Button.jsx'
 import logger from '@src/js/common/logger.js'
 
 class QueryFormButtons extends React.PureComponent {
@@ -15,6 +16,23 @@ class QueryFormButtons extends React.PureComponent {
         onEdit={onEdit}
         onSave={onSave}
         onCancel={query.original ? onCancel : null}
+        renderAdditionalButtons={classes =>
+          this.renderAdditionalButtons(classes)
+        }
+      />
+    )
+  }
+
+  renderAdditionalButtons(classes) {
+    const { query, onExecute } = this.props
+
+    return (
+      <Button
+        name='execute'
+        label='Execute'
+        disabled={!query.sql.value || !query.databaseId.value}
+        styles={{ root: classes.button }}
+        onClick={onExecute}
       />
     )
   }

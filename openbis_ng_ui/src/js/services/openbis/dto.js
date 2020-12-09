@@ -88,6 +88,8 @@ const CLASS_FULL_NAMES = [
   'as/dto/query/create/QueryCreation',
   'as/dto/query/delete/DeleteQueriesOperation',
   'as/dto/query/delete/QueryDeletionOptions',
+  'as/dto/query/execute/QueryExecutionOptions',
+  'as/dto/query/execute/SqlExecutionOptions',
   'as/dto/query/fetchoptions/QueryFetchOptions',
   'as/dto/query/fetchoptions/QueryDatabaseFetchOptions',
   'as/dto/query/id/QueryName',

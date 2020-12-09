@@ -63,7 +63,7 @@ class QueryFormSql extends React.PureComponent {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'QueryFormQuery.render')
+    logger.log(logger.DEBUG, 'QueryFormSql.render')
 
     const { query } = this.props
 

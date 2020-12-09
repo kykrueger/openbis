@@ -93,6 +93,8 @@ import QueryCreation from 'as/dto/query/create/QueryCreation'
 import QueryDatabase from 'as/dto/query/QueryDatabase'
 import QueryDatabaseName from 'as/dto/query/id/QueryDatabaseName'
 import QueryDeletionOptions from 'as/dto/query/delete/QueryDeletionOptions'
+import QueryExecutionOptions from 'as/dto/query/execute/QueryExecutionOptions'
+import SqlExecutionOptions from 'as/dto/query/execute/SqlExecutionOptions'
 import QueryFetchOptions from 'as/dto/query/fetchoptions/QueryFetchOptions'
 import QueryDatabaseFetchOptions from 'as/dto/query/fetchoptions/QueryDatabaseFetchOptions'
 import QueryName from 'as/dto/query/id/QueryName'
@@ -247,6 +249,8 @@ const dto = {
   QueryDatabase,
   QueryDatabaseName,
   QueryDeletionOptions,
+  QueryExecutionOptions,
+  SqlExecutionOptions,
   QueryFetchOptions,
   QueryDatabaseFetchOptions,
   QueryName,

@@ -7,7 +7,8 @@ export default class QueryFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
     return Promise.all([
       this._loadDictionaries(object),
-      this._loadQuery(object, isNew)
+      this._loadQuery(object, isNew),
+      this._loadResults()
     ])
   }
 
@@ -51,6 +52,16 @@ export default class QueryFormControllerLoad extends PageControllerLoad {
 
     return this.context.setState({
       query
+    })
+  }
+
+  async _loadResults() {
+    return this.context.setState({
+      results: {
+        loading: false,
+        loaded: false,
+        tableModel: null
+      }
     })
   }
 

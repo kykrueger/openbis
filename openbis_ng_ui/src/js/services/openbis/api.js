@@ -181,6 +181,14 @@ class Facade {
     return this.promise(this.v3.executeCustomASService(id, options))
   }
 
+  executeQuery(id, options) {
+    return this.promise(this.v3.executeQuery(id, options))
+  }
+
+  executeSql(sql, options) {
+    return this.promise(this.v3.executeSql(sql, options))
+  }
+
   executeOperations(operations, options) {
     return this.promise(this.v3.executeOperations(operations, options))
   }

@@ -171,6 +171,7 @@ class QueryFormParameters extends React.PureComponent {
           reference={this.references.databaseId}
           label='Database'
           name='databaseId'
+          mandatory={true}
           error={error}
           disabled={!enabled}
           value={value}

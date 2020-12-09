@@ -146,7 +146,7 @@ export default class GridController {
     const props = this.context.getProps()
     const state = this.context.getState()
 
-    if (!props.session) {
+    if (!props.session || !props.id) {
       return Promise.resolve()
     }
 
@@ -193,7 +193,7 @@ export default class GridController {
     const props = this.context.getProps()
     const state = this.context.getState()
 
-    if (!props.session) {
+    if (!props.session || !props.id) {
       return Promise.resolve()
     }
 
