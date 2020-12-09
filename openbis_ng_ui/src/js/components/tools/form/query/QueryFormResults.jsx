@@ -10,33 +10,21 @@ const styles = () => ({})
 class QueryFormResults extends React.PureComponent {
   constructor(props) {
     super(props)
-    this.state = {}
-  }
-
-  componentDidMount() {
-    this.generateKey()
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.results !== prevProps.results) {
-      this.generateKey()
-    }
   }
 
   render() {
     logger.log(logger.DEBUG, 'QueryFormResults.render')
 
     const { results } = this.props
-    const { key } = this.state
 
     if (results) {
-      const { loading, loaded, tableModel } = results
+      const { loading, loaded, tableModel, timestamp } = results
       return (
         <Loading loading={loading}>
           {loaded && (
             <GridContainer>
               <Grid
-                key={key}
+                key={timestamp}
                 header='Results'
                 columns={this.getColumns(tableModel)}
                 rows={this.getRows(tableModel)}
@@ -59,13 +47,10 @@ class QueryFormResults extends React.PureComponent {
   }
 
   getRows(tableModel) {
-    return tableModel.rows
-  }
-
-  generateKey() {
-    this.setState({
-      key: Date.now()
-    })
+    return tableModel.rows.map((row, index) => ({
+      id: index,
+      ...row
+    }))
   }
 }
 

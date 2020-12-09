@@ -27,7 +27,8 @@ export default class QueryFormControllerExecute {
         results: {
           ...state.results,
           loaded: true,
-          tableModel
+          tableModel,
+          timestamp: Date.now()
         }
       }))
     } catch (error) {
