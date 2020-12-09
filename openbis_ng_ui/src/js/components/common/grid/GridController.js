@@ -75,7 +75,7 @@ export default class GridController {
         if (renderedValue === null || renderedValue === undefined) {
           return ''
         } else if (_.isNumber(renderedValue) || _.isBoolean(renderedValue)) {
-          return new String(renderedValue)
+          return String(renderedValue)
         } else {
           return renderedValue
         }
@@ -84,7 +84,10 @@ export default class GridController {
         function defaultMatches(value, filter) {
           if (filter) {
             return value
-              ? value.trim().toUpperCase().includes(filter.trim().toUpperCase())
+              ? String(value)
+                  .trim()
+                  .toUpperCase()
+                  .includes(filter.trim().toUpperCase())
               : false
           } else {
             return true
