@@ -250,7 +250,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                         dropdownOptionsModel.push({
                             label : "Barcode Update",
                             action : function() {
-                                BarcodeUtil.readBarcode(_this._sampleFormModel.sample);
+                                BarcodeUtil.readBarcode([_this._sampleFormModel.sample]);
                             }
                         });
                     }

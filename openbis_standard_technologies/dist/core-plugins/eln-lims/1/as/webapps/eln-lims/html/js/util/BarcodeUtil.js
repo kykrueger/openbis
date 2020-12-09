@@ -308,7 +308,7 @@ var BarcodeUtil = new function() {
         Util.blockUI($window, css);
     }
 
-    this.readBarcode = function(entity) {
+    this.readBarcode = function(entities) {
         var $window = $('<form>', {
             'action' : 'javascript:void(0);'
         });
@@ -316,33 +316,57 @@ var BarcodeUtil = new function() {
         var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Save Barcode' });
         $btnAccept.prop("disabled",false);
 
-        var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode', 'style' : 'min-width: 50%;' });
-        $barcodeReader.keyup(function() {
-            if($barcodeReader.val().length >= MIN_BARCODE_LENGTH ||
-               $barcodeReader.val().length === 0) {
-                $btnAccept.prop("disabled", false);
-            } else {
-                $btnAccept.prop("disabled", true);
-            }
-        });
+        var $barcodeReaders = [];
+        for(var eIdx = 0; eIdx < entities.length; eIdx++) {
+            var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode', 'style' : 'min-width: 50%;' });
+            $barcodeReaders.push($barcodeReader);
+            $barcodeReader.val(entities[eIdx].properties["$BARCODE"]);
+        }
 
         $btnAccept.click(function(event) {
+            var errors = [];
+            for(var eIdx = 0; eIdx < entities.length; eIdx++) {
+                if($barcodeReaders[eIdx].val().length >= MIN_BARCODE_LENGTH ||
+                   $barcodeReaders[eIdx].val().length === 0) {
+                   // OK
+                } else {
+                    errors.push(entities[eIdx]);
+                }
+            }
+            if(errors.length > 0) {
+                Util.showUserError("Invalid Barcode found", function() {}, true);
+                return;
+            }
+
             Util.blockUINoMessage();
 
             var updateBarcode = function() {
                 require([ "as/dto/sample/update/SampleUpdate", "as/dto/sample/id/SamplePermId" ],
                     function(SampleUpdate, SamplePermId) {
-                        var sample = new SampleUpdate();
-                        sample.setSampleId(new SamplePermId(entity.permId));
-                        sample.setProperty("$BARCODE", $barcodeReader.val());
-                        mainController.openbisV3.updateSamples([ sample ]).done(function(result) {
+
+                        var sampleUpdates = [];
+                        for(var eIdx = 0; eIdx < entities.length; eIdx++) {
+                            var sampleUpdate = new SampleUpdate();
+                            sampleUpdate.setSampleId(new SamplePermId(entities[eIdx].permId));
+                            sampleUpdate.setProperty("$BARCODE", $barcodeReaders[eIdx].val());
+                            sampleUpdates.push(sampleUpdate);
+                        }
+
+                        mainController.openbisV3.updateSamples(sampleUpdates).done(function(result) {
                             Util.unblockUI();
-                            Util.showInfo("Barcode Updated", function() {
+                            var message = null;
+                            if(sampleUpdates.length === 1) {
+                                message = "Barcode Updated";
+                            } else {
+                                message = sampleUpdates.length + " Barcodes Updated";
+                            }
+
+                            Util.showInfo(message, function() {
                                 mainController.refreshView();
-                        }, true);
-                    }).fail(function(result) {
-                        Util.showFailedServerCallError(result);
-                    });
+                            }, true);
+                        }).fail(function(result) {
+                            Util.showFailedServerCallError(result);
+                        });
                 });
             }
 
@@ -379,9 +403,14 @@ var BarcodeUtil = new function() {
         $window.append(FormUtil.getInfoText("A valid barcode need to have " + MIN_BARCODE_LENGTH + " or more characters."));
         $window.append(FormUtil.getWarningText("An empty barcode will delete the current barcode."));
         $window.append($('<br>'));
-        $window.append($('<center>').append($barcodeReader));
-        $window.append($('<br>'));
-        $window.append($btnAccept).append('&nbsp;').append($btnCancel);
+        for(var eIdx = 0; eIdx < entities.length; eIdx++) {
+            $window.append($('<center>').append($barcodeReaders[eIdx]));
+            $window.append($('<br>'));
+        }
+        if(entities.length > 0) {
+            $window.append($btnAccept).append('&nbsp;');
+        }
+        $window.append($btnCancel);
 
         var css = {
             'text-align' : 'left',

@@ -673,7 +673,7 @@ var SampleDataGridUtil = new function() {
                     var $updateBarcode = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Update Barcode'}).append("Update Barcode"));
                     $updateBarcode.click(function(event) {
                         stopEventsBuble(event);
-                        BarcodeUtil.readBarcode(data);
+                        BarcodeUtil.readBarcode([data]);
                     });
                     $list.append($updateBarcode);
                 }

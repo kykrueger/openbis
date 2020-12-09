@@ -140,10 +140,7 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 			}});
 
 			if(profile.mainMenu.showBarcodes) {
-                extraOptions.push({ name : "Generate Barcodes (Selected Objects)", action : function(selected) {
-                    document.title = "Barcodes Generator";
-			        var barcodesGeneratorViews = mainController._getNewViewModel(true, true, false);
-
+                extraOptions.push({ name : "Generate Barcodes (Selected)", action : function(selected) {
 			        var selectedBarcodes = [];
 			        for(var sIdx = 0; sIdx < selected.length; sIdx++) {
                         if(selected[sIdx].properties["$BARCODE"]) {
@@ -153,7 +150,14 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
                         }
 			        }
 
+                    document.title = "Barcodes Generator";
+			        var barcodesGeneratorViews = mainController._getNewViewModel(true, true, false);
 			        BarcodeUtil.preGenerateBarcodes(barcodesGeneratorViews, selectedBarcodes);
+			        this.currentView = null;
+                }});
+
+                extraOptions.push({ name : "Update Barcodes (Selected)", action : function(selected) {
+			        BarcodeUtil.readBarcode(selected);
 			        this.currentView = null;
                 }});
 			}
