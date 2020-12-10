@@ -10,22 +10,22 @@ export default class QueryFormControllerExecute {
 
   async execute() {
     try {
-      const { query } = this.context.getState()
+      const { query, executeParameters } = this.context.getState()
 
       this.context.setState(state => ({
         ...state,
-        results: {
-          ...state.results,
+        executeResults: {
+          ...state.executeResults,
           loading: true
         }
       }))
 
-      const tableModel = await this.executeSql(query)
+      const tableModel = await this.executeSql(query, executeParameters.values)
 
       this.context.setState(state => ({
         ...state,
-        results: {
-          ...state.results,
+        executeResults: {
+          ...state.executeResults,
           loaded: true,
           tableModel,
           timestamp: Date.now()
@@ -36,20 +36,23 @@ export default class QueryFormControllerExecute {
     } finally {
       this.context.setState(state => ({
         ...state,
-        results: {
-          ...state.results,
+        executeResults: {
+          ...state.executeResults,
           loading: false
         }
       }))
     }
   }
 
-  async executeSql(query) {
+  async executeSql(query, parameters) {
     const sql = query.sql.value
     const options = new openbis.SqlExecutionOptions()
     options.withDatabaseId(
       new openbis.QueryDatabaseName(query.databaseId.value)
     )
+    Object.entries(parameters).forEach(([key, value]) => {
+      options.withParameter(key, value)
+    })
     return await this.facade.executeSql(sql, options)
   }
 }

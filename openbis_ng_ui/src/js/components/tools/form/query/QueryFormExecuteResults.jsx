@@ -7,13 +7,13 @@ import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
 
-class QueryFormResults extends React.PureComponent {
+class QueryFormExecuteResults extends React.PureComponent {
   constructor(props) {
     super(props)
   }
 
   render() {
-    logger.log(logger.DEBUG, 'QueryFormResults.render')
+    logger.log(logger.DEBUG, 'QueryFormExecuteResults.render')
 
     const { results } = this.props
 
@@ -54,4 +54,4 @@ class QueryFormResults extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(QueryFormResults)
+export default withStyles(styles)(QueryFormExecuteResults)

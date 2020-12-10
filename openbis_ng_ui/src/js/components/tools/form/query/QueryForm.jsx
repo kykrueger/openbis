@@ -9,7 +9,8 @@ import QueryFormController from '@src/js/components/tools/form/query/QueryFormCo
 import QueryFormFacade from '@src/js/components/tools/form/query/QueryFormFacade.js'
 import QueryFormParameters from '@src/js/components/tools/form/query/QueryFormParameters.jsx'
 import QueryFormSql from '@src/js/components/tools/form/query/QueryFormSql.jsx'
-import QueryFormResults from '@src/js/components/tools/form/query/QueryFormResults.jsx'
+import QueryFormExecuteParameters from '@src/js/components/tools/form/query/QueryFormExecuteParameters.jsx'
+import QueryFormExecuteResults from '@src/js/components/tools/form/query/QueryFormExecuteResults.jsx'
 import QueryFormButtons from '@src/js/components/tools/form/query/QueryFormButtons.jsx'
 import logger from '@src/js/common/logger.js'
 
@@ -54,7 +55,13 @@ class QueryForm extends React.PureComponent {
 
   renderMainPanel() {
     const { controller } = this
-    const { query, results, selection, mode } = this.state
+    const {
+      query,
+      executeParameters,
+      executeResults,
+      selection,
+      mode
+    } = this.state
 
     return (
       <React.Fragment>
@@ -66,7 +73,11 @@ class QueryForm extends React.PureComponent {
           onSelectionChange={controller.handleSelectionChange}
           onBlur={controller.handleBlur}
         />
-        <QueryFormResults results={results} />
+        <QueryFormExecuteParameters
+          parameters={executeParameters}
+          onChange={controller.handleChange}
+        />
+        <QueryFormExecuteResults results={executeResults} />
       </React.Fragment>
     )
   }
