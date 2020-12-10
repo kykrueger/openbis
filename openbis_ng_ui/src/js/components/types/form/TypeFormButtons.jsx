@@ -1,4 +1,5 @@
 import React from 'react'
+import PageMode from '@src/js/components/common/page/PageMode.js'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import TypeFormControllerStrategies from '@src/js/components/types/form/TypeFormControllerStrategies.js'
@@ -26,45 +27,47 @@ class TypeFormButtons extends React.PureComponent {
         onEdit={onEdit}
         onSave={onSave}
         onCancel={existing ? onCancel : null}
-        renderAdditionalButtons={classes =>
-          this.renderAdditionalButtons(classes)
-        }
+        renderAdditionalButtons={params => this.renderAdditionalButtons(params)}
       />
     )
   }
 
-  renderAdditionalButtons(classes) {
-    const { onAddSection, onAddProperty, onRemove } = this.props
+  renderAdditionalButtons({ mode, classes }) {
+    if (mode === PageMode.EDIT) {
+      const { onAddSection, onAddProperty, onRemove } = this.props
 
-    return (
-      <React.Fragment>
-        <Button
-          name='addSection'
-          label='Add Section'
-          styles={{ root: classes.button }}
-          onClick={onAddSection}
-        />
-        <Button
-          name='addProperty'
-          label='Add Property'
-          styles={{ root: classes.button }}
-          disabled={!this.isSectionOrPropertySelected()}
-          onClick={onAddProperty}
-        />
-        <Button
-          name='remove'
-          label='Remove'
-          styles={{ root: classes.button }}
-          disabled={
-            !(
-              this.isNonSystemInternalSectionSelected() ||
-              this.isNonSystemInternalPropertySelected()
-            )
-          }
-          onClick={onRemove}
-        />
-      </React.Fragment>
-    )
+      return (
+        <React.Fragment>
+          <Button
+            name='addSection'
+            label='Add Section'
+            styles={{ root: classes.button }}
+            onClick={onAddSection}
+          />
+          <Button
+            name='addProperty'
+            label='Add Property'
+            styles={{ root: classes.button }}
+            disabled={!this.isSectionOrPropertySelected()}
+            onClick={onAddProperty}
+          />
+          <Button
+            name='remove'
+            label='Remove'
+            styles={{ root: classes.button }}
+            disabled={
+              !(
+                this.isNonSystemInternalSectionSelected() ||
+                this.isNonSystemInternalPropertySelected()
+              )
+            }
+            onClick={onRemove}
+          />
+        </React.Fragment>
+      )
+    } else {
+      return null
+    }
   }
 
   isSectionOrPropertySelected() {

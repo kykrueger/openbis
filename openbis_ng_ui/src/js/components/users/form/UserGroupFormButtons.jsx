@@ -1,4 +1,5 @@
 import React from 'react'
+import PageMode from '@src/js/components/common/page/PageMode.js'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
@@ -21,39 +22,41 @@ class UserGroupFormButtons extends React.PureComponent {
         onEdit={onEdit}
         onSave={onSave}
         onCancel={group.id ? onCancel : null}
-        renderAdditionalButtons={classes =>
-          this.renderAdditionalButtons(classes)
-        }
+        renderAdditionalButtons={params => this.renderAdditionalButtons(params)}
       />
     )
   }
 
-  renderAdditionalButtons(classes) {
-    const { onAddUser, onAddRole, onRemove } = this.props
+  renderAdditionalButtons({ mode, classes }) {
+    if (mode === PageMode.EDIT) {
+      const { onAddUser, onAddRole, onRemove } = this.props
 
-    return (
-      <React.Fragment>
-        <Button
-          name='addUser'
-          label='Add User'
-          styles={{ root: classes.button }}
-          onClick={onAddUser}
-        />
-        <Button
-          name='addRole'
-          label='Add Role'
-          styles={{ root: classes.button }}
-          onClick={onAddRole}
-        />
-        <Button
-          name='remove'
-          label='Remove'
-          styles={{ root: classes.button }}
-          disabled={!this.isUserOrRoleSelected()}
-          onClick={onRemove}
-        />
-      </React.Fragment>
-    )
+      return (
+        <React.Fragment>
+          <Button
+            name='addUser'
+            label='Add User'
+            styles={{ root: classes.button }}
+            onClick={onAddUser}
+          />
+          <Button
+            name='addRole'
+            label='Add Role'
+            styles={{ root: classes.button }}
+            onClick={onAddRole}
+          />
+          <Button
+            name='remove'
+            label='Remove'
+            styles={{ root: classes.button }}
+            disabled={!this.isUserOrRoleSelected()}
+            onClick={onRemove}
+          />
+        </React.Fragment>
+      )
+    } else {
+      return null
+    }
   }
 
   isUserOrRoleSelected() {

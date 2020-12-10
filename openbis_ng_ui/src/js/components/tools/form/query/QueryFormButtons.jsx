@@ -16,14 +16,12 @@ class QueryFormButtons extends React.PureComponent {
         onEdit={onEdit}
         onSave={onSave}
         onCancel={query.original ? onCancel : null}
-        renderAdditionalButtons={classes =>
-          this.renderAdditionalButtons(classes)
-        }
+        renderAdditionalButtons={params => this.renderAdditionalButtons(params)}
       />
     )
   }
 
-  renderAdditionalButtons(classes) {
+  renderAdditionalButtons({ classes }) {
     const { query, onExecute } = this.props
 
     return (
