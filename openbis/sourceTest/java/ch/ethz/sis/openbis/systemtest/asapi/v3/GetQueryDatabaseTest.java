@@ -20,6 +20,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.Test;
@@ -36,7 +37,7 @@ import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUse
 /**
  * @author pkupczyk
  */
-public class GetQueryDatabaseTest extends AbstractTest
+public class GetQueryDatabaseTest extends AbstractQueryTest
 {
 
     @Test
@@ -44,15 +45,15 @@ public class GetQueryDatabaseTest extends AbstractTest
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        QueryDatabaseName id = new QueryDatabaseName("test-database");
         QueryDatabaseFetchOptions fo = new QueryDatabaseFetchOptions();
         fo.withSpace();
 
-        Map<IQueryDatabaseId, QueryDatabase> map = v3api.getQueryDatabases(sessionToken, Arrays.asList(id), fo);
+        Map<IQueryDatabaseId, QueryDatabase> map =
+                v3api.getQueryDatabases(sessionToken, Arrays.asList(DB_TEST_CISD_ID), fo);
 
         assertEquals(1, map.size());
 
-        QueryDatabase database = map.get(id);
+        QueryDatabase database = map.get(DB_TEST_CISD_ID);
         assertEquals(database.getPermId(), new QueryDatabaseName("test-database"));
         assertEquals(database.getName(), "test-database");
         assertEquals(database.getLabel(), "Test Database");
@@ -68,19 +69,19 @@ public class GetQueryDatabaseTest extends AbstractTest
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        QueryDatabaseName id1 = new QueryDatabaseName("1");
         QueryDatabaseName id2 = new QueryDatabaseName("IDONTEXIST");
 
         QueryDatabaseFetchOptions fo = new QueryDatabaseFetchOptions();
         fo.withSpace();
 
-        Map<IQueryDatabaseId, QueryDatabase> map = v3api.getQueryDatabases(sessionToken, Arrays.asList(id1, id2), fo);
+        Map<IQueryDatabaseId, QueryDatabase> map =
+                v3api.getQueryDatabases(sessionToken, Arrays.asList(DB_OPENBIS_METADATA_ID, id2), fo);
 
         assertEquals(1, map.size());
 
-        QueryDatabase database = map.get(id1);
-        assertEquals(database.getPermId(), new QueryDatabaseName("1"));
-        assertEquals(database.getName(), "1");
+        QueryDatabase database = map.get(DB_OPENBIS_METADATA_ID);
+        assertEquals(database.getPermId(), DB_OPENBIS_METADATA_ID);
+        assertEquals(database.getName(), DB_OPENBIS_METADATA);
         assertEquals(database.getLabel(), "openBIS meta data");
         assertEquals(database.getCreatorMinimalRole(), Role.OBSERVER);
         assertEquals(database.getCreatorMinimalRoleLevel(), RoleLevel.INSTANCE);
@@ -94,19 +95,17 @@ public class GetQueryDatabaseTest extends AbstractTest
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        QueryDatabaseName id1 = new QueryDatabaseName("1");
-        QueryDatabaseName id2 = new QueryDatabaseName("1");
-
         QueryDatabaseFetchOptions fo = new QueryDatabaseFetchOptions();
         fo.withSpace();
 
-        Map<IQueryDatabaseId, QueryDatabase> map = v3api.getQueryDatabases(sessionToken, Arrays.asList(id1, id2), fo);
+        Map<IQueryDatabaseId, QueryDatabase> map =
+                v3api.getQueryDatabases(sessionToken, Arrays.asList(DB_OPENBIS_METADATA_ID, DB_OPENBIS_METADATA_ID), fo);
 
         assertEquals(1, map.size());
 
-        QueryDatabase database = map.get(id1);
-        assertEquals(database.getPermId(), new QueryDatabaseName("1"));
-        assertEquals(database.getName(), "1");
+        QueryDatabase database = map.get(DB_OPENBIS_METADATA_ID);
+        assertEquals(database.getPermId(), DB_OPENBIS_METADATA_ID);
+        assertEquals(database.getName(), DB_OPENBIS_METADATA);
         assertEquals(database.getLabel(), "openBIS meta data");
         assertEquals(database.getCreatorMinimalRole(), Role.OBSERVER);
         assertEquals(database.getCreatorMinimalRoleLevel(), RoleLevel.INSTANCE);
@@ -118,19 +117,19 @@ public class GetQueryDatabaseTest extends AbstractTest
     @Test
     public void testGetByIdsUnauthorized()
     {
-        QueryDatabaseName id1 = new QueryDatabaseName("1");
-        QueryDatabaseName id2 = new QueryDatabaseName("test-database");
+        List<IQueryDatabaseId> databaseIds = Arrays.asList(DB_OPENBIS_METADATA_ID, DB_TEST_CISD_ID);
 
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        Map<IQueryDatabaseId, QueryDatabase> map = v3api.getQueryDatabases(sessionToken, Arrays.asList(id1, id2), new QueryDatabaseFetchOptions());
+        Map<IQueryDatabaseId, QueryDatabase> map =
+                v3api.getQueryDatabases(sessionToken, databaseIds, new QueryDatabaseFetchOptions());
         assertEquals(map.size(), 2);
 
         v3api.logout(sessionToken);
 
         sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
-        map = v3api.getQueryDatabases(sessionToken, Arrays.asList(id1, id2), new QueryDatabaseFetchOptions());
+        map = v3api.getQueryDatabases(sessionToken, databaseIds, new QueryDatabaseFetchOptions());
         assertEquals(map.size(), 1);
-        assertNotNull(map.get(id1));
+        assertNotNull(map.get(DB_OPENBIS_METADATA_ID));
 
         v3api.logout(sessionToken);
     }
@@ -140,16 +139,16 @@ public class GetQueryDatabaseTest extends AbstractTest
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        QueryDatabaseName id = new QueryDatabaseName("test-database");
         QueryDatabaseFetchOptions fo = new QueryDatabaseFetchOptions();
 
-        Map<IQueryDatabaseId, QueryDatabase> map = v3api.getQueryDatabases(sessionToken, Arrays.asList(id), fo);
+        Map<IQueryDatabaseId, QueryDatabase> map =
+                v3api.getQueryDatabases(sessionToken, Arrays.asList(DB_TEST_CISD_ID), fo);
 
         assertEquals(1, map.size());
 
-        QueryDatabase database = map.get(id);
-        assertEquals(database.getPermId(), new QueryDatabaseName("test-database"));
-        assertEquals(database.getName(), "test-database");
+        QueryDatabase database = map.get(DB_TEST_CISD_ID);
+        assertEquals(database.getPermId(), DB_TEST_CISD_ID);
+        assertEquals(database.getName(), DB_TEST_CISD);
         assertEquals(database.getLabel(), "Test Database");
         assertEquals(database.getCreatorMinimalRole(), Role.POWER_USER);
         assertEquals(database.getCreatorMinimalRoleLevel(), RoleLevel.SPACE);
@@ -164,17 +163,17 @@ public class GetQueryDatabaseTest extends AbstractTest
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        QueryDatabaseName id = new QueryDatabaseName("test-database");
         QueryDatabaseFetchOptions fo = new QueryDatabaseFetchOptions();
         fo.withSpace();
 
-        Map<IQueryDatabaseId, QueryDatabase> map = v3api.getQueryDatabases(sessionToken, Arrays.asList(id), fo);
+        Map<IQueryDatabaseId, QueryDatabase> map =
+                v3api.getQueryDatabases(sessionToken, Arrays.asList(DB_TEST_CISD_ID), fo);
 
         assertEquals(1, map.size());
 
-        QueryDatabase database = map.get(id);
-        assertEquals(database.getPermId(), new QueryDatabaseName("test-database"));
-        assertEquals(database.getName(), "test-database");
+        QueryDatabase database = map.get(DB_TEST_CISD_ID);
+        assertEquals(database.getPermId(), DB_TEST_CISD_ID);
+        assertEquals(database.getName(), DB_TEST_CISD);
         assertEquals(database.getLabel(), "Test Database");
         assertEquals(database.getCreatorMinimalRole(), Role.POWER_USER);
         assertEquals(database.getCreatorMinimalRoleLevel(), RoleLevel.SPACE);
@@ -189,8 +188,7 @@ public class GetQueryDatabaseTest extends AbstractTest
     {
         String sessionToken = v3api.login(user.getUserId(), PASSWORD);
 
-        IQueryDatabaseId id = new QueryDatabaseName("1");
-
+        QueryDatabaseFetchOptions fetchOptions = new QueryDatabaseFetchOptions();
         if (user.isDisabledProjectUser())
         {
             assertAuthorizationFailureException(new IDelegatedAction()
@@ -198,12 +196,13 @@ public class GetQueryDatabaseTest extends AbstractTest
                     @Override
                     public void execute()
                     {
-                        v3api.getQueryDatabases(sessionToken, Arrays.asList(id), new QueryDatabaseFetchOptions());
+                        v3api.getQueryDatabases(sessionToken, Arrays.asList(DB_OPENBIS_METADATA_ID), fetchOptions);
                     }
                 });
         } else
         {
-            Map<IQueryDatabaseId, QueryDatabase> map = v3api.getQueryDatabases(sessionToken, Arrays.asList(id), new QueryDatabaseFetchOptions());
+            Map<IQueryDatabaseId, QueryDatabase> map =
+                    v3api.getQueryDatabases(sessionToken, Arrays.asList(DB_OPENBIS_METADATA_ID), fetchOptions);
             assertEquals(map.size(), 1);
         }
 
@@ -218,7 +217,7 @@ public class GetQueryDatabaseTest extends AbstractTest
         QueryDatabaseFetchOptions fo = new QueryDatabaseFetchOptions();
         fo.withSpace();
 
-        v3api.getQueryDatabases(sessionToken, Arrays.asList(new QueryDatabaseName("1"), new QueryDatabaseName("test-database")), fo);
+        v3api.getQueryDatabases(sessionToken, Arrays.asList(DB_OPENBIS_METADATA_ID, DB_TEST_CISD_ID), fo);
 
         assertAccessLog("get-query-databases  QUERY_DATABASE_IDS('[1, test-database]') FETCH_OPTIONS('QueryDatabase\n    with Space\n')");
     }
