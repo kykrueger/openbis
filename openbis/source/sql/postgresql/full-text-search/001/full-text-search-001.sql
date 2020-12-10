@@ -8,7 +8,7 @@ BEGIN
                                             REPLACE(
                                                     REPLACE(
                                                             REPLACE(
-                                                                    REPLACE(value, '<', '\<'),
+                                                                    REPLACE(LOWER(value), '<', '\<'),
                                                                     '!', '\!'),
                                                             '*', '\*'),
                                                     '&', '\&'),
@@ -25,11 +25,11 @@ DECLARE cvt RECORD;
 BEGIN
     IF NEW.cvte_id IS NOT NULL THEN
         SELECT code, label INTO STRICT cvt FROM controlled_vocabulary_terms WHERE id = NEW.cvte_id;
-        NEW.tsvector_document := to_tsvector('english', cvt.code) ||
-                to_tsvector('english', coalesce(cvt.label, ''));
+        NEW.tsvector_document := setweight(to_tsvector('english', escape_tsvector_string(cvt.code)), 'C') ||
+                setweight(to_tsvector('english', escape_tsvector_string(coalesce(cvt.label, ''))), 'C');
     ELSE
-        NEW.tsvector_document := to_tsvector('english', coalesce(NEW.value, ''));
-        RETURN NEW;
+        NEW.tsvector_document := setweight(
+                to_tsvector('english', escape_tsvector_string(coalesce(NEW.value, ''))), 'D');
     END IF;
     RETURN NEW;
 END
@@ -43,34 +43,31 @@ DECLARE proj_code VARCHAR;
         container_code VARCHAR;
         identifier VARCHAR := '/';
 BEGIN
-    IF NEW.space_id IS NOT NULL THEN
-        SELECT code INTO STRICT space_code FROM spaces WHERE id = NEW.space_id;
-        identifier := identifier || space_code || '/';
-    END IF;
-
-    IF NEW.proj_id IS NOT NULL THEN
+    IF TG_OP != 'DELETE' AND (TG_OP = 'INSERT' OR
+                (NEW.space_id IS DISTINCT FROM OLD.space_id OR NEW.proj_id IS DISTINCT FROM OLD.proj_id OR
+                NEW.samp_id_part_of IS DISTINCT FROM OLD.samp_id_part_of)) THEN
         IF NEW.space_id IS NOT NULL THEN
-            SELECT code INTO STRICT proj_code FROM projects WHERE id = NEW.proj_id;
-        ELSE
-            SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
-                    INNER JOIN spaces s ON p.space_id = s.id WHERE id = NEW.proj_id;
+            SELECT code INTO STRICT space_code FROM spaces WHERE id = NEW.space_id;
             identifier := identifier || space_code || '/';
         END IF;
 
-        identifier := identifier || proj_code || '/';
-    END IF;
+        IF NEW.proj_id IS NOT NULL THEN
+            SELECT code INTO STRICT proj_code FROM projects WHERE id = NEW.proj_id;
+            identifier := identifier || proj_code || '/';
+        END IF;
 
-    IF NEW.samp_id_part_of IS NOT NULL THEN
-        SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
-        identifier := identifier || container_code || ':' || NEW.code;
-    ELSE
-        identifier := identifier || NEW.code;
-    END IF;
+        IF NEW.samp_id_part_of IS NOT NULL THEN
+            SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
+            identifier := identifier || container_code || ':' || NEW.code;
+        ELSE
+            identifier := identifier || NEW.code;
+        END IF;
 
-    NEW.sample_identifier := identifier;
-    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
-            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
-            (escape_tsvector_string(identifier) || ':1')::tsvector;
+        NEW.sample_identifier := identifier;
+        NEW.tsvector_document := setweight((escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
+                setweight((escape_tsvector_string(identifier) || ':1')::tsvector, 'A') ||
+                setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
+    END IF;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -93,9 +90,39 @@ DECLARE proj_code VARCHAR;
 BEGIN
     SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
             INNER JOIN spaces s ON p.space_id = s.id WHERE p.id = NEW.proj_id;
-    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
-            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
-            (escape_tsvector_string('/' || space_code || '/' || proj_code || '/' || NEW.code) || ':1')::tsvector;
+    NEW.tsvector_document := setweight((escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
+            setweight((escape_tsvector_string('/' || space_code || '/' || proj_code || '/' || NEW.code)
+                    || ':1')::tsvector, 'A') ||
+            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION experiments_all_in_project_tsvector_document_trigger() RETURNS trigger AS $$
+DECLARE new_space_code VARCHAR;
+        tsv tsvector;
+        exp RECORD;
+BEGIN
+    IF TG_OP = 'UPDATE' AND NEW.space_id IS DISTINCT FROM OLD.space_id THEN
+        SELECT code
+        INTO new_space_code
+        FROM spaces
+        WHERE id = NEW.space_id;
+
+        FOR exp IN
+            SELECT id, code, perm_id
+            FROM experiments_all
+            WHERE proj_id = NEW.id
+            LOOP
+                tsv := setweight((escape_tsvector_string(exp.perm_id) || ':1')::tsvector, 'A') ||
+                       setweight((escape_tsvector_string('/' || new_space_code || '/' || NEW.code || '/' || exp.code)
+                           || ':1')::tsvector, 'A') ||
+                       setweight((escape_tsvector_string(exp.code) || ':1')::tsvector, 'B');
+                UPDATE experiments_all
+                SET tsvector_document = tsv
+                WHERE id = exp.id;
+            END LOOP;
+    END IF;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -110,13 +137,16 @@ CREATE TRIGGER experiment_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON experiment_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
+DROP TRIGGER IF EXISTS experiments_all_in_project_tsvector_document ON projects;
+CREATE TRIGGER experiments_all_in_project_tsvector_document AFTER UPDATE
+    ON projects FOR EACH ROW EXECUTE PROCEDURE experiments_all_in_project_tsvector_document_trigger();
+
 -- Data sets
 
 CREATE OR REPLACE FUNCTION data_all_tsvector_document_trigger() RETURNS trigger AS $$
 BEGIN
-    NEW.tsvector_document := (escape_tsvector_string(NEW.data_set_kind) || ':1')::tsvector ||
-            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
-            ('/' || escape_tsvector_string(NEW.code) || ':1')::tsvector;
+    NEW.tsvector_document := setweight(('/' || escape_tsvector_string(NEW.code) || ':1')::tsvector, 'A') ||
+            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -137,8 +167,9 @@ CREATE OR REPLACE FUNCTION materials_tsvector_document_trigger() RETURNS trigger
 DECLARE material_type_code VARCHAR;
 BEGIN
     SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
-    NEW.tsvector_document := (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
-                             (escape_tsvector_string(NEW.code || ' (' || material_type_code || ')') || ':1')::tsvector;
+    NEW.tsvector_document := setweight((escape_tsvector_string(
+            NEW.code || ' (' || material_type_code || ')') || ':1')::tsvector, 'A') ||
+            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;

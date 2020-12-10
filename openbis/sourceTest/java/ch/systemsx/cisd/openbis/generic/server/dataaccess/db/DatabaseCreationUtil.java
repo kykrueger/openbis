@@ -32,7 +32,7 @@ import ch.systemsx.cisd.dbmigration.postgresql.DumpPreparator;
 
 /**
  * Utility methods around database creation.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public final class DatabaseCreationUtil
@@ -74,11 +74,11 @@ public final class DatabaseCreationUtil
         context.setCreateFromScratch(true);
         final ISqlScriptProvider scriptProvider =
                 DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(context,
-                        databaseVersion);
+                        databaseVersion, null);
         context.setCreateFromScratch(false);
         context.setScriptFolder("source/sql");
         DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(context,
-                DatabaseVersionHolder.getDatabaseVersion());
+                DatabaseVersionHolder.getDatabaseVersion(), null);
         createDumpForJava(databaseKind,
                 scriptProvider.getDumpFolder(DatabaseVersionHolder.getDatabaseVersion()));
         scriptProvider.markAsDumpRestorable(DatabaseVersionHolder.getDatabaseVersion());

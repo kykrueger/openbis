@@ -96,10 +96,12 @@
 		factory-method="createOrMigrateDatabaseAndGetScriptProvider">
 		<constructor-arg ref="db-configuration-context" />
 		<constructor-arg>
-			<bean
-				class="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DatabaseVersionHolder"
+			<bean class="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DatabaseVersionHolder"
 				factory-method="getDatabaseVersion" />
-			<!-- TODO: add an extra parameter here. -->
+		</constructor-arg>
+		<constructor-arg>
+			<bean class="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DatabaseVersionHolder"
+				factory-method="getDatabaseFullTextSearchDocumentVersion" />
 		</constructor-arg>
 	</bean>
 

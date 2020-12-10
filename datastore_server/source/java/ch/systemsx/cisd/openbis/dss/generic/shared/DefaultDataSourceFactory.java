@@ -21,8 +21,6 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.reflection.BeanUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
@@ -63,7 +61,7 @@ public class DefaultDataSourceFactory implements IDataSourceFactory
         if (propertiesVersion != null)
         {
             String version = propertiesVersion;
-            DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(context, version);
+            DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(context, version, null);
         } else
         {
             // Now try the version-holder-class-based varient
@@ -73,7 +71,7 @@ public class DefaultDataSourceFactory implements IDataSourceFactory
                 IDatabaseVersionHolder versionHolder =
                         ClassUtils.create(IDatabaseVersionHolder.class, versionClass);
                 String version = versionHolder.getDatabaseVersion();
-                DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(context, version);
+                DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(context, version, null);
             }
         }
         return new DataSourceWithDefinition(context.getDataSource(),
