@@ -28,6 +28,8 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.dbmigration.java.IMigrationStepExecutor;
 
+import java.io.*;
+
 /**
  * Class for creating and migrating a database.
  *
@@ -35,15 +37,17 @@ import ch.systemsx.cisd.dbmigration.java.IMigrationStepExecutor;
  */
 public final class DBMigrationEngine
 {
-    private static final Logger operationLog =
-            LogFactory.getLogger(LogCategory.OPERATION, DBMigrationEngine.class);
+    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, DBMigrationEngine.class);
+
+    /** Path to the file which has the last version of applied full text search migration scripts. */
+    private static final String FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH = "etc/full-text-search-document-version";
 
     /**
      * Creates or migrates a database specified in the context for/to the specified version.
      *
      * @return the SQL script provider.
      */
-    public final static ISqlScriptProvider createOrMigrateDatabaseAndGetScriptProvider(
+    public static ISqlScriptProvider createOrMigrateDatabaseAndGetScriptProvider(
             final DatabaseConfigurationContext context, final String databaseVersion, final String ftsDocumentVersion)
     {
         assert context != null : "Unspecified database configuration context.";
@@ -169,25 +173,71 @@ public final class DBMigrationEngine
 
     /**
      * Executes the scripts related to full text search.
-     *  @param ftsDocumentVersion version of full text search document scripts.
-     *
+     * @param ftsDocumentVersion version of full text search document scripts.
      */
     private void migrateFts(final String ftsDocumentVersion)
     {
-        // TODO: add logic for reading the version from file
-        final String ftsDocumentVersionFromFile = null;
-
-        if (ftsDocumentVersion != null &&
-                (ftsDocumentVersionFromFile == null
-                        || Integer.valueOf(ftsDocumentVersion) > Integer.valueOf(ftsDocumentVersionFromFile)))
+        final File file = new File(FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH);
+        final Integer ftsDocumentVersionFromFile = readVersionFromFile(file);
+        if (ftsDocumentVersion != null && (ftsDocumentVersionFromFile == null
+                || Integer.parseInt(ftsDocumentVersion) > ftsDocumentVersionFromFile))
         {
             operationLog.info("Applying full text search scripts...");
             adminDAO.applyFullTextSearchScripts(
                     scriptProvider.getFtsScriptsFolder(ftsDocumentVersion), ftsDocumentVersion);
             operationLog.info("Full text search scripts applied.");
+            operationLog.info(String.format("Writing new version to file %s.", file.getAbsolutePath()));
+            writeVersionToFile(file, ftsDocumentVersion);
         } else
         {
             operationLog.info("Skipped application of full text search scripts.");
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private void writeVersionToFile(final File file, final String version)
+    {
+        if (!file.exists())
+        {
+            try
+            {
+                file.createNewFile();
+            } catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        try (final FileOutputStream fileOutputStream = new FileOutputStream(file))
+        {
+            fileOutputStream.write(version.getBytes());
+        } catch (final IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private Integer readVersionFromFile(final File file)
+    {
+        try (final FileInputStream fileInputStream = new FileInputStream(file))
+        {
+            byte[] buffer = new byte[15];
+            fileInputStream.read(buffer);
+            return Integer.parseInt(new String(buffer).trim());
+        } catch (final FileNotFoundException e)
+        {
+            operationLog.debug(String.format("File '%s' not found", file.getAbsolutePath()));
+            return null;
+        } catch (final IOException e)
+        {
+            operationLog.error(String.format("Error reading from file '%s'", file.getAbsolutePath()), e);
+            throw new RuntimeException(e);
+        } catch (final NumberFormatException e)
+        {
+            operationLog.error(String.format("Contents of the file '%s' cannot be parsed as integer",
+                    file.getAbsolutePath()));
+            throw new RuntimeException(e);
         }
     }
 
