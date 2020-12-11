@@ -2917,6 +2917,17 @@ public class SearchSampleTest extends AbstractSampleTest
                 "/CISD/MP1-MIXED:B02", "/CISD/MP2-NO-CL:A01", "/CISD/MP2-NO-CL:C03");
     }
 
+    @Test
+    public void testSearchWithPermIdWithFullTextSearch()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        criteria.withTextAttribute().thatMatchesText("cp-test-1 cp-test-2 cp-test-3 cp-test-4");
+        criteria.withPermId().thatContains("7-");
+
+        testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1", "/CISD/CP-TEST-2", "/TEST-SPACE/CP-TEST-4");
+    }
+
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)
     {
         String sessionToken = v3api.login(user, PASSWORD);
