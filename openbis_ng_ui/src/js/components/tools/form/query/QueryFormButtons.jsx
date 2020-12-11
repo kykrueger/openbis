@@ -22,13 +22,12 @@ class QueryFormButtons extends React.PureComponent {
   }
 
   renderAdditionalButtons({ classes }) {
-    const { query, onExecute } = this.props
+    const { onExecute } = this.props
 
     return (
       <Button
         name='execute'
         label='Execute'
-        disabled={!query.sql.value || !query.databaseId.value}
         styles={{ root: classes.button }}
         onClick={onExecute}
       />

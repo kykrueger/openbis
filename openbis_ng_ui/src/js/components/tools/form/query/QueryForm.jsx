@@ -60,6 +60,7 @@ class QueryForm extends React.PureComponent {
       executeParameters,
       executeResults,
       selection,
+      dictionaries,
       mode
     } = this.state
 
@@ -77,7 +78,11 @@ class QueryForm extends React.PureComponent {
           parameters={executeParameters}
           onChange={controller.handleChange}
         />
-        <QueryFormExecuteResults results={executeResults} />
+        <QueryFormExecuteResults
+          query={query}
+          results={executeResults}
+          dictionaries={dictionaries}
+        />
       </React.Fragment>
     )
   }

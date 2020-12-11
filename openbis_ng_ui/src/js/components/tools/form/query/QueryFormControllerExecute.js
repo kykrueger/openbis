@@ -45,14 +45,20 @@ export default class QueryFormControllerExecute {
   }
 
   async executeSql(query, parameters) {
-    const sql = query.sql.value
     const options = new openbis.SqlExecutionOptions()
-    options.withDatabaseId(
-      new openbis.QueryDatabaseName(query.databaseId.value)
-    )
+
+    if (query.databaseId.value) {
+      options.withDatabaseId(
+        new openbis.QueryDatabaseName(query.databaseId.value)
+      )
+    }
+
     Object.entries(parameters).forEach(([key, value]) => {
-      options.withParameter(key, value)
+      if (value && value.trim().length > 0) {
+        options.withParameter(key, value)
+      }
     })
-    return await this.facade.executeSql(sql, options)
+
+    return await this.facade.executeSql(query.sql.value, options)
   }
 }

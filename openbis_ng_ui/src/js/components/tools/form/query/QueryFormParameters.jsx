@@ -1,7 +1,9 @@
+import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
@@ -83,6 +85,7 @@ class QueryFormParameters extends React.PureComponent {
     return (
       <Container>
         <Header>Query</Header>
+        {this.renderMessagePublic(query)}
         {this.renderName(query)}
         {this.renderDescription(query)}
         {this.renderDatabaseId(query)}
@@ -91,6 +94,34 @@ class QueryFormParameters extends React.PureComponent {
         {this.renderPublic(query)}
       </Container>
     )
+  }
+
+  renderMessagePublic(query) {
+    const { dictionaries } = this.props
+
+    if (query.publicFlag.value && query.databaseId.value) {
+      const queryDatabase = dictionaries.queryDatabases.find(
+        queryDatabase => queryDatabase.name === query.databaseId.value
+      )
+
+      if (queryDatabase && !queryDatabase.space) {
+        const { classes } = this.props
+
+        return (
+          <div className={classes.field}>
+            <Message type='warning'>
+              Security warning: this query is public (i.e. visible to other
+              users) and is defined for a database that is not assigned to any
+              space. Please make sure the query returns only data that can be
+              seen by every user or the results contain one of the special
+              columns (i.e. experiment_key/sample_key/data_set_key) that will be
+              used for an automatic query results filtering.
+            </Message>
+          </div>
+        )
+      }
+    }
+    return null
   }
 
   renderName(query) {
@@ -159,7 +190,11 @@ class QueryFormParameters extends React.PureComponent {
     if (dictionaries.queryDatabases) {
       options = dictionaries.queryDatabases.map(queryDatabase => {
         return {
-          label: queryDatabase.name,
+          label:
+            queryDatabase.name +
+            ' (space: ' +
+            _.get(queryDatabase, 'space.code', 'none') +
+            ')',
           value: queryDatabase.name
         }
       })
