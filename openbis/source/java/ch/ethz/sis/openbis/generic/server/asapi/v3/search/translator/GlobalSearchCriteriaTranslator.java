@@ -77,8 +77,6 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String CODE_HEADLINE_ALIAS = "code_headline";
 
-    public static final String DESCRIPTION_HEADLINE_ALIAS = "description_headline";
-
     private static final String REG_CONFIG = "english";
 
     private static final String PROPERTIES_TABLE_ALIAS = "prop";
@@ -203,26 +201,33 @@ public class GlobalSearchCriteriaTranslator
     private static void translateOrderBy(final StringBuilder sqlBuilder,
             final TranslationContext translationContext)
     {
-        final GlobalSearchObjectSortOptions sortOptions = translationContext.getFetchOptions().getSortBy();
-        if (sortOptions != null)
+        final GlobalSearchObjectSortOptions suppliedSortOptions = translationContext.getFetchOptions().getSortBy();
+        final GlobalSearchObjectSortOptions sortOptions;
+        if (suppliedSortOptions != null)
         {
-            final List<Sorting> sortings = sortOptions.getSortings();
+            sortOptions = suppliedSortOptions;
+        }
+        else
+        {
+            sortOptions = new GlobalSearchObjectSortOptions();
+            sortOptions.score().desc();
+        }
 
-            if (sortings != null && !sortings.isEmpty())
+        final List<Sorting> sortings = sortOptions.getSortings();
+        if (sortings != null && !sortings.isEmpty())
+        {
+            sqlBuilder.append(ORDER_BY).append(SP);
+            final Spliterator<Sorting> spliterator = sortings.stream().spliterator();
+
+            if (spliterator.tryAdvance(sorting -> addOrderByField(sqlBuilder, sorting)))
             {
-                sqlBuilder.append(ORDER_BY).append(SP);
-                final Spliterator<Sorting> spliterator = sortings.stream().spliterator();
-
-                if (spliterator.tryAdvance(sorting -> addOrderByField(sqlBuilder, sorting)))
+                StreamSupport.stream(spliterator, false).forEach(sorting ->
                 {
-                    StreamSupport.stream(spliterator, false).forEach(sorting ->
-                    {
-                        sqlBuilder.append(COMMA).append(SP);
-                        addOrderByField(sqlBuilder, sorting);
-                    });
-                }
-                sqlBuilder.append(NL);
+                    sqlBuilder.append(COMMA).append(SP);
+                    addOrderByField(sqlBuilder, sorting);
+                });
             }
+            sqlBuilder.append(NL);
         }
     }
 
