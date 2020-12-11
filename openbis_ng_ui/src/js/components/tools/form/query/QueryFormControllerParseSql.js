@@ -1,6 +1,6 @@
 export default class QueryFormControllerParseSql {
   parse(sql) {
-    const parameterRegex = /\$\{(.+?)\}/g
+    const parameterRegex = /\$\{(.+?)(::.*)?\}/g
     const parameterNames = []
 
     let match = null

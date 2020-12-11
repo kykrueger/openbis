@@ -90,6 +90,7 @@ class QueryFormSql extends React.PureComponent {
           language='sql'
           label='SQL'
           name='sql'
+          description='A query can contain parameters in the following format: ${parameterName}.'
           mandatory={true}
           error={error}
           disabled={!enabled}
