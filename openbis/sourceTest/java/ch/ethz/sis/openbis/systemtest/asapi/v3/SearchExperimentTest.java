@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
@@ -1567,6 +1568,17 @@ public class SearchExperimentTest extends AbstractExperimentTest
 
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE", "/CISD/NEMO/EXP-TEST-1",
                 "/CISD/NEMO/EXP11");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithFullTextSearch()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
+
+        criteria.withTextAttribute().thatMatchesText("exp-test-1 exp-test-2 experiment-to-delete");
+        criteria.withPermId().thatContains("8-");
+
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-2", "/TEST-SPACE/NOE/EXP-TEST-2");
     }
 
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
