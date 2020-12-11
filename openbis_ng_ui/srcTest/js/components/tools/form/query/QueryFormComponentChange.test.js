@@ -25,7 +25,10 @@ async function testChange() {
   form.getButtons().getEdit().click()
   await form.update()
 
-  form.getSql().getSql().change('select * from sometable;')
+  form
+    .getSql()
+    .getSql()
+    .change('select * from sometable where param = ${param}')
   await form.update()
 
   form.getParameters().getDescription().change('updated description')
@@ -40,12 +43,15 @@ async function testChange() {
   form.getParameters().getPublicFlag().change(!sampleQuery.isPublic())
   await form.update()
 
+  form.getExecuteParameters().getParameters()[0].change('some execution value')
+  await form.update()
+
   form.expectJSON({
     sql: {
       title: 'SQL',
       sql: {
         label: 'SQL',
-        value: 'select * from sometable;',
+        value: 'select * from sometable where param = ${param}',
         enabled: true,
         mode: 'edit'
       }
@@ -83,6 +89,20 @@ async function testChange() {
         enabled: true,
         mode: 'edit'
       }
+    },
+    executeParameters: {
+      title: 'Parameters',
+      parameters: [
+        {
+          label: 'param',
+          value: 'some execution value',
+          mode: 'edit'
+        }
+      ]
+    },
+    executeResults: {
+      title: null,
+      grid: null
     },
     buttons: {
       save: {

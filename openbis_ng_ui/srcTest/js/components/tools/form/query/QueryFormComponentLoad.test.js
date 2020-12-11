@@ -19,6 +19,7 @@ describe(QueryFormComponentTest.SUITE, () => {
     const { genericQuery } = QueryFormTestData
     await testLoadExisting(genericQuery)
   })
+  test('load existing query with parameters', testLoadExistingWithParameters)
 })
 
 async function testLoadNew() {
@@ -89,8 +90,19 @@ async function testLoadNew() {
         mode: 'edit'
       }
     },
+    executeParameters: {
+      title: null,
+      parameters: []
+    },
+    executeResults: {
+      title: null,
+      grid: null
+    },
     buttons: {
       save: {
+        enabled: true
+      },
+      execute: {
         enabled: true
       },
       edit: null,
@@ -154,8 +166,19 @@ async function testLoadExisting(query) {
         mode: 'view'
       }
     },
+    executeParameters: {
+      title: null,
+      parameters: []
+    },
+    executeResults: {
+      title: null,
+      grid: null
+    },
     buttons: {
       edit: {
+        enabled: true
+      },
+      execute: {
         enabled: true
       },
       save: null,
@@ -226,11 +249,141 @@ async function testLoadExisting(query) {
         mode: 'edit'
       }
     },
+    executeParameters: {
+      title: null,
+      parameters: []
+    },
+    executeResults: {
+      title: null,
+      grid: null
+    },
     buttons: {
       save: {
         enabled: true
       },
       cancel: {
+        enabled: true
+      },
+      execute: {
+        enabled: true
+      },
+      edit: null,
+      message: null
+    }
+  })
+}
+
+async function testLoadExistingWithParameters() {
+  const {
+    testDatabase,
+    anotherDatabase,
+    queryWithParameters
+  } = QueryFormTestData
+
+  common.facade.loadQueryDatabases.mockReturnValue(
+    Promise.resolve([testDatabase, anotherDatabase])
+  )
+
+  const form = await common.mountExisting(queryWithParameters)
+
+  form.expectJSON({
+    sql: {
+      title: 'SQL',
+      sql: {
+        label: 'SQL',
+        value: queryWithParameters.sql,
+        mode: 'view'
+      }
+    },
+    parameters: {
+      messages: [
+        {
+          text:
+            'Security warning: this query is public (i.e. visible to other users) and is defined for a database that is not assigned to any space. Please make sure the query returns only data that can be seen by every user or the results contain one of the special columns (i.e. experiment_key/sample_key/data_set_key) that will be used for an automatic query results filtering.',
+          type: 'warning'
+        }
+      ]
+    },
+    executeParameters: {
+      title: 'Parameters',
+      parameters: [
+        {
+          label: 'code',
+          value: null,
+          mode: 'edit'
+        },
+        {
+          label: 'permId',
+          value: null,
+          mode: 'edit'
+        }
+      ]
+    },
+    executeResults: {
+      title: null,
+      grid: null
+    },
+    buttons: {
+      edit: {
+        enabled: true
+      },
+      execute: {
+        enabled: true
+      },
+      save: null,
+      cancel: null,
+      message: null
+    }
+  })
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.expectJSON({
+    sql: {
+      title: 'SQL',
+      sql: {
+        label: 'SQL',
+        value: queryWithParameters.sql,
+        mode: 'edit'
+      }
+    },
+    parameters: {
+      messages: [
+        {
+          text:
+            'Security warning: this query is public (i.e. visible to other users) and is defined for a database that is not assigned to any space. Please make sure the query returns only data that can be seen by every user or the results contain one of the special columns (i.e. experiment_key/sample_key/data_set_key) that will be used for an automatic query results filtering.',
+          type: 'warning'
+        }
+      ]
+    },
+    executeParameters: {
+      title: 'Parameters',
+      parameters: [
+        {
+          label: 'code',
+          value: null,
+          mode: 'edit'
+        },
+        {
+          label: 'permId',
+          value: null,
+          mode: 'edit'
+        }
+      ]
+    },
+    executeResults: {
+      title: null,
+      grid: null
+    },
+    buttons: {
+      save: {
+        enabled: true
+      },
+      cancel: {
+        enabled: true
+      },
+      execute: {
         enabled: true
       },
       edit: null,

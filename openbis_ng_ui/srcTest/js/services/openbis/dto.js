@@ -127,6 +127,9 @@ import SpaceFetchOptions from 'as/dto/space/fetchoptions/SpaceFetchOptions'
 import SpacePermId from 'as/dto/space/id/SpacePermId'
 import SpaceSearchCriteria from 'as/dto/space/search/SpaceSearchCriteria'
 import SynchronousOperationExecutionOptions from 'as/dto/operation/SynchronousOperationExecutionOptions'
+import TableModel from 'as/dto/common/TableModel'
+import TableColumn from 'as/dto/common/TableColumn'
+import TableStringCell from 'as/dto/common/TableStringCell'
 import UpdateAuthorizationGroupsOperation from 'as/dto/authorizationgroup/update/UpdateAuthorizationGroupsOperation'
 import UpdateDataSetTypesOperation from 'as/dto/dataset/update/UpdateDataSetTypesOperation'
 import UpdateExperimentTypesOperation from 'as/dto/experiment/update/UpdateExperimentTypesOperation'
@@ -283,6 +286,9 @@ const dto = {
   SpacePermId,
   SpaceSearchCriteria,
   SynchronousOperationExecutionOptions,
+  TableModel,
+  TableColumn,
+  TableStringCell,
   UpdateAuthorizationGroupsOperation,
   UpdateDataSetTypesOperation,
   UpdateExperimentTypesOperation,
