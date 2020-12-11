@@ -191,7 +191,7 @@ class QueryFormParameters extends React.PureComponent {
       options = dictionaries.queryDatabases.map(queryDatabase => {
         return {
           label:
-            queryDatabase.name +
+            queryDatabase.label +
             ' (space: ' +
             _.get(queryDatabase, 'space.code', 'none') +
             ')',

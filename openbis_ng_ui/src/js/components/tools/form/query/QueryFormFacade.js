@@ -10,10 +10,10 @@ export default class QueryFormFacade {
   }
 
   async loadQueryDatabases() {
-    const result = await openbis.searchQueryDatabases(
-      new openbis.QueryDatabaseSearchCriteria(),
-      new openbis.QueryDatabaseFetchOptions()
-    )
+    const criteria = new openbis.QueryDatabaseSearchCriteria()
+    const fo = new openbis.QueryDatabaseFetchOptions()
+    fo.withSpace()
+    const result = await openbis.searchQueryDatabases(criteria, fo)
     return result.getObjects()
   }
 

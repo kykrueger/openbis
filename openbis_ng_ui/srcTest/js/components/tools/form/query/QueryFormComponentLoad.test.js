@@ -62,9 +62,13 @@ async function testLoadNew() {
         mode: 'edit',
         options: [
           {
+            label: `${testDatabase.getLabel()} (space: ${
+              testDatabase.space.code
+            })`,
             value: testDatabase.getName()
           },
           {
+            label: `${anotherDatabase.getLabel()} (space: none)`,
             value: anotherDatabase.getName()
           }
         ]

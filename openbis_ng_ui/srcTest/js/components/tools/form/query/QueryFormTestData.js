@@ -1,11 +1,17 @@
 import openbis from '@srcTest/js/services/openbis.js'
 
+const testSpace = new openbis.Space()
+testSpace.setCode('TEST')
+
 const testDatabase = new openbis.QueryDatabase()
-testDatabase.setName('test database')
+testDatabase.setName('test database name')
+testDatabase.setLabel('test database label')
 testDatabase.setPermId(new openbis.QueryDatabaseName(testDatabase.getName()))
+testDatabase.setSpace(testSpace)
 
 const anotherDatabase = new openbis.QueryDatabase()
-anotherDatabase.setName('another database')
+anotherDatabase.setName('another database name')
+anotherDatabase.setLabel('another database label')
 anotherDatabase.setPermId(
   new openbis.QueryDatabaseName(anotherDatabase.getName())
 )
