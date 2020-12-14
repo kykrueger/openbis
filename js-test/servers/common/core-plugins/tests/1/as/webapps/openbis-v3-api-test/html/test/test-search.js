@@ -1748,7 +1748,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 							if (samplePermId === "20130412140147735-20") {
 								prepopulatedSamplesCount++;
 							}
-							c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/PLATE-1" ||
+							c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/SCREENING-EXAMPLES/PLATE-1" ||
 								result.getObjectIdentifier().getIdentifier().startsWith("/TEST/TEST-PROJECT/V3_SAMPLE_"),
 								"ObjectIdentifier");
 							c.assertTrue(match === "Perm ID: " + samplePermId ||
