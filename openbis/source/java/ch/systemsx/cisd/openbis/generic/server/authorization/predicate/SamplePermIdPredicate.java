@@ -69,8 +69,7 @@ public class SamplePermIdPredicate extends AbstractDatabaseInstancePredicate<Per
         SamplePE sample = authorizationDataProvider.tryGetSampleByPermId(id.getId());
         if (sample == null)
         {
-            return Status.createError(String.format("There is no sample with perm id '%s'.",
-                    id.getId()));
+            return Status.OK;
         }
         return samplePEPredicate.evaluate(person, allowedRoles, sample);
     }
