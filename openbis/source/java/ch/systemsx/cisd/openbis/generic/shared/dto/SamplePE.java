@@ -57,6 +57,8 @@ import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.OptimisticLock;
 import org.hibernate.validator.constraints.Length;
 
+import ch.rinn.restrictions.Friend;
+import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.collection.UnmodifiableSetDecorator;
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
@@ -78,6 +80,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
 @Entity
 @Table(name = TableNames.SAMPLES_VIEW)
+@Friend(toClasses = ProjectPE.class)
 public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Comparable<SamplePE>,
         IEntityInformationWithPropertiesHolder, IMatchingEntity, IDeletablePE,
         IEntityWithMetaprojects, IModifierAndModificationDateBean, IIdentityHolder, Serializable
@@ -594,19 +597,39 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     {
         if (projectSamplesEnabled)
         {
-            this.project = project;
             if (project != null)
             {
+                project.addSample(this);
                 projectFrozen = project.isFrozen() && project.isFrozenForSample();
             }
         }
     }
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER) // FetchType.LAZY)
     @JoinColumn(name = ColumnNames.PROJECT_COLUMN, updatable = true)
-    public ProjectPE getProject()
+    private ProjectPE getProjectInternal()
     {
         return project;
+    }
+
+    @Private
+    void setProjectInternal(final ProjectPE project)
+    {
+        if (projectSamplesEnabled)
+        {
+            this.project = project;
+            if (project != null)
+            {
+                projectFrozen = project.isFrozen() && project.isFrozenForExperiment();
+            }
+            this.sampleIdentifier = null;
+        }
+    }
+
+    @Transient
+    public ProjectPE getProject()
+    {
+        return getProjectInternal();
     }
 
     @NotNull
