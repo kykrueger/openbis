@@ -49,6 +49,10 @@ export default class QueryFormFacade {
     return result.getObjects()
   }
 
+  async executeQuery(id, options) {
+    return openbis.executeQuery(id, options)
+  }
+
   async executeSql(sql, options) {
     return openbis.executeSql(sql, options)
   }

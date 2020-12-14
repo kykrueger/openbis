@@ -1,3 +1,4 @@
+import PageMode from '@src/js/components/common/page/PageMode.js'
 import openbis from '@src/js/services/openbis.js'
 import actions from '@src/js/store/actions/actions.js'
 
@@ -10,7 +11,7 @@ export default class QueryFormControllerExecute {
 
   async execute() {
     try {
-      const { query, executeParameters } = this.context.getState()
+      const { mode, query, executeParameters } = this.context.getState()
 
       this.context.setState(state => ({
         ...state,
@@ -20,7 +21,15 @@ export default class QueryFormControllerExecute {
         }
       }))
 
-      const tableModel = await this.executeSql(query, executeParameters.values)
+      let tableModel = null
+
+      if (mode === PageMode.VIEW) {
+        tableModel = await this.executeQuery(query, executeParameters.values)
+      } else if (mode === PageMode.EDIT) {
+        tableModel = await this.executeSql(query, executeParameters.values)
+      } else {
+        throw new Error('Unsupported mode: ' + mode)
+      }
 
       this.context.setState(state => ({
         ...state,
@@ -42,6 +51,19 @@ export default class QueryFormControllerExecute {
         }
       }))
     }
+  }
+
+  async executeQuery(query, parameters) {
+    const id = new openbis.QueryName(query.name.value)
+    const options = new openbis.QueryExecutionOptions()
+
+    Object.entries(parameters).forEach(([key, value]) => {
+      if (value && value.trim().length > 0) {
+        options.withParameter(key, value)
+      }
+    })
+
+    return await this.facade.executeQuery(id, options)
   }
 
   async executeSql(query, parameters) {

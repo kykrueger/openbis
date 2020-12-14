@@ -71,7 +71,7 @@ async function testExecuteExisting() {
   common.facade.loadQueryDatabases.mockReturnValue(
     Promise.resolve([testDatabase, anotherDatabase])
   )
-  common.facade.executeSql.mockReturnValue(Promise.resolve(testResult))
+  common.facade.executeQuery.mockReturnValue(Promise.resolve(testResult))
 
   const form = await common.mountExisting(queryWithParameters)
 
@@ -214,6 +214,8 @@ async function testExecuteExisting() {
       message: null
     }
   })
+
+  common.facade.executeSql.mockReturnValue(Promise.resolve(testResult))
 
   form.getButtons().getExecute().click()
   await form.update()
