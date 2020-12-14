@@ -829,13 +829,13 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			var fSearch = function(facade) {
 				var criteria = new c.SampleSearchCriteria();
-				criteria.withIdentifier().thatEquals("/PLATONIC/PLATE-1");
+				criteria.withIdentifier().thatEquals("/PLATONIC/SCREENING-EXAMPLES/PLATE-1");
 				return facade.searchSamples(criteria, c.createSampleFetchOptions());
 			}
 
 			var fCheck = function(facade, samples) {
 				c.assertEqual(samples.length, 1);
-				c.assertEqual(samples[0].getIdentifier(), "/PLATONIC/PLATE-1");
+				c.assertEqual(samples[0].getIdentifier(), "/PLATONIC/SCREENING-EXAMPLES/PLATE-1");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -870,7 +870,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fCheck = function(facade, samples) {
 				identifiers = c.extractIdentifiers(samples);
 				c.assertEqual(identifiers.length, 4);
-				c.assertEqual(identifiers.toString(), "/PLATONIC/PLATE-1:A1,/PLATONIC/PLATE-2:A1,/TEST/PLATE-1A:A1,/TEST/PLATE-2:A1");
+				c.assertEqual(identifiers.toString(), "/PLATONIC/SCREENING-EXAMPLES/PLATE-1:A1,/PLATONIC/SCREENING-EXAMPLES/PLATE-2:A1,/TEST/TEST-PROJECT/PLATE-1A:A1,/TEST/TEST-PROJECT/PLATE-2:A1");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -889,7 +889,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fCheck = function(facade, samples) {
 				identifiers = c.extractIdentifiers(samples);
 				c.assertEqual(identifiers.length, 1);
-				c.assertEqual(identifiers.toString(), "/TEST/TEST-SAMPLE-2-PARENT");
+				c.assertEqual(identifiers.toString(), "/TEST/TEST-PROJECT/TEST-SAMPLE-2-PARENT");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -908,7 +908,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fCheck = function(facade, samples) {
 				identifiers = c.extractIdentifiers(samples);
 				c.assertEqual(identifiers.length, 2);
-				c.assertEqual(identifiers.toString(), "/TEST/TEST-SAMPLE-2-CHILD-2,/TEST/TEST-SAMPLE-2-PARENT");
+				c.assertEqual(identifiers.toString(), "/TEST/TEST-PROJECT/TEST-SAMPLE-2-CHILD-2,/TEST/TEST-PROJECT/TEST-SAMPLE-2-PARENT");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -921,8 +921,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var criteria = new c.SampleSearchCriteria().withAndOperator();
 
 				var subCriteria1 = criteria.withSubcriteria().withOrOperator();
-				subCriteria1.withIdentifier().thatStartsWith("/PLATONIC/PLATE-1");
-				subCriteria1.withIdentifier().thatStartsWith("/TEST/PLATE-2");
+				subCriteria1.withIdentifier().thatStartsWith("/PLATONIC/SCREENING-EXAMPLES/PLATE-1");
+				subCriteria1.withIdentifier().thatStartsWith("/TEST/TEST-PROJECT/PLATE-2");
 
 				var subCriteria2 = criteria.withSubcriteria().withOrOperator();
 				subCriteria2.withIdentifier().thatEndsWith(":A1");
@@ -935,7 +935,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var identifiers = c.extractIdentifiers(samples);
 				c.assertEqual(identifiers.length, 4);
 				c.assertEqual(identifiers.toString(),
-					"/PLATONIC/PLATE-1:A1,/PLATONIC/PLATE-1:A2,/TEST/PLATE-2:A1,/TEST/PLATE-2:A2");
+					"/PLATONIC/SCREENING-EXAMPLES/PLATE-1:A1,/PLATONIC/SCREENING-EXAMPLES/PLATE-1:A2,/TEST/TEST-PROJECT/PLATE-2:A1,/TEST/TEST-PROJECT/PLATE-2:A2");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -1749,7 +1749,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 								prepopulatedSamplesCount++;
 							}
 							c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/PLATE-1" ||
-								result.getObjectIdentifier().getIdentifier().startsWith("/TEST/V3_SAMPLE_"),
+								result.getObjectIdentifier().getIdentifier().startsWith("/TEST/TEST-PROJECT/V3_SAMPLE_"),
 								"ObjectIdentifier");
 							c.assertTrue(match === "Perm ID: " + samplePermId ||
 								match === "Property 'Test Property Type': 20130412140147735-20",
