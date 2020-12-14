@@ -7,6 +7,8 @@ const deleteExperimentTypes = jest.fn()
 const deleteMaterialTypes = jest.fn()
 const deleteSampleTypes = jest.fn()
 const executeOperations = jest.fn()
+const executeQuery = jest.fn()
+const executeSql = jest.fn()
 const getAuthorizationGroups = jest.fn()
 const getDataSetTypes = jest.fn()
 const getExperimentTypes = jest.fn()
@@ -25,6 +27,7 @@ const searchMaterials = jest.fn()
 const searchPersons = jest.fn()
 const searchPlugins = jest.fn()
 const searchQueries = jest.fn()
+const searchQueryDatabases = jest.fn()
 const searchProjects = jest.fn()
 const searchPropertyAssignments = jest.fn()
 const searchPropertyTypes = jest.fn()
@@ -100,6 +103,12 @@ const mockSearchQueries = queries => {
   searchQueries.mockReturnValue(Promise.resolve(searchResult))
 }
 
+const mockSearchQueryDatabases = databases => {
+  const searchResult = new dto.SearchResult()
+  searchResult.setObjects(databases)
+  searchQueries.mockReturnValue(Promise.resolve(searchResult))
+}
+
 export default {
   login,
   logout,
@@ -108,6 +117,8 @@ export default {
   deleteMaterialTypes,
   deleteSampleTypes,
   executeOperations,
+  executeQuery,
+  executeSql,
   getAuthorizationGroups,
   getDataSetTypes,
   getExperimentTypes,
@@ -126,6 +137,7 @@ export default {
   searchPersons,
   searchPlugins,
   searchQueries,
+  searchQueryDatabases,
   searchProjects,
   searchPropertyAssignments,
   searchPropertyTypes,
@@ -147,5 +159,6 @@ export default {
   mockSearchPropertyTypes,
   mockSearchVocabularies,
   mockSearchPlugins,
-  mockSearchQueries
+  mockSearchQueries,
+  mockSearchQueryDatabases
 }

@@ -57,6 +57,14 @@ async function testValidate() {
         error: null
       }
     },
+    executeParameters: {
+      title: null,
+      parameters: []
+    },
+    executeResults: {
+      title: null,
+      grid: null
+    },
     buttons: {
       save: {
         enabled: true

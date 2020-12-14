@@ -29,6 +29,12 @@ describe(QueryFormComponentTest.SUITE, () => {
 })
 
 async function testSaveCreate(query) {
+  const { testDatabase, anotherDatabase } = QueryFormTestData
+
+  common.facade.loadQueryDatabases.mockReturnValue(
+    Promise.resolve([testDatabase, anotherDatabase])
+  )
+
   const form = await common.mountNew()
 
   form.getSql().getSql().change(query.getSql())
@@ -74,6 +80,12 @@ async function testSaveCreate(query) {
 }
 
 async function testSaveUpdate(query, update) {
+  const { testDatabase, anotherDatabase } = QueryFormTestData
+
+  common.facade.loadQueryDatabases.mockReturnValue(
+    Promise.resolve([testDatabase, anotherDatabase])
+  )
+
   const form = await common.mountExisting(query)
 
   form.getButtons().getEdit().click()

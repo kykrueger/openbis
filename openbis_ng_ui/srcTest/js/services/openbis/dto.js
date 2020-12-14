@@ -90,11 +90,16 @@ import PropertyTypeSearchCriteria from 'as/dto/property/search/PropertyTypeSearc
 import PropertyTypeUpdate from 'as/dto/property/update/PropertyTypeUpdate'
 import Query from 'as/dto/query/Query'
 import QueryCreation from 'as/dto/query/create/QueryCreation'
+import QueryDatabase from 'as/dto/query/QueryDatabase'
 import QueryDatabaseName from 'as/dto/query/id/QueryDatabaseName'
 import QueryDeletionOptions from 'as/dto/query/delete/QueryDeletionOptions'
+import QueryExecutionOptions from 'as/dto/query/execute/QueryExecutionOptions'
+import SqlExecutionOptions from 'as/dto/query/execute/SqlExecutionOptions'
 import QueryFetchOptions from 'as/dto/query/fetchoptions/QueryFetchOptions'
+import QueryDatabaseFetchOptions from 'as/dto/query/fetchoptions/QueryDatabaseFetchOptions'
 import QueryName from 'as/dto/query/id/QueryName'
 import QuerySearchCriteria from 'as/dto/query/search/QuerySearchCriteria'
+import QueryDatabaseSearchCriteria from 'as/dto/query/search/QueryDatabaseSearchCriteria'
 import QueryTechId from 'as/dto/query/id/QueryTechId'
 import QueryType from 'as/dto/query/QueryType'
 import QueryUpdate from 'as/dto/query/update/QueryUpdate'
@@ -122,6 +127,9 @@ import SpaceFetchOptions from 'as/dto/space/fetchoptions/SpaceFetchOptions'
 import SpacePermId from 'as/dto/space/id/SpacePermId'
 import SpaceSearchCriteria from 'as/dto/space/search/SpaceSearchCriteria'
 import SynchronousOperationExecutionOptions from 'as/dto/operation/SynchronousOperationExecutionOptions'
+import TableModel from 'as/dto/common/TableModel'
+import TableColumn from 'as/dto/common/TableColumn'
+import TableStringCell from 'as/dto/common/TableStringCell'
 import UpdateAuthorizationGroupsOperation from 'as/dto/authorizationgroup/update/UpdateAuthorizationGroupsOperation'
 import UpdateDataSetTypesOperation from 'as/dto/dataset/update/UpdateDataSetTypesOperation'
 import UpdateExperimentTypesOperation from 'as/dto/experiment/update/UpdateExperimentTypesOperation'
@@ -241,11 +249,16 @@ const dto = {
   PropertyTypeUpdate,
   Query,
   QueryCreation,
+  QueryDatabase,
   QueryDatabaseName,
   QueryDeletionOptions,
+  QueryExecutionOptions,
+  SqlExecutionOptions,
   QueryFetchOptions,
+  QueryDatabaseFetchOptions,
   QueryName,
   QuerySearchCriteria,
+  QueryDatabaseSearchCriteria,
   QueryTechId,
   QueryType,
   QueryUpdate,
@@ -273,6 +286,9 @@ const dto = {
   SpacePermId,
   SpaceSearchCriteria,
   SynchronousOperationExecutionOptions,
+  TableModel,
+  TableColumn,
+  TableStringCell,
   UpdateAuthorizationGroupsOperation,
   UpdateDataSetTypesOperation,
   UpdateExperimentTypesOperation,

@@ -75,6 +75,10 @@ class Facade {
     return this.promise(this.v3.searchQueries(criteria, fo))
   }
 
+  searchQueryDatabases(criteria, fo) {
+    return this.promise(this.v3.searchQueryDatabases(criteria, fo))
+  }
+
   searchMaterials(criteria, fo) {
     return this.promise(this.v3.searchMaterials(criteria, fo))
   }
@@ -175,6 +179,14 @@ class Facade {
     let id = new dto.CustomASServiceCode('openbis-ng-ui-service')
     let options = new dto.CustomASServiceExecutionOptions()
     return this.promise(this.v3.executeCustomASService(id, options))
+  }
+
+  executeQuery(id, options) {
+    return this.promise(this.v3.executeQuery(id, options))
+  }
+
+  executeSql(sql, options) {
+    return this.promise(this.v3.executeSql(sql, options))
   }
 
   executeOperations(operations, options) {

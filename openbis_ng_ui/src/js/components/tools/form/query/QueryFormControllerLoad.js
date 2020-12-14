@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import PageControllerLoad from '@src/js/components/common/page/PageControllerLoad.js'
+import QueryFormControllerParseSql from '@src/js/components/tools/form/query/QueryFormControllerParseSql.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
 
@@ -13,11 +14,13 @@ export default class QueryFormControllerLoad extends PageControllerLoad {
 
   async _loadDictionaries() {
     const [
+      queryDatabases,
       experimentTypes,
       sampleTypes,
       dataSetTypes,
       materialTypes
     ] = await Promise.all([
+      this.facade.loadQueryDatabases(),
       this.facade.loadExperimentTypes(),
       this.facade.loadSampleTypes(),
       this.facade.loadDataSetTypes(),
@@ -26,6 +29,7 @@ export default class QueryFormControllerLoad extends PageControllerLoad {
 
     await this.context.setState(() => ({
       dictionaries: {
+        queryDatabases,
         experimentTypes,
         sampleTypes,
         dataSetTypes,
@@ -45,9 +49,13 @@ export default class QueryFormControllerLoad extends PageControllerLoad {
     }
 
     const query = this._createQuery(loadedQuery)
+    const executeParameters = this._createExecuteParameters(loadedQuery)
+    const executeResults = this._createExecuteResults()
 
     return this.context.setState({
-      query
+      query,
+      executeParameters,
+      executeResults
     })
   }
 
@@ -83,5 +91,27 @@ export default class QueryFormControllerLoad extends PageControllerLoad {
       query.original = _.cloneDeep(query)
     }
     return query
+  }
+
+  _createExecuteParameters(loadedQuery) {
+    let parameterNames = []
+
+    if (loadedQuery) {
+      const parsedSql = new QueryFormControllerParseSql().parse(loadedQuery.sql)
+      parameterNames = parsedSql.parameterNames
+    }
+
+    return {
+      names: parameterNames,
+      values: {}
+    }
+  }
+
+  _createExecuteResults() {
+    return {
+      loading: false,
+      loaded: false,
+      tableModel: null
+    }
   }
 }
