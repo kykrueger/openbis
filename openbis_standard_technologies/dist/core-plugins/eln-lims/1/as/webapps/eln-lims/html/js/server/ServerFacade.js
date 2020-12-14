@@ -2441,6 +2441,7 @@ function ServerFacade(openbisServer) {
 
 			var fetchOptions = new GlobalSearchObjectFetchOptions();
 			fetchOptions.withMatch();
+			fetchOptions.sortBy().score().desc();
 			var sampleFetchOptions = fetchOptions.withSample();
 			sampleFetchOptions.withSpace();
 			sampleFetchOptions.withType();
