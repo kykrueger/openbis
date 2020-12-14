@@ -593,18 +593,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
         return children;
     }
 
-    public void setProject(ProjectPE project)
-    {
-        if (projectSamplesEnabled)
-        {
-            if (project != null)
-            {
-                project.addSample(this);
-                projectFrozen = project.isFrozen() && project.isFrozenForSample();
-            }
-        }
-    }
-
     @ManyToOne(fetch = FetchType.EAGER) // FetchType.LAZY)
     @JoinColumn(name = ColumnNames.PROJECT_COLUMN, updatable = true)
     private ProjectPE getProjectInternal()
@@ -630,6 +618,18 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     public ProjectPE getProject()
     {
         return getProjectInternal();
+    }
+
+    public void setProject(ProjectPE project)
+    {
+        if (projectSamplesEnabled)
+        {
+            if (project != null)
+            {
+                project.addSample(this);
+//                projectFrozen = project.isFrozen() && project.isFrozenForSample();
+            }
+        }
     }
 
     @NotNull
