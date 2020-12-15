@@ -1701,7 +1701,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 12);
+				objects = objects.filter(o => o.getObjectIdentifier().toString().search("V3") < 0);
+				c.assertEqual(objects.length, 4);
 				var prepopulatedExperimentsCount = 0;
 				var prepopulatedSamplesCount = 0;
                 for (var oIdx = 0; oIdx < objects.length; oIdx++) {
@@ -1798,6 +1799,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
+				objects = objects.filter(o => o.getObjectIdentifier().toString().search("V3") < 0);
 				c.assertEqual(objects.length, 1);
 
 				var object0 = objects[0];
@@ -1828,7 +1830,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 3);
+				objects = objects.filter(o => o.getObjectIdentifier().toString().search("V3") < 0);
+				c.assertEqual(objects.length, 1);
 
 				var prepopulatedExperimentsCount = 0;
 				for (var i = 0; i < objects.length; i++) {
@@ -3353,7 +3356,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 		function createSample(c, facade, sampleTypeId, propertyType, value) {
 			var creation = new c.SampleCreation();
 			creation.setTypeId(sampleTypeId);
-			creation.setCode("TST-SAMPLE-" + Date.now());
+			creation.setCode("V3-TST-SAMPLE-" + Date.now());
 			creation.setSpaceId(new c.SpacePermId("TEST"));
 			creation.setProperty(propertyType, value);
 			return facade.createSamples([creation]);
