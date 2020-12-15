@@ -175,6 +175,10 @@ class Facade {
     return this.promise(this.v3.deleteMaterialTypes(ids, options))
   }
 
+  evaluatePlugin(options) {
+    return this.promise(this.v3.evaluatePlugin(options))
+  }
+
   executeService() {
     let id = new dto.CustomASServiceCode('openbis-ng-ui-service')
     let options = new dto.CustomASServiceExecutionOptions()

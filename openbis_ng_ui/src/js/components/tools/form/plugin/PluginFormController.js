@@ -2,6 +2,7 @@ import PageController from '@src/js/components/common/page/PageController.js'
 import PluginFormControllerLoad from '@src/js/components/tools/form/plugin/PluginFormControllerLoad.js'
 import PluginFormControllerValidate from '@src/js/components/tools/form/plugin/PluginFormControllerValidate.js'
 import PluginFormControllerChange from '@src/js/components/tools/form/plugin/PluginFormControllerChange.js'
+import PluginFormControllerEvaluate from '@src/js/components/tools/form/plugin/PluginFormControllerEvaluate.js'
 import PluginFormControllerSave from '@src/js/components/tools/form/plugin/PluginFormControllerSave.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
@@ -59,6 +60,10 @@ export default class PluginFormController extends PageController {
 
   handleChange(type, params) {
     return new PluginFormControllerChange(this).execute(type, params)
+  }
+
+  handleEvaluate() {
+    return new PluginFormControllerEvaluate(this).execute()
   }
 
   handleSave() {

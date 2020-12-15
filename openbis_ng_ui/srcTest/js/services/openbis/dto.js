@@ -20,6 +20,7 @@ import CreateVocabularyTermsOperation from 'as/dto/vocabulary/create/CreateVocab
 import CustomASServiceCode from 'as/dto/service/id/CustomASServiceCode'
 import CustomASServiceExecutionOptions from 'as/dto/service/CustomASServiceExecutionOptions'
 import DataSetFetchOptions from 'as/dto/dataset/fetchoptions/DataSetFetchOptions'
+import DataSetPermId from 'as/dto/dataset/id/DataSetPermId'
 import DataSetSearchCriteria from 'as/dto/dataset/search/DataSetSearchCriteria'
 import DataSetType from 'as/dto/dataset/DataSetType'
 import DataSetTypeCreation from 'as/dto/dataset/create/DataSetTypeCreation'
@@ -42,6 +43,7 @@ import DeleteVocabularyTermsOperation from 'as/dto/vocabulary/delete/DeleteVocab
 import EntityKind from 'as/dto/entitytype/EntityKind'
 import EntityTypePermId from 'as/dto/entitytype/id/EntityTypePermId'
 import ExperimentFetchOptions from 'as/dto/experiment/fetchoptions/ExperimentFetchOptions'
+import ExperimentIdentifier from 'as/dto/experiment/id/ExperimentIdentifier'
 import ExperimentSearchCriteria from 'as/dto/experiment/search/ExperimentSearchCriteria'
 import ExperimentType from 'as/dto/experiment/ExperimentType'
 import ExperimentTypeCreation from 'as/dto/experiment/create/ExperimentTypeCreation'
@@ -50,6 +52,7 @@ import ExperimentTypeFetchOptions from 'as/dto/experiment/fetchoptions/Experimen
 import ExperimentTypeSearchCriteria from 'as/dto/experiment/search/ExperimentTypeSearchCriteria'
 import ExperimentTypeUpdate from 'as/dto/experiment/update/ExperimentTypeUpdate'
 import MaterialFetchOptions from 'as/dto/material/fetchoptions/MaterialFetchOptions'
+import MaterialPermId from 'as/dto/material/id/MaterialPermId'
 import MaterialSearchCriteria from 'as/dto/material/search/MaterialSearchCriteria'
 import MaterialType from 'as/dto/material/MaterialType'
 import MaterialTypeCreation from 'as/dto/material/create/MaterialTypeCreation'
@@ -67,6 +70,9 @@ import Plugin from 'as/dto/plugin/Plugin'
 import PluginCreation from 'as/dto/plugin/create/PluginCreation'
 import PluginDeletionOptions from 'as/dto/plugin/delete/PluginDeletionOptions'
 import PluginFetchOptions from 'as/dto/plugin/fetchoptions/PluginFetchOptions'
+import PluginEvaluationOptions from 'as/dto/plugin/evaluate/PluginEvaluationOptions'
+import EntityValidationPluginEvaluationOptions from 'as/dto/plugin/evaluate/EntityValidationPluginEvaluationOptions'
+import DynamicPropertyPluginEvaluationOptions from 'as/dto/plugin/evaluate/DynamicPropertyPluginEvaluationOptions'
 import PluginKind from 'as/dto/plugin/PluginKind'
 import PluginPermId from 'as/dto/plugin/id/PluginPermId'
 import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
@@ -110,6 +116,7 @@ import RoleAssignmentDeletionOptions from 'as/dto/roleassignment/delete/RoleAssi
 import RoleAssignmentTechId from 'as/dto/roleassignment/id/RoleAssignmentTechId'
 import RoleLevel from 'as/dto/roleassignment/RoleLevel'
 import SampleFetchOptions from 'as/dto/sample/fetchoptions/SampleFetchOptions'
+import SampleIdentifier from 'as/dto/sample/id/SampleIdentifier'
 import SampleSearchCriteria from 'as/dto/sample/search/SampleSearchCriteria'
 import SampleType from 'as/dto/sample/SampleType'
 import SampleTypeCreation from 'as/dto/sample/create/SampleTypeCreation'
@@ -179,6 +186,7 @@ const dto = {
   CustomASServiceCode,
   CustomASServiceExecutionOptions,
   DataSetFetchOptions,
+  DataSetPermId,
   DataSetSearchCriteria,
   DataSetType,
   DataSetTypeCreation,
@@ -201,6 +209,7 @@ const dto = {
   EntityKind,
   EntityTypePermId,
   ExperimentFetchOptions,
+  ExperimentIdentifier,
   ExperimentSearchCriteria,
   ExperimentType,
   ExperimentTypeCreation,
@@ -209,6 +218,7 @@ const dto = {
   ExperimentTypeSearchCriteria,
   ExperimentTypeUpdate,
   MaterialFetchOptions,
+  MaterialPermId,
   MaterialSearchCriteria,
   MaterialType,
   MaterialTypeCreation,
@@ -226,6 +236,9 @@ const dto = {
   PluginCreation,
   PluginDeletionOptions,
   PluginFetchOptions,
+  PluginEvaluationOptions,
+  EntityValidationPluginEvaluationOptions,
+  DynamicPropertyPluginEvaluationOptions,
   PluginKind,
   PluginPermId,
   PluginSearchCriteria,
@@ -269,6 +282,7 @@ const dto = {
   RoleAssignmentTechId,
   RoleLevel,
   SampleFetchOptions,
+  SampleIdentifier,
   SampleSearchCriteria,
   SampleType,
   SampleTypeCreation,

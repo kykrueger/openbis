@@ -8,6 +8,8 @@ import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.
 import PluginFormController from '@src/js/components/tools/form/plugin/PluginFormController.js'
 import PluginFormFacade from '@src/js/components/tools/form/plugin/PluginFormFacade.js'
 import PluginFormScript from '@src/js/components/tools/form/plugin/PluginFormScript.jsx'
+import PluginFormEvaluateParameters from '@src/js/components/tools/form/plugin/PluginFormEvaluateParameters.jsx'
+import PluginFormEvaluateResults from '@src/js/components/tools/form/plugin/PluginFormEvaluateResults.jsx'
 import PluginFormParameters from '@src/js/components/tools/form/plugin/PluginFormParameters.jsx'
 import PluginFormButtons from '@src/js/components/tools/form/plugin/PluginFormButtons.jsx'
 import openbis from '@src/js/services/openbis.js'
@@ -54,18 +56,35 @@ class PluginForm extends React.PureComponent {
 
   renderMainPanel() {
     const { controller } = this
-    const { plugin, selection, mode } = this.state
+    const {
+      plugin,
+      evaluateParameters,
+      evaluateResults,
+      selection,
+      mode
+    } = this.state
 
     if (plugin.pluginKind === openbis.PluginKind.JYTHON) {
       return (
-        <PluginFormScript
-          plugin={plugin}
-          selection={selection}
-          mode={mode}
-          onChange={controller.handleChange}
-          onSelectionChange={controller.handleSelectionChange}
-          onBlur={controller.handleBlur}
-        />
+        <React.Fragment>
+          <PluginFormScript
+            plugin={plugin}
+            selection={selection}
+            mode={mode}
+            onChange={controller.handleChange}
+            onSelectionChange={controller.handleSelectionChange}
+            onBlur={controller.handleBlur}
+          />
+          <PluginFormEvaluateParameters
+            plugin={plugin}
+            parameters={evaluateParameters}
+            onChange={controller.handleChange}
+          />
+          <PluginFormEvaluateResults
+            plugin={plugin}
+            results={evaluateResults}
+          />
+        </React.Fragment>
       )
     } else {
       return <div></div>
@@ -97,6 +116,7 @@ class PluginForm extends React.PureComponent {
         onEdit={controller.handleEdit}
         onSave={controller.handleSave}
         onCancel={controller.handleCancel}
+        onEvaluate={controller.handleEvaluate}
         plugin={plugin}
         changed={changed}
         mode={mode}

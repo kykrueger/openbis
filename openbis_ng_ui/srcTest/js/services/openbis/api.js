@@ -9,6 +9,7 @@ const deleteSampleTypes = jest.fn()
 const executeOperations = jest.fn()
 const executeQuery = jest.fn()
 const executeSql = jest.fn()
+const evaluatePlugin = jest.fn()
 const getAuthorizationGroups = jest.fn()
 const getDataSetTypes = jest.fn()
 const getExperimentTypes = jest.fn()
@@ -119,6 +120,7 @@ export default {
   executeOperations,
   executeQuery,
   executeSql,
+  evaluatePlugin,
   getAuthorizationGroups,
   getDataSetTypes,
   getExperimentTypes,

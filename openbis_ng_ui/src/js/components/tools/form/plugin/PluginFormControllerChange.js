@@ -6,6 +6,8 @@ export default class PluginFormControllerChange extends PageControllerChange {
   async execute(type, params) {
     if (type === PluginFormSelectionType.PLUGIN) {
       await this._handleChangePlugin(params)
+    } else if (type === PluginFormSelectionType.EVALUATE_PARAMETER) {
+      await this._handleChangeEvaluateParameter(params)
     }
   }
 
@@ -21,5 +23,18 @@ export default class PluginFormControllerChange extends PageControllerChange {
       }
     })
     await this.controller.changed(true)
+  }
+
+  async _handleChangeEvaluateParameter(params) {
+    await this.context.setState(state => {
+      const { newObject } = FormUtil.changeObjectField(
+        state.evaluateParameters,
+        params.field,
+        params.value
+      )
+      return {
+        evaluateParameters: newObject
+      }
+    })
   }
 }

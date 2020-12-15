@@ -15,9 +15,13 @@ export default class PluginFormControllerLoad extends PageControllerLoad {
     }
 
     const plugin = this._createPlugin(object, loadedPlugin)
+    const evaluateParameters = this._createEvaluateParameters()
+    const evaluateResults = this._createEvaluateResults()
 
     return this.context.setState({
-      plugin
+      plugin,
+      evaluateParameters,
+      evaluateResults
     })
   }
 
@@ -68,5 +72,21 @@ export default class PluginFormControllerLoad extends PageControllerLoad {
       plugin.original = _.cloneDeep(plugin)
     }
     return plugin
+  }
+
+  _createEvaluateParameters() {
+    return {
+      entityKind: FormUtil.createField(),
+      entityId: FormUtil.createField(),
+      entityIsNew: FormUtil.createField()
+    }
+  }
+
+  _createEvaluateResults() {
+    return {
+      loading: false,
+      loaded: false,
+      result: null
+    }
   }
 }
