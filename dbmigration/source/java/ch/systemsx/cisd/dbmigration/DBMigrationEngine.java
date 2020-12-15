@@ -48,7 +48,7 @@ public final class DBMigrationEngine
      * @return the SQL script provider.
      */
     public static ISqlScriptProvider createOrMigrateDatabaseAndGetScriptProvider(
-            final DatabaseConfigurationContext context, final String databaseVersion, final String ftsDocumentVersion)
+            final DatabaseConfigurationContext context, final String databaseVersion, final String fullTextSearchDocumentVersion)
     {
         assert context != null : "Unspecified database configuration context.";
         assert StringUtils.isNotBlank(databaseVersion) : "Unspecified database version.";
@@ -62,7 +62,7 @@ public final class DBMigrationEngine
                 new DBMigrationEngine(migrationDAOFactory, sqlScriptProvider, context
                         .isCreateFromScratch());
         migrationEngine.migrateTo(databaseVersion);
-        migrationEngine.migrateFts(ftsDocumentVersion);
+        migrationEngine.migrateFullTextSearch(fullTextSearchDocumentVersion);
 
         /*
          * This triggers population of a lazily populated hashmap of error codes which requires locking and connection to the database. This can lead
@@ -173,21 +173,22 @@ public final class DBMigrationEngine
 
     /**
      * Executes the scripts related to full text search.
-     * @param ftsDocumentVersion version of full text search document scripts.
+     * @param fullTextSearchDocumentVersion version of full text search document scripts.
      */
-    private void migrateFts(final String ftsDocumentVersion)
+    private void migrateFullTextSearch(final String fullTextSearchDocumentVersion)
     {
         final File file = new File(FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH);
         final Integer ftsDocumentVersionFromFile = readVersionFromFile(file);
-        if (ftsDocumentVersion != null && (ftsDocumentVersionFromFile == null
-                || Integer.parseInt(ftsDocumentVersion) > ftsDocumentVersionFromFile))
+        if (fullTextSearchDocumentVersion != null && (ftsDocumentVersionFromFile == null
+                || Integer.parseInt(fullTextSearchDocumentVersion) > ftsDocumentVersionFromFile))
         {
             operationLog.info("Applying full text search scripts...");
             adminDAO.applyFullTextSearchScripts(
-                    scriptProvider.getFtsScriptsFolder(ftsDocumentVersion), ftsDocumentVersion);
+                    scriptProvider.getFullTextSearchScriptsFolder(fullTextSearchDocumentVersion),
+                    fullTextSearchDocumentVersion);
             operationLog.info("Full text search scripts applied.");
             operationLog.info(String.format("Writing new version to file %s.", file.getAbsolutePath()));
-            writeVersionToFile(file, ftsDocumentVersion);
+            writeVersionToFile(file, fullTextSearchDocumentVersion);
         } else
         {
             operationLog.info("Skipped application of full text search scripts.");

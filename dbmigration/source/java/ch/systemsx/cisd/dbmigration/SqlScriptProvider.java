@@ -46,7 +46,7 @@ public class SqlScriptProvider implements ISqlScriptProvider
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, SqlScriptProvider.class);
 
-    private static final String FTS_SCRIPTS_FOLDER_NAME = "full-text-search";
+    private static final String FULL_TEXT_SEARCH_SCRIPTS_FOLDER_NAME = "full-text-search";
 
     private final List<String> schemaScriptRootFolders;
 
@@ -105,10 +105,10 @@ public class SqlScriptProvider implements ISqlScriptProvider
     }
 
     @Override
-    public File getFtsScriptsFolder(final String version)
+    public File getFullTextSearchScriptsFolder(final String version)
     {
         return new File(getSpecificScriptFolder(schemaScriptRootFolders.get(schemaScriptRootFolders
-                .size() - 1)) + "/" + FTS_SCRIPTS_FOLDER_NAME, version);
+                .size() - 1)) + "/" + FULL_TEXT_SEARCH_SCRIPTS_FOLDER_NAME, version);
     }
 
     /**

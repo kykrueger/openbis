@@ -44,7 +44,7 @@ public interface ISqlScriptProvider
     /**
      * Returns the folder where all scripts with the given version for full text search are located.
      */
-    File getFtsScriptsFolder(String version);
+    File getFullTextSearchScriptsFolder(String version);
 
     /**
      * Returns the script to create database schemas.
