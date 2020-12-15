@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 ETH Zuerich, CISD
+ * Copyright 2020 ETH Zuerich, SIS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,14 @@
 
 package ch.systemsx.cisd.openbis.generic.server.authorization.predicate;
 
-import ch.systemsx.cisd.openbis.generic.shared.dto.PermId;
-
 /**
- * @author pkupczyk
+ * @author Franz-Josef Elmer
+ *
  */
-public class SamplePermIdStringPredicate extends DelegatedPredicate<PermId, String>
+public class SamplePermIdNullAllowedPredicate extends SamplePermIdPredicate
 {
-
-    public SamplePermIdStringPredicate()
+    public SamplePermIdNullAllowedPredicate()
     {
-        this(true);
+        super(true, true);
     }
-
-    public SamplePermIdStringPredicate(boolean isReadAccess)
-    {
-        super(new SamplePermIdPredicate(isReadAccess, false));
-    }
-
-    @Override
-    public PermId tryConvert(String value)
-    {
-        return value != null ? new PermId(value) : null;
-    }
-
-    @Override
-    public String getCandidateDescription()
-    {
-        return "sample perm id";
-    }
-
 }
