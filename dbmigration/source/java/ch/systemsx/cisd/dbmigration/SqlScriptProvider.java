@@ -207,6 +207,18 @@ public class SqlScriptProvider implements ISqlScriptProvider
         return tryLoadScript(scriptName, toVersion, "migration");
     }
 
+    @Override
+    public Script[] tryGetFullTextSearchScripts(final String version)
+    {
+        final String prefix = "full-text-search/" + version;
+        return new Script[]
+                {
+                    tryLoadScript("full-text-search-before-" + version + SQL_FILE_TYPE, version, prefix),
+                    tryLoadScript("full-text-search-" + version + SQL_FILE_TYPE, version, prefix),
+                    tryLoadScript("full-text-search-after-" + version + SQL_FILE_TYPE, version, prefix)
+                };
+    }
+
     private Script tryLoadScript(final String scriptName, final String scriptVersion)
     {
         return tryLoadScript(scriptName, scriptVersion, scriptVersion);

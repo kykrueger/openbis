@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
+import ch.systemsx.cisd.dbmigration.*;
 import org.apache.log4j.Logger;
 import org.h2.tools.DeleteDbFiles;
 import org.springframework.jdbc.support.SQLErrorCodesFactory;
@@ -36,11 +37,6 @@ import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.dbmigration.AbstractDatabaseAdminDAO;
-import ch.systemsx.cisd.dbmigration.DatabaseVersionLogDAO;
-import ch.systemsx.cisd.dbmigration.IDatabaseAdminDAO;
-import ch.systemsx.cisd.dbmigration.IMassUploader;
-import ch.systemsx.cisd.dbmigration.MassUploadFileType;
 
 /**
  * Implementation of {@link IDatabaseAdminDAO} for H2.
@@ -161,7 +157,7 @@ public class H2AdminDAO extends AbstractDatabaseAdminDAO
     }
 
     @Override
-    public void applyFullTextSearchScripts(final File dumpFolder, final String version)
+    public void applyFullTextSearchScripts(final ISqlScriptProvider scriptProvider, final String version)
     {
         // No implementation.
     }

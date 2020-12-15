@@ -22,6 +22,7 @@ import java.util.Arrays;
 
 import javax.sql.DataSource;
 
+import ch.systemsx.cisd.dbmigration.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
@@ -33,12 +34,6 @@ import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.dbmigration.AbstractDatabaseAdminDAO;
-import ch.systemsx.cisd.dbmigration.DBUtilities;
-import ch.systemsx.cisd.dbmigration.DatabaseVersionLogDAO;
-import ch.systemsx.cisd.dbmigration.IDatabaseAdminDAO;
-import ch.systemsx.cisd.dbmigration.IMassUploader;
-import ch.systemsx.cisd.dbmigration.MassUploadFileType;
 
 /**
  * Implementation of {@link IDatabaseAdminDAO} for PostgreSQL.
@@ -264,11 +259,13 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
     }
 
     @Override
-    public void applyFullTextSearchScripts(final File dumpFolder, final String version)
+    public void applyFullTextSearchScripts(final ISqlScriptProvider scriptProvider, final String version)
     {
-        final Script beforeScript = tryLoadScript(dumpFolder, "full-text-search-before", version);
-        final Script mainScript = tryLoadScript(dumpFolder, "full-text-search", version);
-        final Script afterScript = tryLoadScript(dumpFolder, "full-text-search-after", version);
+        final Script[] scripts = scriptProvider.tryGetFullTextSearchScripts(version);
+
+        final Script beforeScript = scripts[0];
+        final Script mainScript = scripts[1];
+        final Script afterScript = scripts[2];
 
         operationLog.info("Executing full text search preparation script...");
         scriptExecutor.execute(beforeScript, false, null);

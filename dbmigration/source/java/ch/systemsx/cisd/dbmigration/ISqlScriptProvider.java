@@ -107,4 +107,12 @@ public interface ISqlScriptProvider
      */
     public Script tryGetFunctionMigrationScript(String fromVersion, String toVersion);
 
+    /**
+     * Returns the triple of scripts for full text search.
+     *
+     * @param version full text search script version.
+     * @return array with 3 scripts to be called in sequence.
+     */
+    Script[] tryGetFullTextSearchScripts(String version);
+
 }

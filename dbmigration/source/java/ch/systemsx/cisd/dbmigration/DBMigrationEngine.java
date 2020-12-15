@@ -183,9 +183,7 @@ public final class DBMigrationEngine
                 || Integer.parseInt(fullTextSearchDocumentVersion) > ftsDocumentVersionFromFile))
         {
             operationLog.info("Applying full text search scripts...");
-            adminDAO.applyFullTextSearchScripts(
-                    scriptProvider.getFullTextSearchScriptsFolder(fullTextSearchDocumentVersion),
-                    fullTextSearchDocumentVersion);
+            adminDAO.applyFullTextSearchScripts(scriptProvider, fullTextSearchDocumentVersion);
             operationLog.info("Full text search scripts applied.");
             operationLog.info(String.format("Writing new version to file %s.", file.getAbsolutePath()));
             writeVersionToFile(file, fullTextSearchDocumentVersion);

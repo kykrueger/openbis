@@ -69,10 +69,10 @@ public interface IDatabaseAdminDAO
     /**
      * Applies scripts for full text search.
      *
-     * @param dumpFolder folder with full text search document SQL scripts.
+     * @param scriptProvider script provider.
      * @param version version of scripts.
      */
-    void applyFullTextSearchScripts(File dumpFolder, String version);
+    void applyFullTextSearchScripts(ISqlScriptProvider scriptProvider, String version);
 
     /**
      * Drops the database.
