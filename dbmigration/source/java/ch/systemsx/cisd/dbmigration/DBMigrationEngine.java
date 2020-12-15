@@ -267,11 +267,16 @@ public final class DBMigrationEngine
         adminDAO.createGroups();
         if (scriptProvider.isDumpRestore(version))
         {
+            operationLog.info(String.format("Restoring from dump the database of the version %s.", version));
             adminDAO.restoreDatabaseFromDump(scriptProvider.getDumpFolder(version), version);
+            operationLog.info("Restoring from dump finished.");
         } else
         {
+            operationLog.info(String.format("Creating a new database with the version %s and populating it with data.",
+                    version));
             createEmptyDatabase(version);
             fillWithInitialData(version);
+            operationLog.info("Creation and populating of the database finished.");
         }
         if (operationLog.isInfoEnabled())
         {
