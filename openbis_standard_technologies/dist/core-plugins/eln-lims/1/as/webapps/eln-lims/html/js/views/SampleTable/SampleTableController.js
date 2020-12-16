@@ -156,7 +156,7 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 			        this.currentView = null;
                 }});
 
-                extraOptions.push({ name : "Update Barcodes (Selected)", action : function(selected) {
+                extraOptions.push({ name : "Update Custom Barcodes (Selected)", action : function(selected) {
 			        BarcodeUtil.readBarcode(selected);
 			        this.currentView = null;
                 }});
