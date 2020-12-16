@@ -19,6 +19,7 @@ package ch.systemsx.cisd.dbmigration.postgresql;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.sql.DataSource;
 
@@ -266,6 +267,10 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
         final Script beforeScript = scripts[0];
         final Script mainScript = scripts[1];
         final Script afterScript = scripts[2];
+
+        Objects.requireNonNull(beforeScript, "Full text search before script cannot be loaded.");
+        Objects.requireNonNull(mainScript, "Full text search main script cannot be loaded.");
+        Objects.requireNonNull(afterScript, "Full text search after script cannot be loaded.");
 
         operationLog.info("Executing full text search preparation script...");
         scriptExecutor.execute(beforeScript, false, null);
