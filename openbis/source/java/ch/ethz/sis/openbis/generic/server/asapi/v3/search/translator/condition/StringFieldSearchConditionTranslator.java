@@ -154,8 +154,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 if (casting.equals(DataTypeCode.BOOLEAN.toString()))
                 {
                     BooleanFieldSearchConditionTranslator.translateBooleanProperty(tableMapper, args,
-                            sqlBuilder, aliases, convertStringValueToBooleanValue(value), fullPropertyName,
-                            internalProperty);
+                            sqlBuilder, aliases, convertStringValueToBooleanValue(value), fullPropertyName);
                     sqlBuilder.append(RP);
                     return;
                 }
