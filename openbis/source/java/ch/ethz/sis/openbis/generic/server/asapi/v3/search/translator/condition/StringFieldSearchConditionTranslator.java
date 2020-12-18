@@ -107,7 +107,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                         value, null);
                 break;
             }
-            
+
             case ANY_FIELD:
             {
                 throw new IllegalArgumentException();
@@ -161,12 +161,11 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 }
 
                 // Delegating translation for number properties
-                if (casting.equals(DataTypeCode.INTEGER.toString())
-                        || casting.equals(DataTypeCode.REAL.toString()))
+                if (casting.equals(DataTypeCode.INTEGER.toString()) || casting.equals(DataTypeCode.REAL.toString()))
                 {
 
                     NumberFieldSearchConditionTranslator.translateNumberProperty(tableMapper, args, sqlBuilder,
-                            aliases, convertStringValueToNumberValue(value), fullPropertyName, internalProperty);
+                            aliases, convertStringValueToNumberValue(value), fullPropertyName);
                     sqlBuilder.append(RP);
                     return;
                 }
