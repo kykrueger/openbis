@@ -50,8 +50,7 @@ export default class PluginFormControllerEvaluate {
     const pluginName = plugin.name.value
     const pluginScript = plugin.script.value
 
-    const entityKind = evaluateParameters.entityKind.value
-    const entityId = evaluateParameters.entityId.value
+    const entity = evaluateParameters.entity.value
     const entityIsNew = evaluateParameters.entityIsNew.value
 
     let options = null
@@ -63,20 +62,24 @@ export default class PluginFormControllerEvaluate {
       options.setNew(entityIsNew)
     }
 
-    let objectId = null
+    if (entity) {
+      let objectId = null
 
-    if (entityKind === openbis.EntityKind.EXPERIMENT) {
-      objectId = new openbis.ExperimentIdentifier(entityId)
-    } else if (entityKind === openbis.EntityKind.SAMPLE) {
-      objectId = new openbis.SampleIdentifier(entityId)
-    } else if (entityKind === openbis.EntityKind.DATA_SET) {
-      objectId = new openbis.DataSetPermId(entityId)
-    } else if (entityKind === openbis.EntityKind.MATERIAL) {
-      const entityIdParts = entityId.split(' ')
-      objectId = new openbis.MaterialPermId(entityIdParts[0], entityIdParts[1])
+      if (entity.entityKind === openbis.EntityKind.EXPERIMENT) {
+        objectId = new openbis.ExperimentIdentifier(entity.entityId)
+      } else if (entity.entityKind === openbis.EntityKind.SAMPLE) {
+        objectId = new openbis.SampleIdentifier(entity.entityId)
+      } else if (entity.entityKind === openbis.EntityKind.DATA_SET) {
+        objectId = new openbis.DataSetPermId(entity.entityId)
+      } else if (entity.entityKind === openbis.EntityKind.MATERIAL) {
+        objectId = new openbis.MaterialPermId(
+          entity.entityId.code,
+          entity.entityId.typeCode
+        )
+      }
+
+      options.setObjectId(objectId)
     }
-
-    options.setObjectId(objectId)
 
     if (mode === PageMode.VIEW) {
       options.setPluginId(new openbis.PluginPermId(pluginName))

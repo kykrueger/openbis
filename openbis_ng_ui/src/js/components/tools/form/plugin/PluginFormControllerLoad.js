@@ -77,7 +77,7 @@ export default class PluginFormControllerLoad extends PageControllerLoad {
   _createEvaluateParameters() {
     return {
       entityKind: FormUtil.createField(),
-      entityId: FormUtil.createField(),
+      entity: FormUtil.createField(),
       entityIsNew: FormUtil.createField()
     }
   }

@@ -2,7 +2,7 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
-import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
+import EntityAutocompleterField from '@src/js/components/common/form/EntityAutocompleterField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
@@ -35,7 +35,7 @@ class PluginFormEvaluateParameters extends React.PureComponent {
       <Container>
         <Header>Tester</Header>
         {this.renderEntityKind()}
-        {this.renderEntityId()}
+        {this.renderEntity()}
         {this.renderEntityIsNew()}
       </Container>
     )
@@ -64,18 +64,17 @@ class PluginFormEvaluateParameters extends React.PureComponent {
     )
   }
 
-  renderEntityId() {
+  renderEntity() {
     const { parameters, classes } = this.props
-
-    const options = []
 
     return (
       <div className={classes.parameter}>
-        <AutocompleterField
+        <EntityAutocompleterField
+          key={parameters.entityKind.value}
           label='Entity'
-          name='entityId'
-          options={options}
-          value={parameters.entityId.value}
+          name='entity'
+          entityKind={parameters.entityKind.value}
+          value={parameters.entity.value}
           onChange={this.handleChange}
         />
       </div>

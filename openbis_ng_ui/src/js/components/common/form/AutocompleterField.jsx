@@ -5,6 +5,7 @@ import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import FormFieldContainer from '@src/js/components/common/form/FormFieldContainer.jsx'
 import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel.jsx'
 import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx'
@@ -30,6 +31,11 @@ const styles = theme => ({
     }
   },
   adornment: {
+    marginRight: '-32px',
+    marginTop: '-16px',
+    color: '#0000008a'
+  },
+  adornmentFreeSolo: {
     marginRight: '-4px',
     marginTop: '-16px',
     color: '#0000008a'
@@ -38,6 +44,7 @@ const styles = theme => ({
 
 class AutocompleterFormField extends React.PureComponent {
   static defaultProps = {
+    freeSolo: false,
     mode: 'edit',
     variant: 'filled'
   }
@@ -54,6 +61,7 @@ class AutocompleterFormField extends React.PureComponent {
     this.handleClick = this.handleClick.bind(this)
     this.handleKeyDown = this.handleKeyDown.bind(this)
     this.handleChange = this.handleChange.bind(this)
+    this.handleInputChange = this.handleInputChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
     this.handleBlur = this.handleBlur.bind(this)
   }
@@ -99,6 +107,14 @@ class AutocompleterFormField extends React.PureComponent {
     this.handleEvent(event, value, this.props.onChange)
   }
 
+  handleInputChange(event, value) {
+    this.setState({
+      open: true
+    })
+
+    this.handleEvent(event, value, this.props.onInputChange)
+  }
+
   handleFocus(event) {
     this.setState({
       focused: true
@@ -111,10 +127,6 @@ class AutocompleterFormField extends React.PureComponent {
       focused: false,
       open: false
     })
-
-    if (event.target.value !== this.props.value) {
-      this.handleEvent(event, event.target.value, this.props.onChange)
-    }
 
     event.persist()
 
@@ -162,12 +174,19 @@ class AutocompleterFormField extends React.PureComponent {
       name,
       description,
       value,
+      inputValue,
+      freeSolo,
       disabled,
       error,
       metadata,
       styles,
       classes,
-      variant
+      variant,
+      renderOption,
+      filterOptions,
+      getOptionLabel,
+      getOptionSelected,
+      getOptionDisabled
     } = this.props
 
     const { open, focused } = this.state
@@ -181,14 +200,21 @@ class AutocompleterFormField extends React.PureComponent {
         onClick={this.handleClick}
       >
         <Autocomplete
-          freeSolo
           disableClearable
+          freeSolo={freeSolo}
           name={name}
           disabled={disabled}
           options={this.getOptions()}
+          renderOption={renderOption}
+          filterOptions={filterOptions}
+          getOptionLabel={getOptionLabel}
+          getOptionSelected={getOptionSelected}
+          getOptionDisabled={getOptionDisabled}
           value={value}
+          inputValue={inputValue}
           open={open}
           onChange={this.handleChange}
+          onInputChange={this.handleInputChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
           onKeyDown={this.handleKeyDown}
@@ -242,23 +268,32 @@ class AutocompleterFormField extends React.PureComponent {
 
   renderAdornment() {
     const { open } = this.state
-    const { classes } = this.props
+    const { loading, freeSolo, classes } = this.props
+
     return (
-      <InputAdornment position='end' classes={{ root: classes.adornment }}>
+      <InputAdornment
+        position='end'
+        classes={{
+          root: freeSolo ? classes.adornmentFreeSolo : classes.adornment
+        }}
+      >
+        {loading ? <CircularProgress color='inherit' size={20} /> : null}
         {open ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
       </InputAdornment>
     )
   }
 
   getOptions() {
-    const { options, sort = true } = this.props
+    const { options, getOptionLabel, sort = true } = this.props
 
     if (options) {
       let result = Array.from(options)
 
       if (sort) {
         result.sort((option1, option2) => {
-          return compare(option1, option2)
+          let label1 = getOptionLabel ? getOptionLabel(option1) : option1
+          let label2 = getOptionLabel ? getOptionLabel(option2) : option2
+          return compare(label1, label2)
         })
       }
 
