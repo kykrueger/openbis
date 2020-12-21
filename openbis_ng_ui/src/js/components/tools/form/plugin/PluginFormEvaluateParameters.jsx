@@ -57,6 +57,7 @@ class PluginFormEvaluateParameters extends React.PureComponent {
           label='Entity Kind'
           name='entityKind'
           value={parameters.entityKind.value}
+          disabled={!parameters.entityKind.enabled}
           options={options}
           onChange={this.handleChange}
         />
@@ -75,6 +76,7 @@ class PluginFormEvaluateParameters extends React.PureComponent {
           name='entity'
           entityKind={parameters.entityKind.value}
           value={parameters.entity.value}
+          disabled={!parameters.entity.enabled}
           onChange={this.handleChange}
         />
       </div>
@@ -91,6 +93,7 @@ class PluginFormEvaluateParameters extends React.PureComponent {
             label='Is New Entity'
             name='entityIsNew'
             value={parameters.entityIsNew.value}
+            disabled={!parameters.entityIsNew.enabled}
             onChange={this.handleChange}
           />
         </div>

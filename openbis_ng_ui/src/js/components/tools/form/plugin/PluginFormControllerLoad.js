@@ -15,7 +15,7 @@ export default class PluginFormControllerLoad extends PageControllerLoad {
     }
 
     const plugin = this._createPlugin(object, loadedPlugin)
-    const evaluateParameters = this._createEvaluateParameters()
+    const evaluateParameters = this._createEvaluateParameters(loadedPlugin)
     const evaluateResults = this._createEvaluateResults()
 
     return this.context.setState({
@@ -74,10 +74,16 @@ export default class PluginFormControllerLoad extends PageControllerLoad {
     return plugin
   }
 
-  _createEvaluateParameters() {
+  _createEvaluateParameters(loadedPlugin) {
+    const entityKinds = _.get(loadedPlugin, 'entityKinds', [])
+    const entityKind = entityKinds.length === 1 ? entityKinds[0] : null
+
     return {
-      entityKind: FormUtil.createField(),
-      entity: FormUtil.createField(),
+      entityKind: FormUtil.createField({
+        value: entityKind,
+        enabled: !entityKind
+      }),
+      entity: FormUtil.createField({ enabled: entityKind }),
       entityIsNew: FormUtil.createField()
     }
   }
