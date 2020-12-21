@@ -8,6 +8,7 @@ import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
 
+const ENTITY_NAME_PROPERTY = '$NAME'
 const LOADED_OPTIONS_COUNT = 100
 
 class EntityAutocompleterField extends React.PureComponent {
@@ -124,21 +125,28 @@ class EntityAutocompleterField extends React.PureComponent {
     if (value && value.trim().length > 0) {
       //criteria.withCode().thatContains(value)
       criteria.withIdentifier().thatContains(value)
-      criteria.withProperty('$NAME').thatContains(value)
+      criteria.withProperty(ENTITY_NAME_PROPERTY).thatContains(value)
     }
 
     const fo = new openbis.ExperimentFetchOptions()
+    fo.withProperties()
     fo.from(0).count(count)
     fo.sortBy().identifier().asc()
 
     const results = await openbis.searchExperiments(criteria, fo)
 
     return {
-      options: results.getObjects().map(object => ({
-        label: object.identifier.identifier,
-        entityKind: openbis.EntityKind.EXPERIMENT,
-        entityId: object.identifier.identifier
-      })),
+      options: results.getObjects().map(object => {
+        return {
+          label: this.createOptionLabel(openbis.EntityKind.EXPERIMENT, object),
+          fullLabel: this.createOptionFullLabel(
+            openbis.EntityKind.EXPERIMENT,
+            object
+          ),
+          entityKind: openbis.EntityKind.EXPERIMENT,
+          entityId: object.identifier.identifier
+        }
+      }),
       totalCount: results.totalCount
     }
   }
@@ -150,21 +158,28 @@ class EntityAutocompleterField extends React.PureComponent {
     if (value && value.trim().length > 0) {
       //criteria.withCode().thatContains(value)
       criteria.withIdentifier().thatContains(value)
-      criteria.withProperty('$NAME').thatContains(value)
+      criteria.withProperty(ENTITY_NAME_PROPERTY).thatContains(value)
     }
 
     const fo = new openbis.SampleFetchOptions()
+    fo.withProperties()
     fo.from(0).count(count)
     fo.sortBy().identifier().asc()
 
     const results = await openbis.searchSamples(criteria, fo)
 
     return {
-      options: results.getObjects().map(object => ({
-        label: object.identifier.identifier,
-        entityKind: openbis.EntityKind.SAMPLE,
-        entityId: object.identifier.identifier
-      })),
+      options: results.getObjects().map(object => {
+        return {
+          label: this.createOptionLabel(openbis.EntityKind.SAMPLE, object),
+          fullLabel: this.createOptionFullLabel(
+            openbis.EntityKind.SAMPLE,
+            object
+          ),
+          entityKind: openbis.EntityKind.SAMPLE,
+          entityId: object.identifier.identifier
+        }
+      }),
       totalCount: results.totalCount
     }
   }
@@ -175,24 +190,31 @@ class EntityAutocompleterField extends React.PureComponent {
 
     if (value && value.trim().length > 0) {
       criteria.withCode().thatContains(value)
-      criteria.withProperty('$NAME').thatContains(value)
+      criteria.withProperty(ENTITY_NAME_PROPERTY).thatContains(value)
     }
 
     const fo = new openbis.MaterialFetchOptions()
+    fo.withProperties()
     fo.from(0).count(count)
     fo.sortBy().code().asc()
 
     const results = await openbis.searchMaterials(criteria, fo)
 
     return {
-      options: results.getObjects().map(object => ({
-        label: object.permId.code + ' (' + object.permId.typeCode + ')',
-        entityKind: openbis.EntityKind.MATERIAL,
-        entityId: {
-          code: object.permId.code,
-          typeCode: object.permId.typeCode
+      options: results.getObjects().map(object => {
+        return {
+          label: this.createOptionLabel(openbis.EntityKind.MATERIAL, object),
+          fullLabel: this.createOptionFullLabel(
+            openbis.EntityKind.MATERIAL,
+            object
+          ),
+          entityKind: openbis.EntityKind.MATERIAL,
+          entityId: {
+            code: object.permId.code,
+            typeCode: object.permId.typeCode
+          }
         }
-      })),
+      }),
       totalCount: results.totalCount
     }
   }
@@ -203,34 +225,94 @@ class EntityAutocompleterField extends React.PureComponent {
 
     if (value && value.trim().length > 0) {
       criteria.withCode().thatContains(value)
-      criteria.withProperty('$NAME').thatContains(value)
+      criteria.withProperty(ENTITY_NAME_PROPERTY).thatContains(value)
 
       const experimentCriteria = criteria.withExperiment()
       experimentCriteria.withOrOperator()
       //experimentCriteria.withCode().thatContains(value)
       experimentCriteria.withIdentifier().thatContains(value)
-      experimentCriteria.withProperty('$NAME').thatContains(value)
+      experimentCriteria.withProperty(ENTITY_NAME_PROPERTY).thatContains(value)
 
       const sampleCriteria = criteria.withSample()
       sampleCriteria.withOrOperator()
       //sampleCriteria.withCode().thatContains(value)
       sampleCriteria.withIdentifier().thatContains(value)
-      sampleCriteria.withProperty('$NAME').thatContains(value)
+      sampleCriteria.withProperty(ENTITY_NAME_PROPERTY).thatContains(value)
     }
 
     const fo = new openbis.DataSetFetchOptions()
+    fo.withProperties()
+    fo.withExperiment()
+    fo.withSample()
     fo.from(0).count(count)
     fo.sortBy().code().asc()
 
     const results = await openbis.searchDataSets(criteria, fo)
 
     return {
-      options: results.getObjects().map(object => ({
-        label: object.code,
-        entityKind: openbis.EntityKind.DATA_SET,
-        entityId: object.code
-      })),
+      options: results.getObjects().map(object => {
+        return {
+          label: this.createOptionLabel(openbis.EntityKind.DATA_SET, object),
+          fullLabel: this.createOptionFullLabel(
+            openbis.EntityKind.DATA_SET,
+            object
+          ),
+          entityKind: openbis.EntityKind.DATA_SET,
+          entityId: object.code
+        }
+      }),
       totalCount: results.totalCount
+    }
+  }
+
+  createOptionLabel(entityKind, object) {
+    if (
+      entityKind === openbis.EntityKind.EXPERIMENT ||
+      entityKind === openbis.EntityKind.SAMPLE
+    ) {
+      return object.identifier.identifier
+    } else if (
+      entityKind === openbis.EntityKind.MATERIAL ||
+      entityKind === openbis.EntityKind.DATA_SET
+    ) {
+      return object.code
+    }
+  }
+
+  createOptionFullLabel(entityKind, object) {
+    let name = object.properties[ENTITY_NAME_PROPERTY]
+
+    if (name && name.trim().length > 0) {
+      name = ' (' + name.trim() + ')'
+    } else {
+      name = ''
+    }
+
+    if (
+      entityKind === openbis.EntityKind.EXPERIMENT ||
+      entityKind === openbis.EntityKind.SAMPLE ||
+      entityKind === openbis.EntityKind.MATERIAL
+    ) {
+      return this.createOptionLabel(entityKind, object) + name
+    } else if (entityKind === openbis.EntityKind.DATA_SET) {
+      let owner = null
+
+      if (object.experiment) {
+        owner = this.createOptionLabel(
+          openbis.EntityKind.EXPERIMENT,
+          object.experiment
+        )
+      } else if (object.sample) {
+        owner = this.createOptionLabel(openbis.EntityKind.SAMPLE, object.sample)
+      }
+
+      if (owner) {
+        owner = ' [owner: ' + owner + ']'
+      } else {
+        owner = ''
+      }
+
+      return this.createOptionLabel(entityKind, object) + name + owner
     }
   }
 
@@ -271,7 +353,11 @@ class EntityAutocompleterField extends React.PureComponent {
   }
 
   renderOption(option) {
-    return <span>{this.getOptionLabel(option)}</span>
+    if (option) {
+      return option.fullLabel || option.label
+    } else {
+      return ''
+    }
   }
 
   filterOptions(options) {
