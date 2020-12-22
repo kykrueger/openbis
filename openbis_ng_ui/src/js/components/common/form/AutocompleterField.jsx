@@ -31,11 +31,6 @@ const styles = theme => ({
     }
   },
   adornment: {
-    marginRight: '-32px',
-    marginTop: '-16px',
-    color: '#0000008a'
-  },
-  adornmentFreeSolo: {
     marginRight: '-4px',
     marginTop: '-16px',
     color: '#0000008a'
@@ -54,7 +49,8 @@ class AutocompleterFormField extends React.PureComponent {
 
     this.state = {
       open: false,
-      focused: false
+      focused: false,
+      inputValue: ''
     }
 
     this.reference = React.createRef()
@@ -100,18 +96,13 @@ class AutocompleterFormField extends React.PureComponent {
   }
 
   handleChange(event, value) {
-    this.setState({
-      open: true
-    })
-
     this.handleEvent(event, value, this.props.onChange)
   }
 
   handleInputChange(event, value) {
     this.setState({
-      open: true
+      inputValue: value
     })
-
     this.handleEvent(event, value, this.props.onInputChange)
   }
 
@@ -119,7 +110,7 @@ class AutocompleterFormField extends React.PureComponent {
     this.setState({
       focused: true
     })
-    this.handleEvent(event, null, this.props.onFocus)
+    this.handleEvent(event, event.target.value, this.props.onFocus)
   }
 
   handleBlur(event) {
@@ -130,8 +121,28 @@ class AutocompleterFormField extends React.PureComponent {
 
     event.persist()
 
+    const { freeSolo, getOptionLabel } = this.props
+    const { inputValue } = this.state
+
+    const value = getOptionLabel
+      ? getOptionLabel(this.props.value)
+      : this.props.value
+
+    const valueTrimmed = value ? value.trim() : ''
+    const inputValueTrimmed = inputValue ? inputValue.trim() : ''
+
+    if (inputValueTrimmed.length === 0 && valueTrimmed.length !== 0) {
+      this.handleChange(event, null)
+    } else if (inputValueTrimmed !== valueTrimmed) {
+      if (freeSolo) {
+        this.handleChange(event, inputValue)
+      } else {
+        this.handleInputChange(event, value)
+      }
+    }
+
     setTimeout(() => {
-      this.handleEvent(event, null, this.props.onBlur)
+      this.handleEvent(event, this.state.value, this.props.onBlur)
     }, 0)
   }
 
@@ -174,8 +185,6 @@ class AutocompleterFormField extends React.PureComponent {
       name,
       description,
       value,
-      inputValue,
-      freeSolo,
       disabled,
       error,
       metadata,
@@ -189,7 +198,7 @@ class AutocompleterFormField extends React.PureComponent {
       getOptionDisabled
     } = this.props
 
-    const { open, focused } = this.state
+    const { open, inputValue, focused } = this.state
 
     return (
       <FormFieldContainer
@@ -201,7 +210,7 @@ class AutocompleterFormField extends React.PureComponent {
       >
         <Autocomplete
           disableClearable
-          freeSolo={freeSolo}
+          freeSolo={true}
           name={name}
           disabled={disabled}
           options={this.getOptions()}
@@ -268,13 +277,13 @@ class AutocompleterFormField extends React.PureComponent {
 
   renderAdornment() {
     const { open } = this.state
-    const { loading, freeSolo, classes } = this.props
+    const { loading, classes } = this.props
 
     return (
       <InputAdornment
         position='end'
         classes={{
-          root: freeSolo ? classes.adornmentFreeSolo : classes.adornment
+          root: classes.adornment
         }}
       >
         {loading ? <CircularProgress color='inherit' size={20} /> : null}

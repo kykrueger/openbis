@@ -19,7 +19,6 @@ class EntityAutocompleterField extends React.PureComponent {
 
     this.state = {
       loading: false,
-      inputValue: this.getOptionLabel(props.value),
       options: []
     }
   }
@@ -316,34 +315,15 @@ class EntityAutocompleterField extends React.PureComponent {
     }
   }
 
-  handleFocus() {
-    this.load(this.state.inputValue)
-  }
-
-  handleInputChange(event) {
-    this.setState({
-      inputValue: event.target.value
-    })
+  handleFocus(event) {
     this.load(event.target.value)
   }
 
-  handleBlur(event) {
-    const { value, onChange } = this.props
-    const { inputValue } = this.state
+  handleInputChange(event) {
+    this.load(event.target.value)
+  }
 
-    const valueTrimmed = value ? this.getOptionLabel(value).trim() : ''
-    const inputValueTrimmed = inputValue ? inputValue.trim() : ''
-
-    if (inputValueTrimmed.length === 0 && valueTrimmed.length !== 0) {
-      if (onChange) {
-        onChange(event)
-      }
-    } else if (inputValueTrimmed !== valueTrimmed) {
-      this.setState({
-        inputValue: this.getOptionLabel(value)
-      })
-    }
-
+  handleBlur() {
     this.cancelScheduledLoad()
 
     this.setState({
@@ -381,22 +361,21 @@ class EntityAutocompleterField extends React.PureComponent {
   }
 
   getOptionDisabled(option) {
-    return !option.entityId
+    return !option || !option.entityId
   }
 
   render() {
     logger.log(logger.DEBUG, 'EntityAutocompleterField.render')
 
     const { value } = this.props
-    const { loading, inputValue, options } = this.state
+    const { loading, options } = this.state
 
     return (
       <AutocompleterField
         {...this.props}
         loading={loading}
-        freeSolo={true}
+        freeSolo={false}
         value={value}
-        inputValue={inputValue}
         renderOption={this.renderOption}
         filterOptions={this.filterOptions}
         getOptionLabel={this.getOptionLabel}
