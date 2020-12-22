@@ -347,7 +347,7 @@ class EntityAutocompleterField extends React.PureComponent {
 
   getOptionLabel(option) {
     if (option) {
-      return option.label
+      return option.label || ''
     } else {
       return ''
     }

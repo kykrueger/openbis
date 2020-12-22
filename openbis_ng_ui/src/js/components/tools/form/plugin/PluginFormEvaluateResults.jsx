@@ -50,11 +50,15 @@ class PluginFormEvaluateResults extends React.PureComponent {
     if (result) {
       if (plugin.pluginType === openbis.PluginType.DYNAMIC_PROPERTY) {
         return (
-          <Typography className={classes.result}>{result.value}</Typography>
+          <Typography className={classes.result} data-part='result'>
+            {result.value}
+          </Typography>
         )
       } else if (plugin.pluginType === openbis.PluginType.ENTITY_VALIDATION) {
         return (
-          <Typography className={classes.result}>{result.error}</Typography>
+          <Typography className={classes.result} data-part='result'>
+            {result.error}
+          </Typography>
         )
       } else {
         throw new Error('Unsupported pluginType: ' + plugin.pluginType)

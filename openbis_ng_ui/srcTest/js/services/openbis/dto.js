@@ -40,6 +40,8 @@ import DeleteRoleAssignmentsOperation from 'as/dto/roleassignment/delete/DeleteR
 import DeleteSampleTypesOperation from 'as/dto/sample/delete/DeleteSampleTypesOperation'
 import DeleteVocabulariesOperation from 'as/dto/vocabulary/delete/DeleteVocabulariesOperation'
 import DeleteVocabularyTermsOperation from 'as/dto/vocabulary/delete/DeleteVocabularyTermsOperation'
+import DynamicPropertyPluginEvaluationResult from 'as/dto/plugin/evaluate/DynamicPropertyPluginEvaluationResult'
+import EntityValidationPluginEvaluationResult from 'as/dto/plugin/evaluate/EntityValidationPluginEvaluationResult'
 import EntityKind from 'as/dto/entitytype/EntityKind'
 import EntityTypePermId from 'as/dto/entitytype/id/EntityTypePermId'
 import ExperimentFetchOptions from 'as/dto/experiment/fetchoptions/ExperimentFetchOptions'
@@ -206,6 +208,8 @@ const dto = {
   DeleteSampleTypesOperation,
   DeleteVocabulariesOperation,
   DeleteVocabularyTermsOperation,
+  DynamicPropertyPluginEvaluationResult,
+  EntityValidationPluginEvaluationResult,
   EntityKind,
   EntityTypePermId,
   ExperimentFetchOptions,
