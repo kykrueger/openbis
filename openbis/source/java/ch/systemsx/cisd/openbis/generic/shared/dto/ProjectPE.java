@@ -236,13 +236,19 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
     @Private
     void addSample(SamplePE sample)
     {
+        removeSample(sample);
+        sample.setProjectInternal(this);
+        getSamplesInternal().add(sample);
+    }
+
+    @Private
+    void removeSample(SamplePE sample)
+    {
         ProjectPE project = sample.getProject();
         if (project != null)
         {
             project.getSamplesInternal().remove(sample);
         }
-        sample.setProjectInternal(this);
-        getSamplesInternal().add(sample);
     }
 
     @OptimisticLock(excluded = true)

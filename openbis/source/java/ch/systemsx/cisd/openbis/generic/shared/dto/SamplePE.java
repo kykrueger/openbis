@@ -628,6 +628,10 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
             {
                 project.addSample(this);
 //                projectFrozen = project.isFrozen() && project.isFrozenForSample();
+            } else if (this.project != null)
+            {
+                this.project.removeSample(this);
+                this.project = null;
             }
         }
     }
