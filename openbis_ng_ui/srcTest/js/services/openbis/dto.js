@@ -33,6 +33,7 @@ import DeleteAuthorizationGroupsOperation from 'as/dto/authorizationgroup/delete
 import DeleteDataSetTypesOperation from 'as/dto/dataset/delete/DeleteDataSetTypesOperation'
 import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExperimentTypesOperation'
 import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
+import DeletePersonsOperation from 'as/dto/person/delete/DeletePersonsOperation'
 import DeletePluginsOperation from 'as/dto/plugin/delete/DeletePluginsOperation'
 import DeletePropertyTypesOperation from 'as/dto/property/delete/DeletePropertyTypesOperation'
 import DeleteQueriesOperation from 'as/dto/query/delete/DeleteQueriesOperation'
@@ -64,6 +65,7 @@ import MaterialTypeSearchCriteria from 'as/dto/material/search/MaterialTypeSearc
 import MaterialTypeUpdate from 'as/dto/material/update/MaterialTypeUpdate'
 import Person from 'as/dto/person/Person'
 import PersonCreation from 'as/dto/person/create/PersonCreation'
+import PersonDeletionOptions from 'as/dto/person/delete/PersonDeletionOptions'
 import PersonFetchOptions from 'as/dto/person/fetchoptions/PersonFetchOptions'
 import PersonPermId from 'as/dto/person/id/PersonPermId'
 import PersonSearchCriteria from 'as/dto/person/search/PersonSearchCriteria'
@@ -201,6 +203,7 @@ const dto = {
   DeleteDataSetTypesOperation,
   DeleteExperimentTypesOperation,
   DeleteMaterialTypesOperation,
+  DeletePersonsOperation,
   DeletePluginsOperation,
   DeletePropertyTypesOperation,
   DeleteQueriesOperation,
@@ -232,6 +235,7 @@ const dto = {
   MaterialTypeUpdate,
   Person,
   PersonCreation,
+  PersonDeletionOptions,
   PersonFetchOptions,
   PersonPermId,
   PersonSearchCriteria,

@@ -27,7 +27,7 @@ export default class UserBrowserController extends BrowserController {
           text: user.userId,
           object: { type: objectType.USER, id: user.userId },
           canMatchFilter: true,
-          canRemove: false
+          canRemove: true
         }
       })
 
@@ -95,6 +95,8 @@ export default class UserBrowserController extends BrowserController {
   _prepareRemoveOperations(type, id, reason) {
     if (type === objectType.USER_GROUP) {
       return this._prepareRemoveUserGroupOperations(id, reason)
+    } else if (type === objectType.USER) {
+      return this._prepareRemoveUserOperations(id, reason)
     } else {
       throw new Error('Unsupported type: ' + type)
     }
@@ -106,6 +108,17 @@ export default class UserBrowserController extends BrowserController {
     return Promise.resolve([
       new openbis.DeleteAuthorizationGroupsOperation(
         [new openbis.AuthorizationGroupPermId(id)],
+        options
+      )
+    ])
+  }
+
+  _prepareRemoveUserOperations(id, reason) {
+    const options = new openbis.PersonDeletionOptions()
+    options.setReason(reason)
+    return Promise.resolve([
+      new openbis.DeletePersonsOperation(
+        [new openbis.PersonPermId(id)],
         options
       )
     ])
