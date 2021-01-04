@@ -73,12 +73,6 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
                     {
                         final FullEntityIdentifier fullObjectIdentifier = new FullEntityIdentifier(innerValue, null);
                         final SampleIdentifierParts identifierParts = fullObjectIdentifier.getParts();
-
-                        if (identifierParts.getProjectCodeOrNull() != null)
-                        {
-                            throw new IllegalArgumentException("There cannot be project code for this entity.");
-                        }
-
                         final String entityCode = fullObjectIdentifier.getEntityCode();
                         final String spaceCode = identifierParts.getSpaceCodeOrNull();
                         final String containerCode = identifierParts.getContainerCodeOrNull();
