@@ -1835,9 +1835,6 @@ class Openbis:
             "operator": "AND"
         }
 
-        #import json
-        #print(json.dumps(criteria))
-
         attrs_fetchoptions = self._get_fetchopts_for_attrs(attrs)
 
         # build the various fetch options
