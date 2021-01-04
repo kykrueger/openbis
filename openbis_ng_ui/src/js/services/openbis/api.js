@@ -87,6 +87,14 @@ class Facade {
     return this.promise(this.v3.searchSamples(criteria, fo))
   }
 
+  searchExperiments(criteria, fo) {
+    return this.promise(this.v3.searchExperiments(criteria, fo))
+  }
+
+  searchDataSets(criteria, fo) {
+    return this.promise(this.v3.searchDataSets(criteria, fo))
+  }
+
   searchVocabularies(criteria, fo) {
     return this.promise(this.v3.searchVocabularies(criteria, fo))
   }
@@ -173,6 +181,10 @@ class Facade {
 
   deleteMaterialTypes(ids, options) {
     return this.promise(this.v3.deleteMaterialTypes(ids, options))
+  }
+
+  evaluatePlugin(options) {
+    return this.promise(this.v3.evaluatePlugin(options))
   }
 
   executeService() {

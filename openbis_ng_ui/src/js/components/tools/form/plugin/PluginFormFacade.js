@@ -10,6 +10,10 @@ export default class PluginFormFacade {
     })
   }
 
+  async evaluatePlugin(options) {
+    return openbis.evaluatePlugin(options)
+  }
+
   async executeOperations(operations, options) {
     return openbis.executeOperations(operations, options)
   }

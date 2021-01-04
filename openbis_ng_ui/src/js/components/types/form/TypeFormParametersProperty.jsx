@@ -298,6 +298,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             error={error}
             disabled={!enabled}
             value={value}
+            freeSolo={true}
             mode={mode}
             onChange={this.handleChange}
             onFocus={this.handleFocus}

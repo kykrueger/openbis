@@ -26,8 +26,8 @@ export default class PluginFormControllerValidate extends PageControllerValidate
   }
 
   _validatePlugin(validator, plugin) {
-    validator.validateNotEmpty(plugin, 'name', 'Name')
     validator.validateNotEmpty(plugin, 'script', 'Script')
+    validator.validateNotEmpty(plugin, 'name', 'Name')
     return validator.withErrors(plugin)
   }
 }
