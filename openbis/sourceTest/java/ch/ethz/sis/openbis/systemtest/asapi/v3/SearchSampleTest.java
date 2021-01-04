@@ -304,8 +304,19 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withCode().thatEquals("/CISD/RP1-A2X");
-
         testSearch(TEST_USER, criteria, "/CISD/RP1-A2X");
+    }
+
+    @Test
+    public void testSearchWithIncorrectCode()
+    {
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withCode().thatEquals("/CISD/RP1-A2X/ABCD");
+        testSearch(TEST_USER, criteria1);
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withCode().thatEquals("/A/B/C/D/E");
+        testSearch(TEST_USER, criteria2);
     }
 
     @Test
@@ -399,6 +410,14 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withCodes().thatIn(Arrays.asList("RP1-A2X", "RP1-B1X"));
         testSearch(TEST_USER, criteria, "/CISD/RP1-A2X", "/CISD/RP1-B1X");
+    }
+
+    @Test
+    public void testSearchWithIncorrectCodes()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("/CISD/RP1-A2X/ABC", "/A/B/C/D"));
+        testSearch(TEST_USER, criteria);
     }
 
     @Test
