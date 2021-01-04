@@ -486,6 +486,69 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testUpdate(c, fCreate, fUpdate, c.findSample, fCheck);
 		});
 
+		QUnit.test("updateSamples() turn project sample into a space sample", function(assert) {
+			var c = new common(assert, openbis);
+			var code = c.generateId("SAMPLE");
+
+			var fCreate = function(facade) {
+				var creation = new c.SampleCreation();
+				creation.setTypeId(new c.EntityTypePermId("UNKNOWN"));
+				creation.setCode(code);
+				creation.setSpaceId(new c.SpacePermId("TEST"));
+				creation.setProjectId(new c.ProjectIdentifier("/TEST/TEST-PROJECT"));
+				return facade.createSamples([ creation ]);
+			}
+
+			var fUpdate = function(facade, permId) {
+				var update = new c.SampleUpdate();
+				update.setSampleId(permId);
+				update.setProjectId(null);
+				update.setSpaceId(new c.SpacePermId("PLATONIC"));
+				return facade.updateSamples([ update ]);
+			}
+
+			var fCheck = function(sample) {
+				c.assertEqual(sample.getCode(), code, "Sample code");
+				c.assertEqual(sample.getType().getCode(), "UNKNOWN", "Type code");
+				c.assertEqual(sample.getIdentifier(), "/PLATONIC/" + code, "Identifier");
+				c.assertEqual(sample.getProject(), null, "Project");
+				c.assertEqual(sample.getSpace().getCode(), "PLATONIC", "Space code");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findSample, fCheck);
+		});
+
+		QUnit.test("updateSamples() turn space sample into a project sample", function(assert) {
+			var c = new common(assert, openbis);
+			var code = c.generateId("SAMPLE");
+
+			var fCreate = function(facade) {
+				var creation = new c.SampleCreation();
+				creation.setTypeId(new c.EntityTypePermId("UNKNOWN"));
+				creation.setCode(code);
+				creation.setSpaceId(new c.SpacePermId("TEST"));
+				return facade.createSamples([ creation ]);
+			}
+
+			var fUpdate = function(facade, permId) {
+				var update = new c.SampleUpdate();
+				update.setSampleId(permId);
+				update.setProjectId(new c.ProjectIdentifier("/PLATONIC/SCREENING-EXAMPLES"));
+				update.setSpaceId(new c.SpacePermId("PLATONIC"));
+				return facade.updateSamples([ update ]);
+			}
+
+			var fCheck = function(sample) {
+				c.assertEqual(sample.getCode(), code, "Sample code");
+				c.assertEqual(sample.getType().getCode(), "UNKNOWN", "Type code");
+				c.assertEqual(sample.getIdentifier(), "/PLATONIC/SCREENING-EXAMPLES/" + code, "Identifier");
+				c.assertEqual(sample.getProject().getIdentifier(), "/PLATONIC/SCREENING-EXAMPLES", "Project");
+				c.assertEqual(sample.getSpace().getCode(), "PLATONIC", "Space code");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findSample, fCheck);
+		});
+
 		QUnit.test("updateSamples() with annotated parent and child", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("SAMPLE");

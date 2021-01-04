@@ -1141,6 +1141,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			fo.withType();
 			fo.withExperiment().withProject().withSpace();
 			fo.withSpace();
+			fo.withProject();
 			fo.withProperties();
 			fo.withMaterialProperties();
 			fo.withSampleProperties();
