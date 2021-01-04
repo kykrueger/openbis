@@ -300,6 +300,15 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithCodeWithSpace()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withCode().thatEquals("/CISD/RP1-A2X");
+
+        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X");
+    }
+
+    @Test
     public void testSearchWithCodeThatIsLessOrEqualTo()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
