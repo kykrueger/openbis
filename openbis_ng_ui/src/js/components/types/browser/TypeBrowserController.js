@@ -91,6 +91,7 @@ export default class TypeBrowserController extends BrowserController {
           {
             id: 'objectTypes',
             text: 'Object Types',
+            object: { type: objectType.OVERVIEW, id: objectType.OBJECT_TYPE },
             children: objectTypeNodes,
             childrenType: objectType.NEW_OBJECT_TYPE,
             canAdd: true
@@ -98,6 +99,10 @@ export default class TypeBrowserController extends BrowserController {
           {
             id: 'collectionTypes',
             text: 'Collection Types',
+            object: {
+              type: objectType.OVERVIEW,
+              id: objectType.COLLECTION_TYPE
+            },
             children: collectionTypeNodes,
             childrenType: objectType.NEW_COLLECTION_TYPE,
             canAdd: true
@@ -105,6 +110,7 @@ export default class TypeBrowserController extends BrowserController {
           {
             id: 'dataSetTypes',
             text: 'Data Set Types',
+            object: { type: objectType.OVERVIEW, id: objectType.DATA_SET_TYPE },
             children: dataSetTypeNodes,
             childrenType: objectType.NEW_DATA_SET_TYPE,
             canAdd: true
@@ -112,6 +118,7 @@ export default class TypeBrowserController extends BrowserController {
           {
             id: 'materialTypes',
             text: 'Material Types',
+            object: { type: objectType.OVERVIEW, id: objectType.MATERIAL_TYPE },
             children: materialTypeNodes,
             childrenType: objectType.NEW_MATERIAL_TYPE,
             canAdd: true
@@ -119,6 +126,10 @@ export default class TypeBrowserController extends BrowserController {
           {
             id: 'vocabularyTypes',
             text: 'Vocabulary Types',
+            object: {
+              type: objectType.OVERVIEW,
+              id: objectType.VOCABULARY_TYPE
+            },
             children: vocabularyTypeNodes,
             childrenType: objectType.NEW_VOCABULARY_TYPE,
             canAdd: true

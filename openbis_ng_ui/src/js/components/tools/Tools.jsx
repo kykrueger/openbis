@@ -55,7 +55,7 @@ class Tools extends React.Component {
   }
 
   renderTab(tab) {
-    const { object } = tab
+    const { object, changed } = tab
 
     const prefixes = {
       [objectType.DYNAMIC_PROPERTY_PLUGIN]: 'Dynamic Property Plugin: ',
@@ -68,7 +68,9 @@ class Tools extends React.Component {
       [objectType.SEARCH]: 'Search: '
     }
 
-    return <ContentTab prefix={prefixes[object.type]} tab={tab} />
+    return (
+      <ContentTab label={prefixes[object.type] + object.id} changed={changed} />
+    )
   }
 }
 

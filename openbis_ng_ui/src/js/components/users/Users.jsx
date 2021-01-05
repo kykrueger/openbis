@@ -55,7 +55,7 @@ class Users extends React.Component {
   }
 
   renderTab(tab) {
-    const { object } = tab
+    const { object, changed } = tab
 
     const prefixes = {
       [objectType.USER]: 'User: ',
@@ -65,7 +65,9 @@ class Users extends React.Component {
       [objectType.SEARCH]: 'Search: '
     }
 
-    return <ContentTab prefix={prefixes[object.type]} tab={tab} />
+    return (
+      <ContentTab label={prefixes[object.type] + object.id} changed={changed} />
+    )
   }
 }
 

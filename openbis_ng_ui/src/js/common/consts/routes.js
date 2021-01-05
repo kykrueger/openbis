@@ -67,6 +67,11 @@ const routes = {
     page: pages.TYPES,
     type: objectTypes.OBJECT_TYPE
   }),
+  OBJECT_TYPE_OVERVIEW: new Route('/object-type-overview', {
+    page: pages.TYPES,
+    type: objectTypes.OVERVIEW,
+    id: objectTypes.OBJECT_TYPE
+  }),
   NEW_COLLECTION_TYPE: new Route('/new-collection-type/:id', {
     page: pages.TYPES,
     type: objectTypes.NEW_COLLECTION_TYPE
@@ -74,6 +79,11 @@ const routes = {
   COLLECTION_TYPE: new Route('/collection-type/:id', {
     page: pages.TYPES,
     type: objectTypes.COLLECTION_TYPE
+  }),
+  COLLECTION_TYPE_OVERVIEW: new Route('/collection-type-overview', {
+    page: pages.TYPES,
+    type: objectTypes.OVERVIEW,
+    id: objectTypes.COLLECTION_TYPE
   }),
   NEW_DATA_SET_TYPE: new Route('/new-dataset-type/:id', {
     page: pages.TYPES,
@@ -83,6 +93,11 @@ const routes = {
     page: pages.TYPES,
     type: objectTypes.DATA_SET_TYPE
   }),
+  DATA_SET_TYPE_OVERVIEW: new Route('/dataset-type-overview', {
+    page: pages.TYPES,
+    type: objectTypes.OVERVIEW,
+    id: objectTypes.DATA_SET_TYPE
+  }),
   NEW_MATERIAL_TYPE: new Route('/new-material-type/:id', {
     page: pages.TYPES,
     type: objectTypes.NEW_MATERIAL_TYPE
@@ -91,6 +106,11 @@ const routes = {
     page: pages.TYPES,
     type: objectTypes.MATERIAL_TYPE
   }),
+  MATERIAL_TYPE_OVERVIEW: new Route('/material-type-overview', {
+    page: pages.TYPES,
+    type: objectTypes.OVERVIEW,
+    id: objectTypes.MATERIAL_TYPE
+  }),
   NEW_VOCABULARY_TYPE: new Route('/new-vocabulary-type/:id', {
     page: pages.TYPES,
     type: objectTypes.NEW_VOCABULARY_TYPE
@@ -98,6 +118,11 @@ const routes = {
   VOCABULARY_TYPE: new Route('/vocabulary-type/:id', {
     page: pages.TYPES,
     type: objectTypes.VOCABULARY_TYPE
+  }),
+  VOCABULARY_TYPE_OVERVIEW: new Route('/vocabulary-type-overview', {
+    page: pages.TYPES,
+    type: objectTypes.OVERVIEW,
+    id: objectTypes.VOCABULARY_TYPE
   }),
   USERS: new Route('/users', {
     page: pages.USERS
