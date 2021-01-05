@@ -3,10 +3,8 @@ import React from 'react'
 import autoBind from 'auto-bind'
 import { withStyles } from '@material-ui/core/styles'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
-import LinkToObject from '@src/js/components/common/form/LinkToObject.jsx'
+import UserGroupLink from '@src/js/components/common/link/UserGroupLink.jsx'
 import openbis from '@src/js/services/openbis.js'
-import pages from '@src/js/common/consts/pages.js'
-import objectTypes from '@src/js/common/consts/objectType.js'
 import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
 
@@ -175,25 +173,8 @@ class RolesGrid extends React.PureComponent {
     return row.role.value
   }
 
-  renderInheritedFromValue({ value, row }) {
-    if (value) {
-      return this.renderDefault({
-        value: (
-          <LinkToObject
-            page={pages.USERS}
-            object={{
-              type: objectTypes.USER_GROUP,
-              id: row.inheritedFrom.value
-            }}
-          >
-            {row.inheritedFrom.value}
-          </LinkToObject>
-        ),
-        row
-      })
-    } else {
-      return null
-    }
+  renderInheritedFromValue({ value }) {
+    return <UserGroupLink groupCode={value} />
   }
 
   renderLevelValue({ value, row }) {

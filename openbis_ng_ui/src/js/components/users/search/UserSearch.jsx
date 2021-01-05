@@ -3,7 +3,7 @@ import autoBind from 'auto-bind'
 import React from 'react'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
 import UsersGrid from '@src/js/components/users/common/UsersGrid.jsx'
-import GroupsGrid from '@src/js/components/users/common/GroupsGrid.jsx'
+import UserGroupsGrid from '@src/js/components/users/common/UserGroupsGrid.jsx'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import ids from '@src/js/common/consts/ids.js'
 import store from '@src/js/store/store.js'
@@ -135,7 +135,7 @@ class UserSearch extends React.Component {
             selection && selection.type === 'user' ? selection.id : null
           }
         />
-        <GroupsGrid
+        <UserGroupsGrid
           id={ids.USER_GROUPS_GRID_ID}
           rows={this.state.groups}
           onSelectedRowChange={this.handleSelectedGroupRowChange}

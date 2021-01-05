@@ -1,8 +1,6 @@
 import React from 'react'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
-import LinkToObject from '@src/js/components/common/form/LinkToObject.jsx'
-import pages from '@src/js/common/consts/pages.js'
-import objectTypes from '@src/js/common/consts/objectType.js'
+import UserGroupLink from '@src/js/components/common/link/UserGroupLink.jsx'
 import logger from '@src/js/common/logger.js'
 
 export default class GroupsGrid extends React.PureComponent {
@@ -29,21 +27,7 @@ export default class GroupsGrid extends React.PureComponent {
             sort: 'asc',
             getValue: ({ row }) => row.code.value,
             renderValue: ({ value }) => {
-              if (value) {
-                return (
-                  <LinkToObject
-                    page={pages.USERS}
-                    object={{
-                      type: objectTypes.USER_GROUP,
-                      id: value
-                    }}
-                  >
-                    {value}
-                  </LinkToObject>
-                )
-              } else {
-                return ''
-              }
+              return <UserGroupLink groupCode={value} />
             }
           },
           {

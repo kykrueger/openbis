@@ -7,6 +7,8 @@ const USER_ROLES_GRID_ID = 'user_roles_grid'
 const USER_GROUP_USERS_GRID_ID = 'user_group_users_grid'
 const USER_GROUP_ROLES_GRID_ID = 'user_group_roles_grid'
 const VOCABULARY_TERMS_GRID_ID = 'vocabulary_terms_grid'
+const PLUGINS_GRID_ID = 'plugins_grid'
+const QUERIES_GRID_ID = 'queries_grid'
 
 export default {
   WEB_APP_ID,
@@ -17,5 +19,7 @@ export default {
   USER_ROLES_GRID_ID,
   USER_GROUP_USERS_GRID_ID,
   USER_GROUP_ROLES_GRID_ID,
-  VOCABULARY_TERMS_GRID_ID
+  VOCABULARY_TERMS_GRID_ID,
+  PLUGINS_GRID_ID,
+  QUERIES_GRID_ID
 }
