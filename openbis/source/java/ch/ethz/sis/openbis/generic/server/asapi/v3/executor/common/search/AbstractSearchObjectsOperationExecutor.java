@@ -23,9 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,7 +86,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         }
 
         Collection<OBJECT> allResults = searchAndTranslate(context, criteria, fetchOptions);
-        List<OBJECT> sortedAndPaged = sortAndPage(context, allResults, criteria, fetchOptions);
+        List<OBJECT> sortedAndPaged = sortAndPage(allResults, criteria, fetchOptions);
 
         SearchResult<OBJECT> searchResult = new SearchResult<OBJECT>(sortedAndPaged, allResults.size());
         return getOperationResult(searchResult);
@@ -130,7 +128,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         return objects;
     }
 
-    private List<OBJECT> sortAndPage(IOperationContext context, Collection<OBJECT> results,  CRITERIA criteria, FETCH_OPTIONS fetchOptions)
+    private List<OBJECT> sortAndPage(Collection<OBJECT> results, CRITERIA criteria, FETCH_OPTIONS fetchOptions)
     {
         if (results == null || results.isEmpty())
         {

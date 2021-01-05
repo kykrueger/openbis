@@ -138,7 +138,7 @@ public class CriteriaMapper {
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ListableSampleTypeSearchCriteria.class, new ListableSampleTypeSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(LocationSearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ModificationDateSearchCriteria.class, dateFieldSearchConditionTranslator);
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NameSearchCriteria.class, codeSearchConditionTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NameSearchCriteria.class, new NameSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NoExperimentSearchCriteria.class, absenceConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NoProjectSearchCriteria.class, absenceConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NoSampleContainerSearchCriteria.class, absenceConditionTranslator);

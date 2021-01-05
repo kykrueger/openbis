@@ -300,14 +300,6 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
-    public void testSearchWithCodeWithSpace()
-    {
-        final SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withCode().thatEquals("/CISD/RP1-A2X");
-        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X");
-    }
-
-    @Test
     public void testSearchWithIncorrectCode()
     {
         final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
@@ -339,16 +331,19 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithCodeThatIsGreaterThanOrEqualTo()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withCode().thatIsGreaterThanOrEqualTo("WELL-A01");
-        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02");
+        criteria.withCode().thatIsGreaterThanOrEqualTo("PLATE_WELLSEARCH:WELL-A01");
+        testSearch(TEST_USER, criteria, "/TEST-SPACE/SAMPLE-TO-DELETE", "/CISD/RP1-B1X",
+                "/CISD/PLATE_WELLSEARCH:WELL-A02", "/CISD/RP1-A2X", "/CISD/RP2-A1X",
+                "/CISD/PLATE_WELLSEARCH:WELL-A01");
     }
 
     @Test
     public void testSearchWithCodeThatIsGreaterThan()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withCode().thatIsGreaterThan("WELL-A01");
-        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A02");
+        criteria.withCode().thatIsGreaterThan("PLATE_WELLSEARCH:WELL-A01");
+        testSearch(TEST_USER, criteria, "/TEST-SPACE/SAMPLE-TO-DELETE", "/CISD/RP1-B1X",
+                "/CISD/PLATE_WELLSEARCH:WELL-A02", "/CISD/RP1-A2X", "/CISD/RP2-A1X");
     }
 
     @Test
@@ -2942,7 +2937,7 @@ public class SearchSampleTest extends AbstractSampleTest
         subcriteria2.withPermId().thatContains("-100");
 
         testSearch(TEST_USER, criteria, "/CISD/MP1-MIXED:A01", "/CISD/MP1-MIXED:A02", "/CISD/MP1-MIXED:A03",
-                "/CISD/MP1-MIXED:B02", "/CISD/MP2-NO-CL:A01", "/CISD/MP2-NO-CL:C03");
+                "/CISD/MP1-MIXED:B02", "/CISD/MP2-NO-CL:A01");
     }
 
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)
