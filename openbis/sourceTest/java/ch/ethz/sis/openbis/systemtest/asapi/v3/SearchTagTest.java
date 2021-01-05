@@ -174,20 +174,8 @@ public class SearchTagTest extends AbstractTest
         TagSearchCriteria criteria = new TagSearchCriteria();
         criteria.withId().thatEquals(permId);
 
-        if (user.isDisabledProjectUser())
-        {
-            assertAuthorizationFailureException(new IDelegatedAction()
-                {
-                    @Override
-                    public void execute()
-                    {
-                        testSearch(user.getUserId(), criteria, permId.getPermId());
-                    }
-                });
-        } else
-        {
-            testSearch(user.getUserId(), criteria, permId.getPermId());
-        }
+        // Search should succeed for any user.
+        testSearch(user.getUserId(), criteria, permId.getPermId());
     }
 
     @Test
