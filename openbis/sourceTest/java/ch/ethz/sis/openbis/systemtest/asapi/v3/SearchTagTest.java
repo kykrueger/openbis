@@ -27,7 +27,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.create.TagCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
-import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
 /**
@@ -105,7 +104,7 @@ public class SearchTagTest extends AbstractTest
         criteria.withCodes().thatIn(Arrays.asList("TEST_METAPROJECTS", "ANOTHER_TEST_METAPROJECTS"));
         testSearch(TEST_USER, criteria, "/test/TEST_METAPROJECTS", "/test/ANOTHER_TEST_METAPROJECTS");
     }
-    
+
     @Test
     public void testSearchWithCodeThatContains()
     {
@@ -153,10 +152,15 @@ public class SearchTagTest extends AbstractTest
     @Test
     public void testSearchWithUnauthorized()
     {
-        TagSearchCriteria criteria = new TagSearchCriteria();
-        criteria.withPermId().thatEquals("/test/TEST_METAPROJECTS");
-        testSearch(TEST_USER, criteria, "/test/TEST_METAPROJECTS");
-        testSearch(TEST_SPACE_USER, criteria);
+        final TagSearchCriteria criteria1 = new TagSearchCriteria();
+        criteria1.withPermId().thatEquals("/test/TEST_METAPROJECTS");
+        testSearch(TEST_USER, criteria1, "/test/TEST_METAPROJECTS");
+        testSearch(TEST_SPACE_USER, criteria1);
+
+        final TagSearchCriteria criteria2 = new TagSearchCriteria();
+        criteria2.withCode().thatEquals("TEST_METAPROJECTS");
+        testSearch(TEST_USER, criteria2, "/test/TEST_METAPROJECTS");
+        testSearch(TEST_SPACE_USER, criteria2, "/test_space/TEST_METAPROJECTS");
     }
 
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER_WITH_ETL)
@@ -185,7 +189,7 @@ public class SearchTagTest extends AbstractTest
             testSearch(user.getUserId(), criteria, permId.getPermId());
         }
     }
-    
+
     @Test
     public void testLogging()
     {
