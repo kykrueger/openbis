@@ -54,7 +54,6 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
         {
             case ATTRIBUTE:
             {
-                final String columnName = (criterion.getFieldName().equals(NAME_COLUMN)) ?  NAME_COLUMN : CODE_COLUMN;
                 final AbstractStringValue value = criterion.getFieldValue();
 
                 if (value != null && value.getValue() != null)
@@ -102,7 +101,7 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
                                             append(EQ).append(SP).append(LP).
                                             append(SELECT).append(SP).append(ID_COLUMN).append(SP).append(FROM).
                                             append(SP).append(tableMapper.getEntitiesTable()).append(SP).
-                                            append(WHERE).append(SP).append(columnName).append(SP);
+                                            append(WHERE).append(SP).append(NAME_COLUMN).append(SP);
                                     TranslatorUtils.appendStringComparatorOp(value.getClass(), containerCode,
                                             sqlBuilder, args);
 
@@ -110,7 +109,7 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
                                 }
 
                                 sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD)
-                                        .append(columnName)
+                                        .append(NAME_COLUMN)
                                         .append(SP);
                                 TranslatorUtils.appendStringComparatorOp(value.getClass(), entityCode, sqlBuilder,
                                         args);
@@ -123,12 +122,12 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
 
                         case SAMPLE:
                         {
-                            // Following query part:
+                            // Building the following query part:
                             // CASE
                             //  WHEN t0.samp_id_part_of IS NULL THEN code LIKE ?
                             //  ELSE substr(t0.sample_identifier, length(t0.sample_identifier)
                             //          - strpos(reverse(t0.sample_identifier), '/') + 2) LIKE ?
-                            //END
+                            // END
 
                             sqlBuilder.append(CASE).append(NL)
                                     .append(SP).append(SP).append(WHEN).append(SP)
@@ -158,16 +157,16 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
 
                         default:
                         {
-                            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName)
-                                    .append(SP);
-                            TranslatorUtils.appendStringComparatorOp(value.getClass(), stringValue.toUpperCase(), sqlBuilder,
-                                    args);
+                            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD)
+                                    .append(CODE_COLUMN).append(SP);
+                            TranslatorUtils.appendStringComparatorOp(value.getClass(), stringValue.toUpperCase(),
+                                    sqlBuilder, args);
                             break;
                         }
                     }
                 } else
                 {
-                    sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName)
+                    sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN)
                             .append(SP).append(IS_NOT_NULL);
                 }
                 break;
