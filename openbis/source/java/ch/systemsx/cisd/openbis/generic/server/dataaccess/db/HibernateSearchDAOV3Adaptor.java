@@ -884,7 +884,14 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 criterionV3Criteria = v3Criteria.withProject().withSpace().withCode();
                 break;
             case METAPROJECT:
-                criterionV3Criteria = v3Criteria.withTag().withCode();
+                criterionV3Criteria = v3Criteria;
+                if (v3Criteria instanceof SampleSearchCriteria)
+                {
+                    final SampleSearchCriteria subcriteria = ((SampleSearchCriteria) v3Criteria).withSubcriteria()
+                            .withOrOperator();
+                    subcriteria.withTag().withPermId();
+                    subcriteria.withTag().withCode();
+                }
                 break;
             case REGISTRATION_DATE:
                 criterionV3Criteria = v3Criteria.withRegistrationDate();
@@ -961,7 +968,10 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 criterionV3Criteria = v3Criteria.withProject().withSpace().withCode();
                 break;
             case METAPROJECT:
-                criterionV3Criteria = v3Criteria.withTag().withCode();
+                criterionV3Criteria = v3Criteria;
+                final ExperimentSearchCriteria subcriteria = v3Criteria.withSubcriteria().withOrOperator();
+                subcriteria.withTag().withPermId();
+                subcriteria.withTag().withCode();
                 break;
             case REGISTRATION_DATE:
                 criterionV3Criteria = v3Criteria.withRegistrationDate();
@@ -1029,7 +1039,10 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 criterionV3Criteria = v3Criteria.withType().withCode();
                 break;
             case METAPROJECT:
-                criterionV3Criteria = v3Criteria.withTag().withCode();
+                criterionV3Criteria = v3Criteria;
+                final MaterialSearchCriteria subcriteria = v3Criteria.withSubcriteria().withOrOperator();
+                subcriteria.withTag().withCode();
+                subcriteria.withTag().withPermId();
                 break;
             case REGISTRATION_DATE:
                 criterionV3Criteria = v3Criteria.withRegistrationDate();
