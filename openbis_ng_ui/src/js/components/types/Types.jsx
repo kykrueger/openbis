@@ -9,7 +9,6 @@ import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
 
 import TypeBrowser from '@src/js/components/types/browser/TypeBrowser.jsx'
 import TypeSearch from '@src/js/components/types/search/TypeSearch.jsx'
-import TypeOverview from '@src/js/components/types/overview/TypeOverview.jsx'
 import TypeForm from '@src/js/components/types/form/TypeForm.jsx'
 import VocabularyForm from '@src/js/components/types/form/VocabularyForm.jsx'
 
@@ -41,9 +40,9 @@ class Types extends React.Component {
   renderComponent(tab) {
     const { object } = tab
     if (object.type === objectType.SEARCH) {
-      return <TypeSearch objectId={object.id} />
+      return <TypeSearch searchText={object.id} />
     } else if (object.type === objectType.OVERVIEW) {
-      return <TypeOverview objectType={object.id} />
+      return <TypeSearch objectType={object.id} />
     } else if (
       object.type === objectType.VOCABULARY_TYPE ||
       object.type === objectType.NEW_VOCABULARY_TYPE
