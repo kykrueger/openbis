@@ -870,10 +870,10 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fCheck = function(facade, samples) {
 				identifiers = c.extractIdentifiers(samples);
 				var identifiersString = identifiers.toString();
-				c.assertTrue(identifiersString.includes("/PLATONIC/SCREENING-EXAMPLES/PLATE-1:A1"));
-				c.assertTrue(identifiersString.includes("/PLATONIC/SCREENING-EXAMPLES/PLATE-2:A1"));
-				c.assertTrue(identifiersString.includes("/TEST/TEST-PROJECT/PLATE-1A:A1"));
-				c.assertTrue(identifiersString.includes("/TEST/TEST-PROJECT/PLATE-2:A1"));
+				c.assertTrue(identifiersString.indexOf("/PLATONIC/SCREENING-EXAMPLES/PLATE-1:A1") >= 0);
+				c.assertTrue(identifiersString.indexOf("/PLATONIC/SCREENING-EXAMPLES/PLATE-2:A1") >= 0);
+				c.assertTrue(identifiersString.indexOf("/TEST/TEST-PROJECT/PLATE-1A:A1") >= 0);
+				c.assertTrue(identifiersString.indexOf("/TEST/TEST-PROJECT/PLATE-2:A1") >= 0);
 			}
 
 			testSearch(c, fSearch, fCheck);
