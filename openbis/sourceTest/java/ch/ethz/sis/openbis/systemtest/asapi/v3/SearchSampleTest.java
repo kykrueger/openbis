@@ -403,8 +403,10 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithCodes()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withCodes().thatIn(Arrays.asList("RP1-A2X", "RP1-B1X"));
-        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X", "/CISD/RP1-B1X");
+        criteria.withCodes().thatIn(Arrays.asList("RP1-A2X", "RP1-B1X", "PLATE_WELLSEARCH:WELL-A01",
+                "PLATE_WELLSEARCH:WELL-A02"));
+        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X", "/CISD/RP1-B1X",
+                "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02");
     }
 
     @Test
