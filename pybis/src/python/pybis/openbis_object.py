@@ -201,6 +201,7 @@ class OpenBisObject():
             if VERBOSE: print("{} successfully updated.".format(self.entity))
             new_entity_data = get_single_item(self.permId, only_data=True)
             self._set_data(new_entity_data)
+            return self
 
 
 class Transaction:
