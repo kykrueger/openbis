@@ -1405,6 +1405,40 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithSortingByMissingProperty()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withPermId().thatEquals("200902091219327-1025");
+        criteria.withPermId().thatEquals("200902091225616-1027");
+        criteria.withPermId().thatEquals("200902091250077-1026");
+        criteria.withPermId().thatEquals("200902091250077-1051");
+        criteria.withPermId().thatEquals("200811050945092-976");
+        criteria.withPermId().thatEquals("200811050945092-977");
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withProperties();
+
+        fo.sortBy().property("COMMENT").asc();
+        final List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
+        assertEquals(samples1.size(), 6);
+        assertEquals(samples1.get(0).getProperty("COMMENT"), "extremely simple stuff");
+        assertEquals(samples1.get(1).getProperty("COMMENT"), "stuff like others");
+        assertEquals(samples1.get(2).getProperty("COMMENT"), "very advanced stuff");
+
+        fo.sortBy().property("COMMENT").desc();
+        final List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
+        assertEquals(samples2.size(), 6);
+        assertEquals(samples2.get(0).getProperty("COMMENT"), "very advanced stuff");
+        assertEquals(samples2.get(1).getProperty("COMMENT"), "stuff like others");
+        assertEquals(samples2.get(2).getProperty("COMMENT"), "extremely simple stuff");
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchWithSortingByPropertyWithIntegerValues()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();

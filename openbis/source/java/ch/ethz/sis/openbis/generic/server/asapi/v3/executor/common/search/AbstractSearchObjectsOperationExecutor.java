@@ -297,8 +297,20 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
             }
         }
 
-        final List<Long> toPage = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions)
+        final List<Long> sortedIds = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions)
                 : new ArrayList<>(ids);
+
+        final List<Long> toPage;
+        if (sortedIds.size() < ids.size())
+        {
+            final Set<Long> combiningSet = new LinkedHashSet<>(sortedIds);
+            combiningSet.addAll(ids);
+            toPage = new ArrayList<>(combiningSet);
+        } else
+        {
+            toPage = sortedIds;
+        }
+
         final Integer foFromRecord = fetchOptions.getFrom();
         final Integer foRecordsCount = fetchOptions.getCount();
         final boolean hasPaging = foFromRecord != null || foRecordsCount != null;
