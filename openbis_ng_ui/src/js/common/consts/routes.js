@@ -172,6 +172,14 @@ const routes = {
     page: pages.TOOLS,
     type: objectTypes.DYNAMIC_PROPERTY_PLUGIN
   }),
+  DYNAMIC_PROPERTY_PLUGIN_OVERVIEW: new Route(
+    '/dynamic-property-plugin-overview',
+    {
+      page: pages.TOOLS,
+      type: objectTypes.OVERVIEW,
+      id: objectTypes.DYNAMIC_PROPERTY_PLUGIN
+    }
+  ),
   NEW_ENTITY_VALIDATION_PLUGIN: new Route('/new-entity-validation-plugin/:id', {
     page: pages.TOOLS,
     type: objectTypes.NEW_ENTITY_VALIDATION_PLUGIN
@@ -180,6 +188,14 @@ const routes = {
     page: pages.TOOLS,
     type: objectTypes.ENTITY_VALIDATION_PLUGIN
   }),
+  ENTITY_VALIDATION_PLUGIN_OVERVIEW: new Route(
+    '/entity-validation-plugin-overview',
+    {
+      page: pages.TOOLS,
+      type: objectTypes.OVERVIEW,
+      id: objectTypes.ENTITY_VALIDATION_PLUGIN
+    }
+  ),
   NEW_QUERY: new Route('/new-query/:id', {
     page: pages.TOOLS,
     type: objectTypes.NEW_QUERY
@@ -187,6 +203,11 @@ const routes = {
   QUERY: new Route('/query/:id', {
     page: pages.TOOLS,
     type: objectTypes.QUERY
+  }),
+  QUERY_OVERVIEW: new Route('/query-overview', {
+    page: pages.TOOLS,
+    type: objectTypes.OVERVIEW,
+    id: objectTypes.QUERY
   }),
   DEFAULT: new DefaultRoute()
 }

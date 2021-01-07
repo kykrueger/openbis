@@ -50,27 +50,40 @@ class Tools extends React.Component {
     ) {
       return <QueryForm object={object} />
     } else if (object.type === objectType.SEARCH) {
-      return <ToolSearch objectId={object.id} />
+      return <ToolSearch searchText={object.id} />
+    } else if (object.type === objectType.OVERVIEW) {
+      return <ToolSearch objectType={object.id} />
     }
   }
 
   renderTab(tab) {
     const { object, changed } = tab
 
-    const prefixes = {
-      [objectType.DYNAMIC_PROPERTY_PLUGIN]: 'Dynamic Property Plugin: ',
-      [objectType.NEW_DYNAMIC_PROPERTY_PLUGIN]: 'New Dynamic Property Plugin ',
-      [objectType.ENTITY_VALIDATION_PLUGIN]: 'Entity Validation Plugin: ',
-      [objectType.NEW_ENTITY_VALIDATION_PLUGIN]:
-        'New Entity Validation Plugin ',
-      [objectType.QUERY]: 'Query: ',
-      [objectType.NEW_QUERY]: 'New Query ',
-      [objectType.SEARCH]: 'Search: '
+    let label = null
+
+    if (object.type === objectType.OVERVIEW) {
+      const labels = {
+        [objectType.DYNAMIC_PROPERTY_PLUGIN]: 'Dynamic Property Plugins',
+        [objectType.ENTITY_VALIDATION_PLUGIN]: 'Entity Validation Plugins',
+        [objectType.QUERY]: 'Queries'
+      }
+      label = labels[object.id]
+    } else {
+      const prefixes = {
+        [objectType.DYNAMIC_PROPERTY_PLUGIN]: 'Dynamic Property Plugin: ',
+        [objectType.NEW_DYNAMIC_PROPERTY_PLUGIN]:
+          'New Dynamic Property Plugin ',
+        [objectType.ENTITY_VALIDATION_PLUGIN]: 'Entity Validation Plugin: ',
+        [objectType.NEW_ENTITY_VALIDATION_PLUGIN]:
+          'New Entity Validation Plugin ',
+        [objectType.QUERY]: 'Query: ',
+        [objectType.NEW_QUERY]: 'New Query ',
+        [objectType.SEARCH]: 'Search: '
+      }
+      label = prefixes[object.type] + object.id
     }
 
-    return (
-      <ContentTab label={prefixes[object.type] + object.id} changed={changed} />
-    )
+    return <ContentTab label={label} changed={changed} />
   }
 }
 

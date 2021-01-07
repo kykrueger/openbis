@@ -74,6 +74,10 @@ export default class ToolBrowserController extends BrowserController {
         {
           id: 'dynamicPropertyPlugins',
           text: 'Dynamic Property Plugins',
+          object: {
+            type: objectType.OVERVIEW,
+            id: objectType.DYNAMIC_PROPERTY_PLUGIN
+          },
           children: dynamicPropertyPluginNodes,
           childrenType: objectType.NEW_DYNAMIC_PROPERTY_PLUGIN,
           canAdd: true
@@ -81,6 +85,10 @@ export default class ToolBrowserController extends BrowserController {
         {
           id: 'entityValidationPlugins',
           text: 'Entity Validation Plugins',
+          object: {
+            type: objectType.OVERVIEW,
+            id: objectType.ENTITY_VALIDATION_PLUGIN
+          },
           children: entityValidationPluginNodes,
           childrenType: objectType.NEW_ENTITY_VALIDATION_PLUGIN,
           canAdd: true
@@ -88,6 +96,10 @@ export default class ToolBrowserController extends BrowserController {
         {
           id: 'queries',
           text: 'Queries',
+          object: {
+            type: objectType.OVERVIEW,
+            id: objectType.QUERY
+          },
           children: queryNodes,
           childrenType: objectType.NEW_QUERY,
           canAdd: true

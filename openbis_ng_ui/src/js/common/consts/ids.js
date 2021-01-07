@@ -11,7 +11,8 @@ const USER_ROLES_GRID_ID = 'user_roles_grid'
 const USER_GROUP_USERS_GRID_ID = 'user_group_users_grid'
 const USER_GROUP_ROLES_GRID_ID = 'user_group_roles_grid'
 const VOCABULARY_TERMS_GRID_ID = 'vocabulary_terms_grid'
-const PLUGINS_GRID_ID = 'plugins_grid'
+const DYNAMIC_PROPERTY_PLUGINS_GRID_ID = 'dynamic_property_plugins_grid'
+const ENTITY_VALIDATION_PLUGINS_GRID_ID = 'entity_validation_plugins_grid'
 const QUERIES_GRID_ID = 'queries_grid'
 
 export default {
@@ -28,6 +29,7 @@ export default {
   USER_GROUP_USERS_GRID_ID,
   USER_GROUP_ROLES_GRID_ID,
   VOCABULARY_TERMS_GRID_ID,
-  PLUGINS_GRID_ID,
+  DYNAMIC_PROPERTY_PLUGINS_GRID_ID,
+  ENTITY_VALIDATION_PLUGINS_GRID_ID,
   QUERIES_GRID_ID
 }

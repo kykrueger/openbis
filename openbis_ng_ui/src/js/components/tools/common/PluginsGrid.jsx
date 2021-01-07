@@ -2,6 +2,7 @@ import React from 'react'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import PluginLink from '@src/js/components/common/link/PluginLink.jsx'
 import UserLink from '@src/js/components/common/link/UserLink.jsx'
+import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
 class PluginsGrid extends React.PureComponent {
@@ -10,6 +11,7 @@ class PluginsGrid extends React.PureComponent {
 
     const {
       id,
+      pluginType,
       rows,
       selectedRowId,
       onSelectedRowChange,
@@ -20,7 +22,7 @@ class PluginsGrid extends React.PureComponent {
       <Grid
         id={id}
         controllerRef={controllerRef}
-        header='Plugins'
+        header={this.getHeader()}
         columns={[
           {
             name: 'name',
@@ -31,7 +33,7 @@ class PluginsGrid extends React.PureComponent {
               return (
                 <PluginLink
                   pluginName={row.name.value}
-                  pluginType={row.pluginType.value}
+                  pluginType={pluginType}
                 />
               )
             }
@@ -40,11 +42,6 @@ class PluginsGrid extends React.PureComponent {
             name: 'description',
             label: 'Description',
             getValue: ({ row }) => row.description.value
-          },
-          {
-            name: 'pluginType',
-            label: 'Plugin Type',
-            getValue: ({ row }) => row.pluginType.value
           },
           {
             name: 'pluginKind',
@@ -70,6 +67,16 @@ class PluginsGrid extends React.PureComponent {
         onSelectedRowChange={onSelectedRowChange}
       />
     )
+  }
+
+  getHeader() {
+    const { pluginType } = this.props
+
+    if (pluginType === openbis.PluginType.DYNAMIC_PROPERTY) {
+      return 'Dynamic Property Plugins'
+    } else if (pluginType === openbis.PluginType.ENTITY_VALIDATION) {
+      return 'Entity Validation Plugins'
+    }
   }
 }
 
