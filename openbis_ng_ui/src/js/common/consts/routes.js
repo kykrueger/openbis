@@ -139,6 +139,11 @@ const routes = {
     page: pages.USERS,
     type: objectTypes.USER
   }),
+  USER_OVERVIEW: new Route('/user-overview', {
+    page: pages.USERS,
+    type: objectTypes.OVERVIEW,
+    id: objectTypes.USER
+  }),
   NEW_USER_GROUP: new Route('/new-user-group/:id', {
     page: pages.USERS,
     type: objectTypes.NEW_USER_GROUP
@@ -146,6 +151,11 @@ const routes = {
   USER_GROUP: new Route('/user-group/:id', {
     page: pages.USERS,
     type: objectTypes.USER_GROUP
+  }),
+  USER_GROUP_OVERVIEW: new Route('/user-group-overview', {
+    page: pages.USERS,
+    type: objectTypes.OVERVIEW,
+    id: objectTypes.USER_GROUP
   }),
   TOOLS: new Route('/tools', {
     page: pages.TOOLS

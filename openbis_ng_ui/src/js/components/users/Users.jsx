@@ -50,24 +50,35 @@ class Users extends React.Component {
     ) {
       return <UserGroupForm object={object} />
     } else if (object.type === objectType.SEARCH) {
-      return <UserSearch objectId={object.id} />
+      return <UserSearch searchText={object.id} />
+    } else if (object.type === objectType.OVERVIEW) {
+      return <UserSearch objectType={object.id} />
     }
   }
 
   renderTab(tab) {
     const { object, changed } = tab
 
-    const prefixes = {
-      [objectType.USER]: 'User: ',
-      [objectType.USER_GROUP]: 'Group: ',
-      [objectType.NEW_USER]: 'New User ',
-      [objectType.NEW_USER_GROUP]: 'New Group ',
-      [objectType.SEARCH]: 'Search: '
+    let label = null
+
+    if (object.type === objectType.OVERVIEW) {
+      const labels = {
+        [objectType.USER]: 'Users',
+        [objectType.USER_GROUP]: 'Groups'
+      }
+      label = labels[object.id]
+    } else {
+      const prefixes = {
+        [objectType.USER]: 'User: ',
+        [objectType.USER_GROUP]: 'Group: ',
+        [objectType.NEW_USER]: 'New User ',
+        [objectType.NEW_USER_GROUP]: 'New Group ',
+        [objectType.SEARCH]: 'Search: '
+      }
+      label = prefixes[object.type] + object.id
     }
 
-    return (
-      <ContentTab label={prefixes[object.type] + object.id} changed={changed} />
-    )
+    return <ContentTab label={label} changed={changed} />
   }
 }
 

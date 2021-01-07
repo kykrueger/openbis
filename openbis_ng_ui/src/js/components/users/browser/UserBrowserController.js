@@ -45,6 +45,7 @@ export default class UserBrowserController extends BrowserController {
         {
           id: 'users',
           text: 'Users',
+          object: { type: objectType.OVERVIEW, id: objectType.USER },
           children: userNodes,
           childrenType: objectType.NEW_USER,
           canAdd: true
@@ -52,6 +53,7 @@ export default class UserBrowserController extends BrowserController {
         {
           id: 'groups',
           text: 'Groups',
+          object: { type: objectType.OVERVIEW, id: objectType.USER_GROUP },
           children: groupNodes,
           childrenType: objectType.NEW_USER_GROUP,
           canAdd: true
