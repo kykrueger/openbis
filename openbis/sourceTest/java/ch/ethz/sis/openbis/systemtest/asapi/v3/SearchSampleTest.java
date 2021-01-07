@@ -1439,6 +1439,69 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithSortingByMultipleProperties()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withPermId().thatEquals("200902091219327-1025");
+        criteria.withPermId().thatEquals("200902091225616-1027");
+        criteria.withPermId().thatEquals("200902091250077-1026");
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withProperties();
+
+        fo.sortBy().property("COMMENT").asc();
+        fo.sortBy().property("SIZE").desc();
+
+        try
+        {
+            // No exception should be thrown because both properties exist in the result set.
+            final List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
+            assertEquals(samples1.size(), 3);
+            assertEquals(samples1.get(0).getProperty("COMMENT"), "extremely simple stuff");
+            assertEquals(samples1.get(1).getProperty("COMMENT"), "stuff like others");
+            assertEquals(samples1.get(2).getProperty("COMMENT"), "very advanced stuff");
+        } finally
+        {
+            v3api.logout(sessionToken);
+        }
+    }
+
+    @Test(expectedExceptions = RuntimeException.class,
+            expectedExceptionsMessageRegExp = "Sorting by multiple fields when one or more properties are missing " +
+                    "in the result set entities is not supported\\..*")
+    public void testSearchWithSortingByMultiplePropertiesMissingProperty()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withPermId().thatEquals("200902091219327-1025");
+        criteria.withPermId().thatEquals("200902091225616-1027");
+        criteria.withPermId().thatEquals("200902091250077-1026");
+        criteria.withPermId().thatEquals("200902091250077-1051");
+        criteria.withPermId().thatEquals("200811050945092-976");
+        criteria.withPermId().thatEquals("200811050945092-977");
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withProperties();
+
+        fo.sortBy().property("COMMENT").asc();
+        fo.sortBy().property("OFFSET").desc();
+
+        try
+        {
+            searchSamples(sessionToken, criteria, fo);
+            fail("Expected exception to be thrown.");
+        } finally
+        {
+            v3api.logout(sessionToken);
+        }
+    }
+
+    @Test
     public void testSearchWithSortingByPropertyWithIntegerValues()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();

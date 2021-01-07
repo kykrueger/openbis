@@ -78,11 +78,11 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
         if (criteria == null)
         {
-            throw new IllegalArgumentException("Criteria cannot be null.");
+            throwIllegalArgumentException("Criteria cannot be null.");
         }
         if (fetchOptions == null)
         {
-            throw new IllegalArgumentException("Fetch options cannot be null.");
+            throwIllegalArgumentException("Fetch options cannot be null.");
         }
 
         Collection<OBJECT> allResults = searchAndTranslate(context, criteria, fetchOptions);
@@ -289,7 +289,8 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
             for (Sorting sorting : sortingToRemove) {
                 sortOptions.getSortings().remove(sorting);
-                operationLog.warn("[SQL Query Engine - backwards compatibility warning - stop using this feature] SORTING ORDER IGNORED!: " + sorting.getField());
+                operationLog.warn("[SQL Query Engine - backwards compatibility warning - stop using this feature] " +
+                        "SORTING ORDER IGNORED!: " + sorting.getField());
             }
 
             if (sortOptions.getSortings().isEmpty()) {
@@ -303,6 +304,12 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         final List<Long> toPage;
         if (sortedIds.size() < ids.size())
         {
+            if (sortOptions != null && sortOptions.getSortings().size() > 1)
+            {
+                throwIllegalArgumentException("Sorting by multiple fields when one or more properties are missing " +
+                        "in the result set entities is not supported.");
+            }
+
             final Set<Long> combiningSet = new LinkedHashSet<>(sortedIds);
             combiningSet.addAll(ids);
             toPage = new ArrayList<>(combiningSet);
@@ -324,6 +331,10 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         {
             return toPage;
         }
+    }
+
+    private static void throwIllegalArgumentException(final String message) throws RuntimeException {
+        throw new IllegalArgumentException(message);
     }
 
 }
