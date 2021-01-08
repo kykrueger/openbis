@@ -51,13 +51,13 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
     @Override
     protected Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass()
     {
-        return SampleParentsSearchCriteria.class;
+        return null;
     }
 
     @Override
     protected Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass()
     {
-        return MaterialSearchCriteria.class;
+        return null;
     }
 
     @Override

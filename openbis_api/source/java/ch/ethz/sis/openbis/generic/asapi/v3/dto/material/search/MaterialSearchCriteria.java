@@ -50,6 +50,11 @@ public class MaterialSearchCriteria extends AbstractEntitySearchCriteria<IMateri
         return (MaterialSearchCriteria) withOperator(SearchOperator.AND);
     }
 
+    public MaterialSearchCriteria withSubcriteria()
+    {
+        return with(new MaterialSearchCriteria());
+    }
+
     @Override
     protected SearchCriteriaToStringBuilder createBuilder()
     {

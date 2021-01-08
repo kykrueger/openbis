@@ -116,11 +116,6 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         return idsTranslator.map(ids);
     }
 
-    protected List<Long> doSortIDs(final Collection<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
-    {
-        return getSearchDAO().sortIDs(tableMapper, filteredIDs, sortOptions);
-    }
-
     protected <T, C extends AbstractFieldSearchCriteria<T>> C convertToOtherCriterion(final AbstractFieldSearchCriteria<T> criterion,
             IFieldSearchCriterionFactory<C> factory)
     {

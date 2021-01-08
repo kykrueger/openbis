@@ -300,14 +300,6 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
-    public void testSearchWithCodeWithSpace()
-    {
-        final SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withCode().thatEquals("/CISD/RP1-A2X");
-        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X");
-    }
-
-    @Test
     public void testSearchWithIncorrectCode()
     {
         final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
@@ -339,16 +331,19 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithCodeThatIsGreaterThanOrEqualTo()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withCode().thatIsGreaterThanOrEqualTo("WELL-A01");
-        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02");
+        criteria.withCode().thatIsGreaterThanOrEqualTo("PLATE_WELLSEARCH:WELL-A01");
+        testSearch(TEST_USER, criteria, "/TEST-SPACE/SAMPLE-TO-DELETE", "/CISD/RP1-B1X",
+                "/CISD/PLATE_WELLSEARCH:WELL-A02", "/CISD/RP1-A2X", "/CISD/RP2-A1X",
+                "/CISD/PLATE_WELLSEARCH:WELL-A01");
     }
 
     @Test
     public void testSearchWithCodeThatIsGreaterThan()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withCode().thatIsGreaterThan("WELL-A01");
-        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A02");
+        criteria.withCode().thatIsGreaterThan("PLATE_WELLSEARCH:WELL-A01");
+        testSearch(TEST_USER, criteria, "/TEST-SPACE/SAMPLE-TO-DELETE", "/CISD/RP1-B1X",
+                "/CISD/PLATE_WELLSEARCH:WELL-A02", "/CISD/RP1-A2X", "/CISD/RP2-A1X");
     }
 
     @Test
@@ -408,8 +403,10 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithCodes()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withCodes().thatIn(Arrays.asList("RP1-A2X", "RP1-B1X"));
-        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X", "/CISD/RP1-B1X");
+        criteria.withCodes().thatIn(Arrays.asList("RP1-A2X", "RP1-B1X", "PLATE_WELLSEARCH:WELL-A01",
+                "PLATE_WELLSEARCH:WELL-A02"));
+        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X", "/CISD/RP1-B1X",
+                "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02");
     }
 
     @Test
@@ -1405,6 +1402,103 @@ public class SearchSampleTest extends AbstractSampleTest
         assertEquals(samples2.get(2).getProperty("COMMENT"), "extremely simple stuff");
 
         v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithSortingByMissingProperty()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withPermId().thatEquals("200902091219327-1025");
+        criteria.withPermId().thatEquals("200902091225616-1027");
+        criteria.withPermId().thatEquals("200902091250077-1026");
+        criteria.withPermId().thatEquals("200902091250077-1051");
+        criteria.withPermId().thatEquals("200811050945092-976");
+        criteria.withPermId().thatEquals("200811050945092-977");
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withProperties();
+
+        fo.sortBy().property("COMMENT").asc();
+        final List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
+        assertEquals(samples1.size(), 6);
+        assertEquals(samples1.get(0).getProperty("COMMENT"), "extremely simple stuff");
+        assertEquals(samples1.get(1).getProperty("COMMENT"), "stuff like others");
+        assertEquals(samples1.get(2).getProperty("COMMENT"), "very advanced stuff");
+
+        fo.sortBy().property("COMMENT").desc();
+        final List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
+        assertEquals(samples2.size(), 6);
+        assertEquals(samples2.get(0).getProperty("COMMENT"), "very advanced stuff");
+        assertEquals(samples2.get(1).getProperty("COMMENT"), "stuff like others");
+        assertEquals(samples2.get(2).getProperty("COMMENT"), "extremely simple stuff");
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithSortingByMultipleProperties()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withPermId().thatEquals("200902091219327-1025");
+        criteria.withPermId().thatEquals("200902091225616-1027");
+        criteria.withPermId().thatEquals("200902091250077-1026");
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withProperties();
+
+        fo.sortBy().property("COMMENT").asc();
+        fo.sortBy().property("SIZE").desc();
+
+        try
+        {
+            // No exception should be thrown because both properties exist in the result set.
+            final List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
+            assertEquals(samples1.size(), 3);
+            assertEquals(samples1.get(0).getProperty("COMMENT"), "extremely simple stuff");
+            assertEquals(samples1.get(1).getProperty("COMMENT"), "stuff like others");
+            assertEquals(samples1.get(2).getProperty("COMMENT"), "very advanced stuff");
+        } finally
+        {
+            v3api.logout(sessionToken);
+        }
+    }
+
+    @Test(expectedExceptions = RuntimeException.class,
+            expectedExceptionsMessageRegExp = "Sorting by multiple fields when one or more properties are missing " +
+                    "in the result set entities is not supported\\..*")
+    public void testSearchWithSortingByMultiplePropertiesMissingProperty()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withPermId().thatEquals("200902091219327-1025");
+        criteria.withPermId().thatEquals("200902091225616-1027");
+        criteria.withPermId().thatEquals("200902091250077-1026");
+        criteria.withPermId().thatEquals("200902091250077-1051");
+        criteria.withPermId().thatEquals("200811050945092-976");
+        criteria.withPermId().thatEquals("200811050945092-977");
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withProperties();
+
+        fo.sortBy().property("COMMENT").asc();
+        fo.sortBy().property("OFFSET").desc();
+
+        try
+        {
+            searchSamples(sessionToken, criteria, fo);
+            fail("Expected exception to be thrown.");
+        } finally
+        {
+            v3api.logout(sessionToken);
+        }
     }
 
     @Test
@@ -2942,7 +3036,7 @@ public class SearchSampleTest extends AbstractSampleTest
         subcriteria2.withPermId().thatContains("-100");
 
         testSearch(TEST_USER, criteria, "/CISD/MP1-MIXED:A01", "/CISD/MP1-MIXED:A02", "/CISD/MP1-MIXED:A03",
-                "/CISD/MP1-MIXED:B02", "/CISD/MP2-NO-CL:A01", "/CISD/MP2-NO-CL:C03");
+                "/CISD/MP1-MIXED:B02", "/CISD/MP2-NO-CL:A01");
     }
 
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)

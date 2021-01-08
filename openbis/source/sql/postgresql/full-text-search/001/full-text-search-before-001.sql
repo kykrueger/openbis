@@ -1,6 +1,6 @@
 -- Disabling all available triggers
 
-CREATE FUNCTION toggle_all_available_triggers(enable boolean) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION toggle_all_available_triggers(enable boolean) RETURNS void AS $$
 DECLARE trig RECORD;
         modification varchar;
 BEGIN

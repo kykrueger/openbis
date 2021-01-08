@@ -863,14 +863,17 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			var fSearch = function(facade) {
 				var criteria = new c.SampleSearchCriteria();
-				criteria.withCode().thatIsLessThanOrEqualTo("A1");
+				criteria.withCode().thatIsLessThanOrEqualTo("PLATE-2:A1");
 				return facade.searchSamples(criteria, c.createSampleFetchOptions());
 			}
 
 			var fCheck = function(facade, samples) {
 				identifiers = c.extractIdentifiers(samples);
-				c.assertEqual(identifiers.length, 4);
-				c.assertEqual(identifiers.toString(), "/PLATONIC/SCREENING-EXAMPLES/PLATE-1:A1,/PLATONIC/SCREENING-EXAMPLES/PLATE-2:A1,/TEST/TEST-PROJECT/PLATE-1A:A1,/TEST/TEST-PROJECT/PLATE-2:A1");
+				var identifiersString = identifiers.toString();
+				c.assertTrue(identifiersString.indexOf("/PLATONIC/SCREENING-EXAMPLES/PLATE-1:A1") >= 0);
+				c.assertTrue(identifiersString.indexOf("/PLATONIC/SCREENING-EXAMPLES/PLATE-2:A1") >= 0);
+				c.assertTrue(identifiersString.indexOf("/TEST/TEST-PROJECT/PLATE-1A:A1") >= 0);
+				c.assertTrue(identifiersString.indexOf("/TEST/TEST-PROJECT/PLATE-2:A1") >= 0);
 			}
 
 			testSearch(c, fSearch, fCheck);
