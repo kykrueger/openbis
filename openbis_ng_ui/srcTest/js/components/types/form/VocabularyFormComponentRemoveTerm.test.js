@@ -88,7 +88,7 @@ async function testRemoveTerm() {
           mode: 'edit'
         },
         urlTemplate: {
-          label: 'URL template',
+          label: 'URL Template',
           value: fixture.TEST_VOCABULARY_DTO.getUrlTemplate(),
           enabled: true,
           mode: 'edit'

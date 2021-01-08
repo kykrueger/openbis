@@ -37,7 +37,7 @@ class VocabulariesGrid extends React.PureComponent {
           },
           {
             name: 'urlTemplate',
-            label: 'URL template',
+            label: 'URL Template',
             getValue: ({ row }) => row.urlTemplate
           }
         ]}

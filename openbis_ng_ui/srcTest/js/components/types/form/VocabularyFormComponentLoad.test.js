@@ -36,7 +36,7 @@ async function testLoadNew() {
           mode: 'edit'
         },
         urlTemplate: {
-          label: 'URL template',
+          label: 'URL Template',
           value: null,
           enabled: true,
           mode: 'edit'
@@ -125,7 +125,7 @@ async function testLoadExisting() {
           mode: 'view'
         },
         urlTemplate: {
-          label: 'URL template',
+          label: 'URL Template',
           value: fixture.TEST_VOCABULARY_DTO.getUrlTemplate(),
           mode: 'view'
         }
@@ -164,7 +164,7 @@ async function testLoadExisting() {
           mode: 'edit'
         },
         urlTemplate: {
-          label: 'URL template',
+          label: 'URL Template',
           value: fixture.TEST_VOCABULARY_DTO.getUrlTemplate(),
           enabled: true,
           mode: 'edit'

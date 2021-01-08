@@ -192,6 +192,7 @@ async function testLoadWithObjectType(resultsFound) {
   })
 
   form.expectJSON({
+    messages: [],
     dynamicPropertyPlugins: {
       columns: [
         {

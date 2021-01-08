@@ -175,7 +175,7 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.urlTemplate}
-          label='URL template'
+          label='URL Template'
           name='urlTemplate'
           error={error}
           disabled={!enabled}
