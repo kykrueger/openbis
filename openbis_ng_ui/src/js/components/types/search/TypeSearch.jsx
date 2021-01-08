@@ -178,7 +178,8 @@ class TypeSearch extends React.Component {
       .map(object => ({
         id: object.code,
         code: object.code,
-        description: object.description
+        description: object.description,
+        urlTemplate: object.urlTemplate
       }))
 
     this.setState({

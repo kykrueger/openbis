@@ -81,13 +81,19 @@ async function testLoadWithSearchText(resultsFound) {
           {
             values: {
               name: testPlugin.getName(),
-              description: testPlugin.getDescription()
+              description: testPlugin.getDescription(),
+              pluginKind: testPlugin.getPluginKind(),
+              entityKind: testPlugin.getEntityKinds()[0],
+              registrator: testPlugin.registrator.userId
             }
           },
           {
             values: {
               name: testPlugin2.getName(),
-              description: testPlugin2.getDescription()
+              description: testPlugin2.getDescription(),
+              pluginKind: null,
+              entityKind: null,
+              registrator: null
             }
           }
         ]
@@ -119,7 +125,10 @@ async function testLoadWithSearchText(resultsFound) {
           {
             values: {
               name: testPlugin2.getName(),
-              description: testPlugin2.getDescription()
+              description: testPlugin2.getDescription(),
+              pluginKind: null,
+              entityKind: null,
+              registrator: null
             }
           }
         ]
@@ -159,7 +168,12 @@ async function testLoadWithSearchText(resultsFound) {
           {
             values: {
               name: testQuery.getName(),
-              description: testQuery.getDescription()
+              description: testQuery.getDescription(),
+              database: testQuery.getDatabaseLabel(),
+              queryType: testQuery.getQueryType(),
+              entityTypeCodePattern: testQuery.getEntityTypeCodePattern(),
+              publicFlag: String(testQuery.getPublicFlag()),
+              registrator: testQuery.registrator.userId
             }
           }
         ]
@@ -221,19 +235,28 @@ async function testLoadWithObjectType(resultsFound) {
             {
               values: {
                 name: anotherPlugin.getName(),
-                description: anotherPlugin.getDescription()
+                description: anotherPlugin.getDescription(),
+                pluginKind: null,
+                entityKind: null,
+                registrator: null
               }
             },
             {
               values: {
                 name: testPlugin.getName(),
-                description: testPlugin.getDescription()
+                description: testPlugin.getDescription(),
+                pluginKind: testPlugin.getPluginKind(),
+                entityKind: testPlugin.getEntityKinds()[0],
+                registrator: testPlugin.registrator.userId
               }
             },
             {
               values: {
                 name: testPlugin2.getName(),
-                description: testPlugin2.getDescription()
+                description: testPlugin2.getDescription(),
+                pluginKind: null,
+                entityKind: null,
+                registrator: null
               }
             }
           ]

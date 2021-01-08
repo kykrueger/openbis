@@ -74,14 +74,20 @@ async function testLoadWithSearchText(resultsFound) {
             values: {
               userId: testUser.getUserId(),
               firstName: testUser.getFirstName(),
-              lastName: testUser.getLastName()
+              lastName: testUser.getLastName(),
+              email: testUser.getEmail(),
+              space: testUser.space.code,
+              active: String(testUser.isActive())
             }
           },
           {
             values: {
               userId: testUser2.getUserId(),
               firstName: testUser2.getFirstName(),
-              lastName: testUser2.getLastName()
+              lastName: testUser2.getLastName(),
+              email: null,
+              space: null,
+              active: null
             }
           }
         ]
@@ -167,21 +173,30 @@ async function testLoadWithObjectType(resultsFound) {
               values: {
                 userId: anotherUser.getUserId(),
                 firstName: anotherUser.getFirstName(),
-                lastName: anotherUser.getLastName()
+                lastName: anotherUser.getLastName(),
+                email: null,
+                space: null,
+                active: null
               }
             },
             {
               values: {
                 userId: testUser.getUserId(),
                 firstName: testUser.getFirstName(),
-                lastName: testUser.getLastName()
+                lastName: testUser.getLastName(),
+                email: testUser.getEmail(),
+                space: testUser.space.code,
+                active: String(testUser.isActive())
               }
             },
             {
               values: {
                 userId: testUser2.getUserId(),
                 firstName: testUser2.getFirstName(),
-                lastName: testUser2.getLastName()
+                lastName: testUser2.getLastName(),
+                email: null,
+                space: null,
+                active: null
               }
             }
           ]
