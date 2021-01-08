@@ -92,7 +92,7 @@ async function testLoadWithSearchText(resultsFound) {
               name: testPlugin2.getName(),
               description: testPlugin2.getDescription(),
               pluginKind: null,
-              entityKind: null,
+              entityKind: '(all)',
               registrator: null
             }
           }
@@ -127,7 +127,7 @@ async function testLoadWithSearchText(resultsFound) {
               name: testPlugin2.getName(),
               description: testPlugin2.getDescription(),
               pluginKind: null,
-              entityKind: null,
+              entityKind: '(all)',
               registrator: null
             }
           }
@@ -237,7 +237,7 @@ async function testLoadWithObjectType(resultsFound) {
                 name: anotherPlugin.getName(),
                 description: anotherPlugin.getDescription(),
                 pluginKind: null,
-                entityKind: null,
+                entityKind: '(all)',
                 registrator: null
               }
             },
@@ -255,7 +255,7 @@ async function testLoadWithObjectType(resultsFound) {
                 name: testPlugin2.getName(),
                 description: testPlugin2.getDescription(),
                 pluginKind: null,
-                entityKind: null,
+                entityKind: '(all)',
                 registrator: null
               }
             }

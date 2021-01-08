@@ -5,6 +5,8 @@ import UserLink from '@src/js/components/common/link/UserLink.jsx'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
+const ALL_VALUE = '(all)'
+
 class PluginsGrid extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'PluginsGrid.render')
@@ -51,7 +53,9 @@ class PluginsGrid extends React.PureComponent {
           {
             name: 'entityKind',
             label: 'Entity Kind',
-            getValue: ({ row }) => row.entityKind.value
+            getValue: ({ row }) => {
+              return row.entityKind.value ? row.entityKind.value : ALL_VALUE
+            }
           },
           {
             name: 'registrator',
