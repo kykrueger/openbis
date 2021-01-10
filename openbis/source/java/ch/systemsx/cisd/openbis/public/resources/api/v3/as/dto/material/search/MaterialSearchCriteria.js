@@ -19,6 +19,9 @@ define([ "stjs", "as/dto/common/search/AbstractEntitySearchCriteria", "as/dto/co
 		prototype.withAndOperator = function() {
 			return this.withOperator(SearchOperator.AND);
 		};
+		prototype.withSubcriteria = function() {
+			return this.addCriteria(new MaterialSearchCriteria());
+		};
 	}, {
 		operator : {
 			name : "Enum",

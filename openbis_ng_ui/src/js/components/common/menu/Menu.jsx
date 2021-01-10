@@ -112,6 +112,8 @@ class Menu extends React.Component {
             classes={{ root: classes.tabs }}
           >
             <Tab value={pages.TYPES} label='Types' />
+            <Tab value={pages.USERS} label='Users' />
+            <Tab value={pages.TOOLS} label='Tools' />
           </Tabs>
           <TextField
             placeholder='Search...'

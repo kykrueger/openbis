@@ -1091,6 +1091,11 @@ function ServerFacade(openbisServer) {
    * This is a Javascript version of the Java method found at org.apache.lucene.queryparser.classic.QueryParserBase.escape
    */
     this.queryParserEscape = function(s) {
+
+        if(!profile.enableLuceneQueryEngine) { // This patch is to avoid escapes in openBIS 20.10
+            return s;
+        }
+
         var sb = "";
         for (var i = 0; i < s.length; i++) {
           var c = s.charAt(i);
@@ -1365,291 +1370,305 @@ function ServerFacade(openbisServer) {
 					criteria.withOperator(operator);
 					return criteria;
 				}
-				
-				searchCriteria = setOperator(searchCriteria, advancedSearchCriteria.logicalOperator);
-			
-				//Rules
-				var ruleKeys = Object.keys(advancedSearchCriteria.rules);
-				for (var idx = 0; idx < ruleKeys.length; idx++)
-				{
-					var fieldType = advancedSearchCriteria.rules[ruleKeys[idx]].type;
-					var fieldName = advancedSearchCriteria.rules[ruleKeys[idx]].name;
-					var fieldNameType = null;
-					var fieldValue = advancedSearchCriteria.rules[ruleKeys[idx]].value;
-					var fieldOperator = advancedSearchCriteria.rules[ruleKeys[idx]].operator;
-					
-					if(fieldName) {
-						var firstDotIndex = fieldName.indexOf(".");
-						fieldNameType = fieldName.substring(0, firstDotIndex);
-						fieldName = fieldName.substring(firstDotIndex + 1, fieldName.length);
-					}
-				
-					if(!fieldValue) {
-						fieldValue = "*";
-					} else if(escapeWildcards &&
-					            (
-					            !fieldOperator ||
-					            (fieldOperator == "thatEqualsString") ||
-					            (fieldOperator == "thatContainsString") ||
-					            (fieldOperator == "thatStartsWithString") ||
-					            (fieldOperator == "thatEndsWithString")
-					            )
-					    ) {
-                        var fieldValueUnEscape = fieldValue;
-                        fieldValue = queryParserEscape(fieldValueUnEscape);
-                        escapeToUnEscapeMap[fieldValue] = fieldValueUnEscape;
+
+			    var setCriteriaRules = function(searchCriteria, advancedSearchCriteria) {
+                    //Rules
+                    var ruleKeys = Object.keys(advancedSearchCriteria.rules);
+                    for (var idx = 0; idx < ruleKeys.length; idx++)
+                    {
+                        var fieldType = advancedSearchCriteria.rules[ruleKeys[idx]].type;
+                        var fieldName = advancedSearchCriteria.rules[ruleKeys[idx]].name;
+                        var fieldNameType = null;
+                        var fieldValue = advancedSearchCriteria.rules[ruleKeys[idx]].value;
+                        var fieldOperator = advancedSearchCriteria.rules[ruleKeys[idx]].operator;
+
+                        if(fieldName) {
+                            var firstDotIndex = fieldName.indexOf(".");
+                            fieldNameType = fieldName.substring(0, firstDotIndex);
+                            fieldName = fieldName.substring(firstDotIndex + 1, fieldName.length);
+                        }
+
+                        if(!fieldValue) {
+                            fieldValue = "*";
+                        } else if(escapeWildcards &&
+                                    (
+                                    !fieldOperator ||
+                                    (fieldOperator == "thatEqualsString") ||
+                                    (fieldOperator == "thatContainsString") ||
+                                    (fieldOperator == "thatStartsWithString") ||
+                                    (fieldOperator == "thatEndsWithString")
+                                    )
+                            ) {
+                            var fieldValueUnEscape = fieldValue;
+                            fieldValue = queryParserEscape(fieldValueUnEscape);
+                            escapeToUnEscapeMap[fieldValue] = fieldValueUnEscape;
+                        }
+
+                        var setPropertyCriteria = function(criteria, propertyName, propertyValue, comparisonOperator) {
+                            if(comparisonOperator) {
+                                try {
+                                    switch(comparisonOperator) {
+                                        case "thatEqualsString":
+                                            criteria.withProperty(propertyName).thatEquals(propertyValue);
+                                            break;
+                                        case "thatEqualsNumber":
+                                            criteria.withNumberProperty(propertyName).thatEquals(parseFloat(propertyValue));
+                                            break;
+                                        case "thatEqualsDate":
+                                            criteria.withDateProperty(propertyName).thatEquals(propertyValue);
+                                            break;
+                                        case "thatContainsString":
+                                            criteria.withProperty(propertyName).thatContains(propertyValue);
+                                            break;
+                                        case "thatStartsWithString":
+                                            criteria.withProperty(propertyName).thatStartsWith(propertyValue);
+                                            break;
+                                        case "thatEndsWithString":
+                                            criteria.withProperty(propertyName).thatEndsWith(propertyValue);
+                                            break;
+                                        case "thatIsLessThanNumber":
+                                            criteria.withNumberProperty(propertyName).thatIsLessThan(parseFloat(propertyValue));
+                                            break;
+                                        case "thatIsLessThanOrEqualToNumber":
+                                            criteria.withNumberProperty(propertyName).thatIsLessThanOrEqualTo(parseFloat(propertyValue));
+                                            break;
+                                        case "thatIsGreaterThanNumber":
+                                            criteria.withNumberProperty(propertyName).thatIsGreaterThan(parseFloat(propertyValue));
+                                            break;
+                                        case "thatIsGreaterThanOrEqualToNumber":
+                                            criteria.withNumberProperty(propertyName).thatIsGreaterThanOrEqualTo(parseFloat(propertyValue));
+                                            break;
+                                        case "thatIsLaterThanDate":
+                                            criteria.withDateProperty(propertyName).thatIsLaterThan(propertyValue);
+                                            break;
+                                        case "thatIsLaterThanOrEqualToDate":
+                                            criteria.withDateProperty(propertyName).thatIsLaterThanOrEqualTo(propertyValue);
+                                            break;
+                                        case "thatIsEarlierThanDate":
+                                            criteria.withDateProperty(propertyName).thatIsEarlierThan(propertyValue);
+                                            break;
+                                        case "thatIsEarlierThanOrEqualToDate":
+                                            criteria.withDateProperty(propertyName).thatIsEarlierThanOrEqualTo(propertyValue);
+                                            break;
+                                    }
+                                } catch(error) {
+                                    Util.showError("Error parsing criteria: " + error.message);
+                                    return;
+                                }
+                            } else {
+                                criteria.withProperty(propertyName).thatContains(propertyValue);
+                            }
+                        }
+
+                        var setAttributeCriteria = function(criteria, attributeName, attributeValue, comparisonOperator) {
+                            switch(attributeName) {
+                                //Used by all entities
+                                case "CODE":
+                                    if(!comparisonOperator) {
+                                        comparisonOperator = "thatEquals";
+                                    }
+                                    switch(comparisonOperator) {
+                                        case "thatEquals":
+                                                criteria.withCode().thatEquals(attributeValue);
+                                                break;
+                                        case "thatContains":
+                                                criteria.withCode().thatContains(attributeValue);
+                                                break;
+                                    }
+                                    break;
+                                case "PERM_ID":
+                                    criteria.withPermId().thatEquals(attributeValue);
+                                    break;
+                                case "METAPROJECT":
+                                    criteria.withTag().withCode().thatEquals(attributeValue); //TO-DO To Test, currently not supported by ELN UI
+                                    break;
+                                case "REGISTRATOR":
+                                    if(comparisonOperator) {
+                                        switch(comparisonOperator) {
+                                            case "thatEqualsUserId":
+                                                criteria.withRegistrator().withUserId().thatEquals(attributeValue);
+                                                break;
+                                            case "thatContainsFirstName":
+                                                criteria.withRegistrator().withFirstName().thatContains(attributeValue);
+                                                break;
+                                            case "thatContainsLastName":
+                                                criteria.withRegistrator().withLastName().thatContains(attributeValue);
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case "REGISTRATION_DATE": //Must be a string object with format 2009-08-18
+                                    if(comparisonOperator) {
+                                        switch(comparisonOperator) {
+                                            case "thatEqualsDate":
+                                                criteria.withRegistrationDate().thatEquals(attributeValue);
+                                                break;
+                                            case "thatIsLaterThanDate":
+                                                criteria.withRegistrationDate().thatIsLaterThan(attributeValue);
+                                                break;
+                                            case "thatIsLaterThanOrEqualToDate":
+                                                criteria.withRegistrationDate().thatIsLaterThanOrEqualTo(attributeValue);
+                                                break;
+                                            case "thatIsEarlierThanDate":
+                                                criteria.withRegistrationDate().thatIsEarlierThan(attributeValue);
+                                                break;
+                                            case "thatIsEarlierThanOrEqualToDate":
+                                                criteria.withRegistrationDate().thatIsEarlierThanOrEqualTo(attributeValue);
+                                                break;
+                                        }
+                                    } else {
+                                        criteria.withRegistrationDate().thatEquals(attributeValue);
+                                    }
+                                    break;
+                                case "MODIFIER":
+                                    if(comparisonOperator) {
+                                        switch(comparisonOperator) {
+                                            case "thatEqualsUserId":
+                                                criteria.withModifier().withUserId().thatEquals(attributeValue);
+                                                break;
+                                            case "thatContainsFirstName":
+                                                criteria.withModifier().withFirstName().thatContains(attributeValue);
+                                                break;
+                                            case "thatContainsLastName":
+                                                criteria.withModifier().withLastName().thatContains(attributeValue);
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case "MODIFICATION_DATE": //Must be a string object with format 2009-08-18
+                                    if(comparisonOperator) {
+                                        switch(comparisonOperator) {
+                                            case "thatEqualsDate":
+                                                criteria.withModificationDate().thatEquals(attributeValue);
+                                                break;
+                                            case "thatIsLaterThanDate":
+                                                criteria.withModificationDate().thatIsLaterThan(attributeValue);
+                                                break;
+                                            case "thatIsLaterThanOrEqualToDate":
+                                                criteria.withModificationDate().thatIsLaterThanOrEqualTo(attributeValue);
+                                                break;
+                                            case "thatIsEarlierThan":
+                                                criteria.withModificationDate().thatIsEarlierThan(attributeValue);
+                                                break;
+                                            case "thatIsEarlierThanOrEqualToDate":
+                                                criteria.withModificationDate().thatIsEarlierThanOrEqualTo(attributeValue);
+                                                break;
+                                        }
+                                    } else {
+                                        criteria.withModificationDate().thatEquals(attributeValue);
+                                    }
+                                    break;
+                                case "SAMPLE_TYPE":
+                                case "EXPERIMENT_TYPE":
+                                case "DATA_SET_TYPE":
+                                    criteria.withType().withCode().thatEquals(attributeValue);
+                                    break;
+                                //Only Sample
+                                case "SPACE":
+                                    criteria.withSpace().withCode().thatEquals(attributeValue);
+                                    break;
+                                //Only Experiment
+                                case "PROJECT":
+                                    criteria.withProject().withCode().thatEquals(attributeValue);
+                                    break;
+                                case "PROJECT_PERM_ID":
+                                    criteria.withProject().withPermId().thatEquals(attributeValue);
+                                    break;
+                                case "PROJECT_SPACE":
+                                    criteria.withProject().withSpace().withCode().thatEquals(attributeValue);
+                                    break;
+                                case "PHYSICAL_STATUS":
+                                    criteria.withPhysicalData().withStatus().thatEquals(attributeValue);
+                                    break;
+                            }
+                        }
+
+                        switch(fieldType) {
+                            case "All":
+                                if(fieldValue !== "*") {
+                                    searchCriteria.withAnyField().thatContains(fieldValue);
+                                }
+                                break;
+                            case "Property":
+                                setPropertyCriteria(setOperator(searchCriteria, advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                break;
+                            case "Attribute":
+                                setAttributeCriteria(setOperator(searchCriteria, advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                break;
+                            case "Property/Attribute":
+                                switch(fieldNameType) {
+                                    case "PROP":
+                                        setPropertyCriteria(setOperator(searchCriteria, advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                    case "ATTR":
+                                        setAttributeCriteria(setOperator(searchCriteria, advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                }
+                                break;
+                            case "Sample":
+                                switch(fieldNameType) {
+                                    case "PROP":
+                                        setPropertyCriteria(setOperator(searchCriteria.withSample(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                    case "ATTR":
+                                        setAttributeCriteria(setOperator(searchCriteria.withSample(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                    case "NULL":
+                                        searchCriteria.withoutSample();
+                                        break;
+                                }
+                                break;
+                            case "Experiment":
+                                switch(fieldNameType) {
+                                    case "PROP":
+                                        setPropertyCriteria(setOperator(searchCriteria.withExperiment(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                    case "ATTR":
+                                        setAttributeCriteria(setOperator(searchCriteria.withExperiment(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                    case "NULL":
+                                        searchCriteria.withoutExperiment();
+                                        break;
+                                }
+                                break;
+                            case "Parent":
+                                switch(fieldNameType) {
+                                    case "PROP":
+                                        setPropertyCriteria(setOperator(searchCriteria.withParents(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                    case "ATTR":
+                                        setAttributeCriteria(setOperator(searchCriteria.withParents(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                }
+                                break;
+                            case "Children":
+                                switch(fieldNameType) {
+                                    case "PROP":
+                                        setPropertyCriteria(setOperator(searchCriteria.withChildren(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                    case "ATTR":
+                                        setAttributeCriteria(setOperator(searchCriteria.withChildren(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                }
+                                break;
+                        }
                     }
-				
-					var setPropertyCriteria = function(criteria, propertyName, propertyValue, comparisonOperator) {
-						if(comparisonOperator) {
-							try {
-								switch(comparisonOperator) {
-									case "thatEqualsString":
-										criteria.withProperty(propertyName).thatEquals(propertyValue);
-										break;
-									case "thatEqualsNumber":
-										criteria.withNumberProperty(propertyName).thatEquals(parseFloat(propertyValue));
-										break;
-									case "thatEqualsDate":
-										criteria.withDateProperty(propertyName).thatEquals(propertyValue);
-										break;
-									case "thatContainsString":
-										criteria.withProperty(propertyName).thatContains(propertyValue);
-										break;
-									case "thatStartsWithString":
-										criteria.withProperty(propertyName).thatStartsWith(propertyValue);
-										break;
-									case "thatEndsWithString":
-										criteria.withProperty(propertyName).thatEndsWith(propertyValue);
-										break;
-									case "thatIsLessThanNumber":
-										criteria.withNumberProperty(propertyName).thatIsLessThan(parseFloat(propertyValue));
-										break;
-									case "thatIsLessThanOrEqualToNumber":
-										criteria.withNumberProperty(propertyName).thatIsLessThanOrEqualTo(parseFloat(propertyValue));
-										break;
-									case "thatIsGreaterThanNumber":
-										criteria.withNumberProperty(propertyName).thatIsGreaterThan(parseFloat(propertyValue));
-										break;
-									case "thatIsGreaterThanOrEqualToNumber":
-										criteria.withNumberProperty(propertyName).thatIsGreaterThanOrEqualTo(parseFloat(propertyValue));
-										break;
-									case "thatIsLaterThanDate":
-										criteria.withDateProperty(propertyName).thatIsLaterThan(propertyValue);
-										break;
-									case "thatIsLaterThanOrEqualToDate":
-										criteria.withDateProperty(propertyName).thatIsLaterThanOrEqualTo(propertyValue);
-										break;
-									case "thatIsEarlierThanDate":
-										criteria.withDateProperty(propertyName).thatIsEarlierThan(propertyValue);
-										break;
-									case "thatIsEarlierThanOrEqualToDate":
-										criteria.withDateProperty(propertyName).thatIsEarlierThanOrEqualTo(propertyValue);
-										break;
-								}
-							} catch(error) {
-								Util.showError("Error parsing criteria: " + error.message);
-								return;
-							}
-						} else {
-							criteria.withProperty(propertyName).thatContains(propertyValue);
-						}
-					}
-				
-					var setAttributeCriteria = function(criteria, attributeName, attributeValue, comparisonOperator) {
-						switch(attributeName) {
-							//Used by all entities
-							case "CODE":
-								if(!comparisonOperator) {
-									comparisonOperator = "thatEquals";
-								}
-								switch(comparisonOperator) {
-									case "thatEquals":
-											criteria.withCode().thatEquals(attributeValue);
-											break;
-									case "thatContains":
-											criteria.withCode().thatContains(attributeValue);
-											break;
-								}
-								break;
-							case "PERM_ID":
-								criteria.withPermId().thatEquals(attributeValue);
-								break;
-							case "METAPROJECT":
-								criteria.withTag().withCode().thatEquals(attributeValue); //TO-DO To Test, currently not supported by ELN UI
-								break;
-							case "REGISTRATOR":
-								if(comparisonOperator) {
-									switch(comparisonOperator) {
-										case "thatEqualsUserId":
-											criteria.withRegistrator().withUserId().thatEquals(attributeValue);
-											break;
-										case "thatContainsFirstName":
-											criteria.withRegistrator().withFirstName().thatContains(attributeValue);
-											break;
-										case "thatContainsLastName":
-											criteria.withRegistrator().withLastName().thatContains(attributeValue);
-											break;
-									}
-								}
-								break;
-							case "REGISTRATION_DATE": //Must be a string object with format 2009-08-18
-								if(comparisonOperator) {
-									switch(comparisonOperator) {
-										case "thatEqualsDate":
-											criteria.withRegistrationDate().thatEquals(attributeValue);
-											break;
-										case "thatIsLaterThanDate":
-											criteria.withRegistrationDate().thatIsLaterThan(attributeValue);
-											break;
-										case "thatIsLaterThanOrEqualToDate":
-											criteria.withRegistrationDate().thatIsLaterThanOrEqualTo(attributeValue);
-											break;
-										case "thatIsEarlierThanDate":
-											criteria.withRegistrationDate().thatIsEarlierThan(attributeValue);
-											break;
-										case "thatIsEarlierThanOrEqualToDate":
-											criteria.withRegistrationDate().thatIsEarlierThanOrEqualTo(attributeValue);
-											break;
-									}
-								} else {
-									criteria.withRegistrationDate().thatEquals(attributeValue);
-								}
-								break;
-							case "MODIFIER":
-								if(comparisonOperator) {
-									switch(comparisonOperator) {
-										case "thatEqualsUserId":
-											criteria.withModifier().withUserId().thatEquals(attributeValue);
-											break;
-										case "thatContainsFirstName":
-											criteria.withModifier().withFirstName().thatContains(attributeValue);
-											break;
-										case "thatContainsLastName":
-											criteria.withModifier().withLastName().thatContains(attributeValue);
-											break;
-									}
-								}
-								break;
-							case "MODIFICATION_DATE": //Must be a string object with format 2009-08-18
-								if(comparisonOperator) {
-									switch(comparisonOperator) {
-										case "thatEqualsDate":
-											criteria.withModificationDate().thatEquals(attributeValue);
-											break;
-										case "thatIsLaterThanDate":
-											criteria.withModificationDate().thatIsLaterThan(attributeValue);
-											break;
-										case "thatIsLaterThanOrEqualToDate":
-											criteria.withModificationDate().thatIsLaterThanOrEqualTo(attributeValue);
-											break;
-										case "thatIsEarlierThan":
-											criteria.withModificationDate().thatIsEarlierThan(attributeValue);
-											break;
-										case "thatIsEarlierThanOrEqualToDate":
-											criteria.withModificationDate().thatIsEarlierThanOrEqualTo(attributeValue);
-											break;
-									}
-								} else {
-									criteria.withModificationDate().thatEquals(attributeValue);
-								}
-								break;
-							case "SAMPLE_TYPE":
-							case "EXPERIMENT_TYPE":
-							case "DATA_SET_TYPE":
-								criteria.withType().withCode().thatEquals(attributeValue);
-								break;
-							//Only Sample
-							case "SPACE":
-								criteria.withSpace().withCode().thatEquals(attributeValue);
-								break;
-							//Only Experiment
-							case "PROJECT":
-								criteria.withProject().withCode().thatEquals(attributeValue);
-								break;
-							case "PROJECT_PERM_ID":
-								criteria.withProject().withPermId().thatEquals(attributeValue);
-								break;
-							case "PROJECT_SPACE":
-								criteria.withProject().withSpace().withCode().thatEquals(attributeValue);
-								break;
-							case "PHYSICAL_STATUS":
-								criteria.withPhysicalData().withStatus().thatEquals(attributeValue);
-								break;
-						}
-					}
-				
-					switch(fieldType) {
-						case "All":
-							if(fieldValue !== "*") {
-								searchCriteria.withAnyField().thatContains(fieldValue);
-							}
-							break;
-						case "Property":
-							setPropertyCriteria(setOperator(searchCriteria, advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-							break;
-						case "Attribute":
-							setAttributeCriteria(setOperator(searchCriteria, advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-							break;
-						case "Property/Attribute":
-							switch(fieldNameType) {
-								case "PROP":
-									setPropertyCriteria(setOperator(searchCriteria, advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-									break;
-								case "ATTR":
-									setAttributeCriteria(setOperator(searchCriteria, advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-									break;
-							}
-							break;
-						case "Sample":
-							switch(fieldNameType) {
-								case "PROP":
-									setPropertyCriteria(setOperator(searchCriteria.withSample(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-									break;
-								case "ATTR":
-									setAttributeCriteria(setOperator(searchCriteria.withSample(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-									break;
-								case "NULL":
-									searchCriteria.withoutSample();
-									break;
-							}
-							break;
-						case "Experiment":
-							switch(fieldNameType) {
-								case "PROP":
-									setPropertyCriteria(setOperator(searchCriteria.withExperiment(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-									break;
-								case "ATTR":
-									setAttributeCriteria(setOperator(searchCriteria.withExperiment(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-									break;
-								case "NULL":
-									searchCriteria.withoutExperiment();
-									break;
-							}
-							break;
-						case "Parent":
-							switch(fieldNameType) {
-								case "PROP":
-									setPropertyCriteria(setOperator(searchCriteria.withParents(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-									break;
-								case "ATTR":
-									setAttributeCriteria(setOperator(searchCriteria.withParents(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-									break;
-							}
-							break;
-						case "Children":
-							switch(fieldNameType) {
-								case "PROP":
-									setPropertyCriteria(setOperator(searchCriteria.withChildren(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-									break;
-								case "ATTR":
-									setAttributeCriteria(setOperator(searchCriteria.withChildren(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
-									break;
-							}
-							break;
-					}
-				}
-			
+			    }
+
+			    searchCriteria = setOperator(searchCriteria, advancedSearchCriteria.logicalOperator);
+                setCriteriaRules(searchCriteria, advancedSearchCriteria);
+
+                // Sub Criteria - ONLY! first level support for the UI Tables OR
+                if(advancedSearchCriteria.subCriteria !== undefined) {
+                    var subCriteriaKeys = Object.keys(advancedSearchCriteria.subCriteria);
+                    for (var scdx = 0; scdx < subCriteriaKeys.length; scdx++) {
+                        var advancedSearchSubCriteria = advancedSearchCriteria.subCriteria[subCriteriaKeys[scdx]];
+                        var subCriteria = searchCriteria.withSubcriteria();
+                        subCriteria = setOperator(subCriteria, advancedSearchSubCriteria.logicalOperator);
+                        setCriteriaRules(subCriteria, advancedSearchSubCriteria);
+                    }
+                }
+
 				//
 				// Fix For broken equals PART 1
 				// Currently the back-end matches whole words instead doing a standard EQUALS
@@ -2422,6 +2441,7 @@ function ServerFacade(openbisServer) {
 
 			var fetchOptions = new GlobalSearchObjectFetchOptions();
 			fetchOptions.withMatch();
+			fetchOptions.sortBy().score().desc();
 			var sampleFetchOptions = fetchOptions.withSample();
 			sampleFetchOptions.withSpace();
 			sampleFetchOptions.withType();

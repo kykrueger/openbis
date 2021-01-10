@@ -33,7 +33,7 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 		prototype.withoutProject = function() {
 			var NoProjectSearchCriteria = require("as/dto/project/search/NoProjectSearchCriteria");
 			return this.addCriteria(new NoProjectSearchCriteria());
-		};		
+		};
 		prototype.withExperiment = function() {
 			var ExperimentSearchCriteria = require("as/dto/experiment/search/ExperimentSearchCriteria");
 			return this.addCriteria(new ExperimentSearchCriteria());
@@ -91,6 +91,9 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 		prototype.withContainer = function() {
 			return this.addCriteria(new SampleContainerSearchCriteria());
 		};
+		prototype.withSubcriteria = function() {
+			return this.addCriteria(new SampleSearchCriteria());
+		};
 	}, {
 		relation : {
 			name : "Enum",
@@ -126,7 +129,7 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 			arguments : [ "ISearchCriteria" ]
 		}
 	});
-	
+
 	var SampleChildrenSearchCriteria = function() {
 		AbstractSampleSearchCriteria.call(this, SampleSearchRelation.CHILDREN);
 	};

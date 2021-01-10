@@ -91,6 +91,9 @@ class PageButtons extends React.PureComponent {
 
     return (
       <Container className={classes.container}>
+        <div className={classes.leftContainer}>
+          {this.renderAdditionalButtons()}
+        </div>
         <div className={classes.rightContainer}>
           {onEdit && (
             <Button
@@ -106,21 +109,13 @@ class PageButtons extends React.PureComponent {
   }
 
   renderEdit() {
-    const {
-      classes,
-      onSave,
-      onCancel,
-      changed,
-      renderAdditionalButtons
-    } = this.props
-
-    const additionalButtons = renderAdditionalButtons
-      ? renderAdditionalButtons(classes)
-      : null
+    const { classes, onSave, onCancel, changed } = this.props
 
     return (
       <Container className={classes.container}>
-        <div className={classes.leftContainer}>{additionalButtons}</div>
+        <div className={classes.leftContainer}>
+          {this.renderAdditionalButtons()}
+        </div>
         <div className={classes.rightContainer}>
           {changed && (
             <React.Fragment>
@@ -152,6 +147,13 @@ class PageButtons extends React.PureComponent {
         </div>
       </Container>
     )
+  }
+
+  renderAdditionalButtons() {
+    const { renderAdditionalButtons, mode, classes } = this.props
+    return renderAdditionalButtons
+      ? renderAdditionalButtons({ mode, classes })
+      : null
   }
 }
 

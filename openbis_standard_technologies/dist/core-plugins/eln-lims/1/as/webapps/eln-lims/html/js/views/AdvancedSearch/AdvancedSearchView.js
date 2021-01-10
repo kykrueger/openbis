@@ -794,10 +794,20 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				});
 				
 				columns.push({
-					label : 'Score',
-					property : 'score',
+					label : 'Rank',
+					property : 'rank',
 					isExportable: true,
-					sortable : false
+					sortable : false,
+                    render : function(data, grid) {
+                        var indexFound = null;
+                        for(var idx = 0; idx < grid.lastReceivedData.objects.length; idx++) {
+                            if(grid.lastReceivedData.objects[idx].permId === data.permId) {
+                                indexFound = idx + (grid.lastUsedOptions.pageIndex * grid.lastUsedOptions.pageSize);
+                        		break;
+                            }
+                        }
+                        return indexFound + 1;
+					}
 				});
 			}
 			

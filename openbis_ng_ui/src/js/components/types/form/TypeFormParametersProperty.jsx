@@ -103,7 +103,6 @@ class TypeFormParametersProperty extends React.PureComponent {
         <Header>Property</Header>
         {this.renderMessageGlobal(property)}
         {this.renderMessageAssignments(property)}
-        {this.renderMessageUsage(property)}
         {this.renderMessageSystemInternal(property)}
         {this.renderScope(property)}
         {this.renderCode(property)}
@@ -132,34 +131,6 @@ class TypeFormParametersProperty extends React.PureComponent {
             This property is global. Changes will also influence other types
             where this property is used.
           </Message>
-        </div>
-      )
-    } else {
-      return null
-    }
-  }
-
-  renderMessageUsage(property) {
-    const { classes } = this.props
-
-    function entities(number) {
-      return number === 0 || number > 1
-        ? `${number} entities`
-        : `${number} entity`
-    }
-
-    function message(property) {
-      return `This property is already used by ${entities(
-        property.usagesGlobal
-      )} (${entities(property.usagesLocal)} of this type and ${entities(
-        property.usagesGlobal - property.usagesLocal
-      )} of other types).`
-    }
-
-    if (property.usagesLocal !== 0 || property.usagesGlobal !== 0) {
-      return (
-        <div className={classes.field}>
-          <Message type='info'>{message(property)}</Message>
         </div>
       )
     } else {
@@ -327,6 +298,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             error={error}
             disabled={!enabled}
             value={value}
+            freeSolo={true}
             mode={mode}
             onChange={this.handleChange}
             onFocus={this.handleFocus}

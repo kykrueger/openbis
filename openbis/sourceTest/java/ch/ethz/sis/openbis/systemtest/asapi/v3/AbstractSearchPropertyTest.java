@@ -585,10 +585,10 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 { DataType.VARCHAR, "abcd3", "contains bcd and endsWith d34", false },
                 { DataType.VARCHAR, "abd34", "contains bcd and endsWith d34", false },
                 { DataType.VARCHAR, "abcd34", "contains bcd and endsWith d34", true },
-                { DataType.MULTILINE_VARCHAR, "acd3", "contains bcd or endsWith cd4", false },
-                { DataType.MULTILINE_VARCHAR, "abcd3", "contains bcd or endsWith cd4", true },
-                { DataType.MULTILINE_VARCHAR, "abd4", "contains bcd or endsWith bd4", true },
-                { DataType.MULTILINE_VARCHAR, "abcd4", "contains bcd or endsWith cd4", true },
+                { DataType.MULTILINE_VARCHAR, "acd3", "contains abcd or endsWith acd4", false },
+                { DataType.MULTILINE_VARCHAR, "abcd3", "contains abcd or endsWith bcd4", true },
+                { DataType.MULTILINE_VARCHAR, "abd4", "contains abcd or endsWith abd4", true },
+                { DataType.MULTILINE_VARCHAR, "abcd4", "contains abcd or endsWith bcd4", true },
                 { DataType.MULTILINE_VARCHAR, "12", "> 100 and <= 13", true },
                 { DataType.BOOLEAN, "true", "== true", true },
                 { DataType.BOOLEAN, "true", "== false", false },
@@ -1380,7 +1380,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         {
             super(searchCriteria, propertyTypeId);
         }
-        
+
         @Override
         protected void injectQuery(Operator operator, String operand)
         {

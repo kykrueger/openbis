@@ -243,14 +243,6 @@ async function testConvertProperty() {
   type.setPropertyAssignments(properties)
 
   common.facade.loadType.mockReturnValue(Promise.resolve(type))
-  common.facade.loadUsages.mockReturnValue(
-    Promise.resolve({
-      propertyGlobal: properties.reduce((map, property) => {
-        map[property.propertyType.code] = 1
-        return map
-      }, {})
-    })
-  )
 
   const suffix = ' (converted)'
   let index = 0

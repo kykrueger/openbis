@@ -74,7 +74,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
   }
 
   _handleChangePropertyScope(oldProperty, newProperty) {
-    const { type, assignments, usages } = this.context.getState()
+    const { type, assignments } = this.context.getState()
 
     const oldScope = oldProperty.scope.value
     const newScope = newProperty.scope.value
@@ -167,17 +167,6 @@ export default class TypeFormControllerChange extends PageControllerChange {
       const propertyAssignments =
         (assignments && assignments[propertyCode]) || 0
 
-      const propertyUsagesLocal =
-        (usages &&
-          usages.propertyLocal &&
-          usages.propertyLocal[propertyCode]) ||
-        0
-      const propertyUsagesGlobal =
-        (usages &&
-          usages.propertyGlobal &&
-          usages.propertyGlobal[propertyCode]) ||
-        0
-
       const systemInternalAssignment =
         newProperty.internal.value &&
         newProperty.registratorOfAssignment.value === users.SYSTEM
@@ -239,9 +228,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
           ...newProperty.initialValueForExistingEntities,
           enabled: !systemInternalAssignment
         },
-        assignments: propertyAssignments,
-        usagesLocal: propertyUsagesLocal,
-        usagesGlobal: propertyUsagesGlobal
+        assignments: propertyAssignments
       })
 
       newProperty.originalGlobal = isGlobal ? _.cloneDeep(newProperty) : null

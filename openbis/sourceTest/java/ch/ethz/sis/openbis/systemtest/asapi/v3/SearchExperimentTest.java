@@ -16,17 +16,6 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.junit.Assert.fail;
-import static org.testng.Assert.assertEquals;
-
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.TimeZone;
-
-import org.testng.annotations.Test;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.fetchoptions.AttachmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DatePropertySearchCriteria;
@@ -41,12 +30,21 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
+import org.testng.annotations.Test;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.TimeZone;
+
+import static org.junit.Assert.fail;
+import static org.testng.Assert.assertEquals;
 
 /**
  * @author pkupczyk
@@ -1350,7 +1348,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 experimentCreation3));
 
         final ExperimentFetchOptions emptyFetchOptions = new ExperimentFetchOptions();
-        
+
         // Greater or Equal - Integer
         final ExperimentSearchCriteria criteriaGE = new ExperimentSearchCriteria();
         criteriaGE.withNumberProperty("INT_NUMBER").thatIsGreaterThanOrEqualTo(2);
@@ -1535,6 +1533,40 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 Void -> searchExperiments(sessionToken, criteriaWithDateProperty, new ExperimentFetchOptions()),
                 String.format("Criterion of type %s cannot be applied to the data type %s.",
                         "DatePropertySearchCriteria", "VARCHAR"));
+    }
+
+    @Test
+    public void testNestedLogicalOperators()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
+
+        final ExperimentSearchCriteria subCriteria1 = criteria.withSubcriteria().withOrOperator();
+        subCriteria1.withCode().thatStartsWith("EXP-");
+        subCriteria1.withCode().thatStartsWith("EXP1");
+
+        final ExperimentSearchCriteria subCriteria2 = criteria.withSubcriteria().withOrOperator();
+        subCriteria2.withCode().thatEndsWith("E");
+        subCriteria2.withCode().thatEndsWith("1");
+
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE", "/CISD/NEMO/EXP-TEST-1",
+                "/CISD/NEMO/EXP11");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsMultipleNesting()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
+
+        final ExperimentSearchCriteria subCriteria1 = criteria.withSubcriteria().withOrOperator();
+        subCriteria1.withSubcriteria().withSubcriteria().withCode().thatStartsWith("EXP-");
+        subCriteria1.withSubcriteria().withSubcriteria().withSubcriteria().withSubcriteria().withCode().thatStartsWith("EXP1");
+
+        final ExperimentSearchCriteria subCriteria2 = criteria.withSubcriteria().withOrOperator();
+        subCriteria2.withSubcriteria().withCode().thatEndsWith("E");
+        subCriteria2.withSubcriteria().withSubcriteria().withCode().thatEndsWith("1");
+
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE", "/CISD/NEMO/EXP-TEST-1",
+                "/CISD/NEMO/EXP11");
     }
 
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,

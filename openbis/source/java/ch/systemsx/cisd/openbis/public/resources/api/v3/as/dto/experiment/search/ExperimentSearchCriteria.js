@@ -21,6 +21,9 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 			var ProjectSearchCriteria = require("as/dto/project/search/ProjectSearchCriteria");
 			return this.addCriteria(new ProjectSearchCriteria());
 		};
+		prototype.withSubcriteria = function() {
+			return this.addCriteria(new ExperimentSearchCriteria());
+		};
 		prototype.withOrOperator = function() {
 			return this.withOperator(SearchOperator.OR);
 		};
