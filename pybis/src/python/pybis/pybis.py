@@ -645,7 +645,9 @@ class Openbis:
     """
 
     def __init__(self, url=None, verify_certificates=True, token=None,
-    allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=False):
+        use_cache=True,
+        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=False
+    ):
         """Initialize a new connection to an openBIS server.
 
         Examples:
@@ -656,6 +658,7 @@ class Openbis:
             url (str): https://openbis.example.com
             verify_certificates (bool): set to False when you use self-signed certificates
             token (str): a valid openBIS token. If not set, pybis will try to read a valid token from ~/.pybis
+            use_cache: make openBIS to store spaces, projects, sample types, vocabulary terms and oder more-or-less static objects to optimise speed
             allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks (bool): False
         """
 
@@ -687,17 +690,17 @@ class Openbis:
         self.url = url_obj.geturl()
         self.port = url_obj.port
         self.hostname = url_obj.hostname
+        self.datastores = None
         self.download_prefix = os.path.join('data', self.hostname)
         self.as_v3 = '/openbis/openbis/rmi-application-server-v3.json'
         self.as_v1 = '/openbis/openbis/rmi-general-information-v1.json'
         self.reg_v1 = '/openbis/openbis/rmi-query-v1.json'
         self.verify_certificates = verify_certificates
+        self.use_cache = use_cache
+        self.cache = {}
         self.token = token
 
         self.server_information = None
-        self.dataset_types = None
-        self.sample_types = None
-        #self.files_in_wsp = []
         self.token_path = None
 
         # use an existing token, if available
@@ -726,6 +729,8 @@ class Openbis:
             'is_token_valid()',
             "mount()",
             "unmount()",
+            "use_cache",
+            "clear_cache()",
             "download_prefix",
             "get_mountpoint()",
             "get_server_information()",
@@ -1221,7 +1226,7 @@ class Openbis:
         there might be multiple servers. If you upload a file, you need to specifiy the datastore you want
         the file uploaded to.
         """
-        if hasattr(self, 'datastores'):
+        if self.datastores:
             return self.datastores
 
         request = {
@@ -1731,6 +1736,10 @@ class Openbis:
         """
 
         code = str(code).upper()
+        space = not only_data and self._object_cache(entity='space',code=code)
+        if space:
+            return space
+
         fetchopts = {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"}
         for option in ['registrator']:
             fetchopts[option] = fetch_option[option]
@@ -1756,7 +1765,10 @@ class Openbis:
             if only_data:
                 return resp[permid]
             else:
-                return Space(self, data=resp[permid])
+                space = Space(self, data=resp[permid])
+                if self.use_cache:
+                    self._object_cache(entity='space',code=code,value=space)
+                return space
 
 
     def get_samples(
@@ -2383,6 +2395,13 @@ class Openbis:
         return fo
 
     def get_project(self, projectId, only_data=False):
+        """Returns a Project object for a given identifier, code or permId.
+        """
+
+        project = not only_data and self._object_cache(entity='project',code=projectId)
+        if project:
+            return project
+
         options = ['space', 'registrator', 'modifier', 'attachments']
         if is_identifier(projectId) or is_permid(projectId):
             request = self._create_get_request(
@@ -2393,11 +2412,14 @@ class Openbis:
             if only_data:
                 return resp[projectId]
 
-            return Project(
+            project = Project(
                 openbis_obj=self, 
                 type=None,
                 data=resp[projectId]
             )
+            if self.use_cache:
+                self._object_cache(entity='project', code=projectId, value=project)
+            return project
 
         else:
             search_criteria = _gen_search_criteria({
@@ -2416,11 +2438,14 @@ class Openbis:
             if only_data:
                 return resp['objects'][0]
 
-            return Project(
+            project = Project(
                 openbis_obj=self, 
                 type=None,
                 data=resp['objects'][0]
             )
+            if self.use_cache:
+                self._object_cache(entity='project', code=projectId, value=project)
+            return project
 
     def get_projects(
         self, space=None, code=None,
@@ -2519,13 +2544,39 @@ class Openbis:
         }
         return request
 
-    def get_terms(self, vocabulary=None, start_with=None, count=None, cache={}):
+    def clear_cache(self, entity=None):
+        """Empty the internal object cache
+        If you do not specify any entity, the complete cache is cleared.
+        As entity, you can specify either:
+        space, project, vocabulary, term, sampleType, experimentType, dataSetType
+        """
+        if entity:
+            self.cache[entity] = {}
+        else:
+            self.cache = {}
+
+    def _object_cache(self, entity=None, code=None, value=None):
+
+        # return the value, if no value provided
+        if value is None:
+            if entity in self.cache:
+                return self.cache[entity].get(code)
+        else:
+            if entity not in self.cache:
+                self.cache[entity] = {}
+
+            self.cache[entity][code] = value
+
+
+    def get_terms(self, vocabulary=None, start_with=None, count=None):
         """ Returns information about existing vocabulary terms. 
         If a vocabulary code is provided, it only returns the terms of that vocabulary.
         """
 
-        if vocabulary is not None and vocabulary in cache and start_with is None and count is None:
-            return cache[vocabulary]
+        if self.use_cache and vocabulary is not None and start_with is None and count is None:
+            voc = self._object_cache(entity='term',code=vocabulary)
+            if voc:
+                return voc
 
         search_request = {}
         if vocabulary is not None:
@@ -2570,12 +2621,10 @@ class Openbis:
             count = count,
             totalCount = resp.get('totalCount'),
         )
-        if vocabulary is not None and start_with is None and count is None:
-            cache[vocabulary] = things
-            return cache[vocabulary]
+        if self.use_cache and vocabulary is not None and start_with is None and count is None:
+            self._object_cache(entity='term',code=vocabulary,value=things)
 
-        else:
-            return things
+        return things
         
 
     def new_term(self, code, vocabularyCode, label=None, description=None):
@@ -2667,15 +2716,14 @@ class Openbis:
         )
 
 
-    def get_vocabulary(self, code, only_data=False, cache={}):
+    def get_vocabulary(self, code, only_data=False):
         """ Returns the details of a given vocabulary (including vocabulary terms)
         """
 
-        if code in cache:
-            if only_data:
-                return cache[code]['data']
-            else:
-                return cache[code]['object']
+        code = str(code).upper()
+        voc = not only_data and self._object_cache(entity='vocabulary',code=code)
+        if voc:
+            return voc
 
         entity = 'vocabulary'
         method_name = get_method_for_entity(entity, 'get')
@@ -2697,17 +2745,10 @@ class Openbis:
         else:
             parse_jackson(resp)
             for ident in resp:
-                cache[code] = {}
-                cache[code]['data'] = resp[ident]
-                vocabulary = Vocabulary(
-                    openbis_obj=self, 
-                    data=resp[ident]
-                )
-                cache[code]['object'] = vocabulary
-                if only_data:
-                    return cache[code]['data']
-                else:
-                    return cache[code]['object']
+                vocabulary = Vocabulary( openbis_obj=self, data=resp[ident])
+                if self.use_cache:
+                    self._object_cache(entity='vocabulary', code=code, value=vocabulary)
+                return vocabulary
 
 
     def new_tag(self, code, description=None):
@@ -2755,6 +2796,9 @@ class Openbis:
             for ident in permId:
                 identifiers.append(_type_for_id(ident, 'tag'))
         else:
+            tag = not only_data and self._object_cache(entity='tag',code=permId)
+            if tag:
+                return tag
             identifiers.append(_type_for_id(permId, 'tag'))
 
         fetchopts = fetch_option['tag']
@@ -2780,7 +2824,10 @@ class Openbis:
                 if only_data:
                     return resp[permId]
                 else:
-                    return Tag(self, data=resp[permId])
+                    tag = Tag(self, data=resp[permId])
+                    if self.use_cache:
+                        self._object_cache(entity='tag',code=permId,value=tag)
+                    return tag
         else:
             return self._tag_list_for_response( response=list(resp.values()) )
 
@@ -2939,11 +2986,11 @@ class Openbis:
         objects = self.search_semantic_annotations(permId=permId, only_data=True)
         if len(objects) == 0:
             raise ValueError("Semantic annotation with permId " + permId +  " not found.")
-        object = objects[0]
+        obj = objects[0]
         if only_data:
-            return object
+            return obj
         else:
-            return SemanticAnnotation(self, isNew=False, **object)
+            return SemanticAnnotation(self, isNew=False, **obj)
 
     def get_plugins(self, start_with=None, count=None):
 
@@ -3084,13 +3131,16 @@ class Openbis:
             transformation = transformation,
         )
 
-    def get_property_type(self, code, only_data=False, start_with=None, count=None, cache={}):
+    def get_property_type(self, code, only_data=False, start_with=None, count=None):
 
-        if not isinstance(code, list) and code in cache and start_with is None and count is None:
-            if only_data:
-                return cache[code]['data']
-            else:
-                return cache[code]['object']
+        if not isinstance(code, list) and start_with is None and count is None:
+            code = str(code).upper()
+            pt = self.use_cache and self._object_cache(entity='property_type',code=code)
+            if pt:
+                if only_data:
+                    return pt.data
+                else:
+                    return pt
 
         identifiers = []
         only_one = False
@@ -3125,17 +3175,16 @@ class Openbis:
             if len(resp) == 0:
                 raise ValueError('no such propertyType: {}'.format(code))
             for ident in resp:
-                cache[code[0]] = {}
-                pt = PropertyType(
+                if only_data:
+                    return resp[ident]
+                else:
+                    pt = PropertyType(
                         openbis_obj = self,
                         data=resp[ident]
                     )
-                cache[code[0]]['data'] = resp[ident]
-                cache[code[0]]['object'] = pt
-                if only_data:
-                    return cache[code[0]]['data']
-                else:
-                    return cache[code[0]]['object']
+                    if self.use_cache:
+                        self._object_cache(entity='property_type',code=code[0], value=pt)
+                    return pt
 
         # return a list of objects
         else:
@@ -3327,6 +3376,11 @@ class Openbis:
         )
 
     def get_entity_type(self, entity, identifier, cls, only_data=False, with_vocabulary=False):
+
+        et = not only_data and not isinstance(identifier, list) and self._object_cache(entity=entity, code=identifier)
+        if et:
+            return et
+
         method_name = get_method_for_entity(entity, 'get')
         fetch_options = get_fetchoption_for_entity(entity)
         if with_vocabulary:
@@ -3364,10 +3418,14 @@ class Openbis:
             if only_data:
                 return resp[ident]
             else:
-                return cls(
+                obj = cls(
                     openbis_obj = self,
                     data = resp[ident]
                 )
+                if self.use_cache:
+                    self._object_cache(entity=entity, code=ident, value=obj)
+                return obj
+
 
     def _get_types_of(
         self, method_name, entity, type_name=None,

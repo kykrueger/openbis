@@ -66,7 +66,7 @@ In an **interactive session** e.g. inside a Jupyter notebook, you can use `getpa
 
 ```
 from pybis import Openbis
-o = Openbis('https://example.com', verify_certificates=False)
+o = Openbis('https://example.com')
 
 import getpass
 password = getpass.getpass()
@@ -78,19 +78,43 @@ In a **script** you would rather use two **environment variables** to provide us
 
 ```
 from pybis import Openbis
-o = Openbis(os.environ['OPENBIS_HOST'], verify_certificates=False)
+o = Openbis(os.environ['OPENBIS_HOST'])
 
 o.login(os.environ['OPENBIS_USERNAME'], os.environ['OPENBIS_PASSWORD'])
 ```
 
+### Verify certificate
 
-Check whether the **session token** is still valid and log out:
+By default, your SSL-Certification is being verified. If you have a test-instance with a self-signed certificate, you'll need to turn off this verification explicitly:
 
+```python
+from pybis import Openbis
+o = Openbis('https://test-openbis-instance.com', verify_certificates=False)
 ```
-o.token
-o.is_session_active()
+
+### Check session token, logout()
+
+Check whether your session, i.e. the **session token** is still valid and log out:
+
+```python
+print(f"Session is active: {o.is_session_active()} and token is {o.token}")
 o.logout()
+print(f"Session is active: {o.is_session_active()"}
 ```
+
+### Caching
+
+With `pyBIS 1.17.0`, a lot of caching has been introduce to improve the speed of object lookups that do not change often. If you encounter any problems, you can turn it off like this:
+
+```python
+o = Openbis('https://example.com', use_cache=False)
+
+# or later in the script
+o.use_cache = False
+o.clear_cache()
+o.clear_cache('sampleType')
+```
+
 
 ## Mount openBIS dataStore server
 
