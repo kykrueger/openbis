@@ -123,7 +123,7 @@
 ## Changes with pybis-1.10.1
 
 * fixed a nasty threading bug: open threads are now closed when downloading or uploading datasets
-* this bugfix avoids this RuntimeError: can't start new thread
+* this bugfix avoids this RuntimeError: cannot start new thread
 
 ## Changes with pybis-1.10.0
 

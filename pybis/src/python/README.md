@@ -66,7 +66,7 @@ In an **interactive session** e.g. inside a Jupyter notebook, you can use `getpa
 
 ```
 from pybis import Openbis
-o = Openbis('https://example.com', verify_certificates=False)
+o = Openbis('https://example.com')
 
 import getpass
 password = getpass.getpass()
@@ -78,19 +78,43 @@ In a **script** you would rather use two **environment variables** to provide us
 
 ```
 from pybis import Openbis
-o = Openbis(os.environ['OPENBIS_HOST'], verify_certificates=False)
+o = Openbis(os.environ['OPENBIS_HOST'])
 
 o.login(os.environ['OPENBIS_USERNAME'], os.environ['OPENBIS_PASSWORD'])
 ```
 
+### Verify certificate
 
-Check whether the **session token** is still valid and log out:
+By default, your SSL-Certification is being verified. If you have a test-instance with a self-signed certificate, you'll need to turn off this verification explicitly:
 
+```python
+from pybis import Openbis
+o = Openbis('https://test-openbis-instance.com', verify_certificates=False)
 ```
-o.token
-o.is_session_active()
+
+### Check session token, logout()
+
+Check whether your session, i.e. the **session token** is still valid and log out:
+
+```python
+print(f"Session is active: {o.is_session_active()} and token is {o.token}")
 o.logout()
+print(f"Session is active: {o.is_session_active()"}
 ```
+
+### Caching
+
+With `pyBIS 1.17.0`, a lot of caching has been introduce to improve the speed of object lookups that do not change often. If you encounter any problems, you can turn it off like this:
+
+```python
+o = Openbis('https://example.com', use_cache=False)
+
+# or later in the script
+o.use_cache = False
+o.clear_cache()
+o.clear_cache('sampleType')
+```
+
 
 ## Mount openBIS dataStore server
 
@@ -448,7 +472,7 @@ The new name for **sample** is **object**. You can use boths names interchangeab
 * `new_sample()`  = `new_object()`
 * `get_samples()` = `get_objects()`
 
-etc.
+etc. 
 
 ```
 sample = o.new_sample(
@@ -464,6 +488,7 @@ sample.save()
 
 sample = o.get_sample('/MY_SPACE/MY_SAMPLE_CODE')
 sample = o.get_sample('20170518112808649-52')
+samples= o.get_samples(type='UNKNOWN')    # search for samples, see below
 
 # get individual attributes
 sample.space
@@ -594,6 +619,13 @@ samples = o.get_samples(
     props=['$NAME', 'MATING_TYPE']    # show these properties in the result
 )
 
+sample = samples[9]                   # get the 10th sample
+                                      # of the search results
+sample = samples['/SPACE/AABC']       # same, fetched by identifier
+for sample in samples:                # iterate over the
+   print(sample.code)                 # search results
+
+
 samples.df                            # returns a Pandas DataFrame object
 
 samples = o.get_samples(props="*")    # retrieve all properties of all samples
@@ -625,15 +657,21 @@ exp = o.new_experiment
 )
 exp.save()
 
-o.get_experiments(
-    project='YEASTS',
-    space='MY_SPACE', 
-    type='DEFAULT_EXPERIMENT',
-    tags='*', 
-    finished_flag=False,
-    props=['name', 'finished_flag']
+experiments = o.get_experiments(
+    project       = 'YEASTS',
+    space         = 'MY_SPACE', 
+    type          = 'DEFAULT_EXPERIMENT',
+    tags          = '*', 
+    finished_flag = False,
+    props         = ['name', 'finished_flag']
 )
-project.get_experiments()
+experiments = project.get_experiments()
+experiment = experiments[0]        # get first experiment of result list
+experiment = experiment
+for experiment in experiments:     # iterate over search results
+    print(experiment.props.all())
+dataframe = experiments.df         # get Pandas DataFrame of result list
+    
 exp = o.get_experiment('/MY_SPACE/MY_PROJECT/MY_EXPERIMENT')
 
 exp.set_props({ key: value})
@@ -668,7 +706,15 @@ exp.freezeForSamples = True
 
 ### working with existing dataSets
 ```
-sample.get_datasets()
+# search for datasets, see more search examples below
+datasets = sample.get_datasets(type='SCANS', start_with=0, count=10)
+
+for dataset in datasets:
+    print(dataset.props.all())
+    print(dataset.file_list)
+    dataset.download()
+dataset = datasets[0]
+
 ds = o.get_dataset('20160719143426517-259')
 ds.get_parents()
 ds.get_children()
@@ -746,7 +792,7 @@ ds.props.all()                    # returns all properties as a dict
 * properties must be in UPPERCASE to distinguish them from attributes
 
 ```
-dataSets = o.get_dataSets(
+datasets = o.get_datasets(
     type  ='MY_DATASET_TYPE',
     NAME  = 'some name',              # properties are always uppercase 
                                       # to distinguish them from attributes
@@ -763,10 +809,11 @@ dataSets = o.get_dataSets(
     ],
     props=['$NAME', 'MATING_TYPE']    # show these properties in the result
 )
-
-df = dataSets.df                      # returns the Pandas dataFrame object
-
-dataSets = o.get_dataSets(props="*")  # retrieve all properties of all dataSets
+datasets = o.get_datasets(props="*")  # retrieve all properties of all dataSets
+dataset = datasets[0]                 # get the first dataset in the search result
+for dataset in datasets:              # iterate over the datasets
+    ...
+df = datasets.df                      # returns a Pandas dataFrame object of the search results
 ```
 
 In some cases, you might want to retrieve precisely certain datasets. This can be achieved by

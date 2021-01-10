@@ -7,22 +7,24 @@ class PropertyHolder():
     def __init__(self, openbis_obj, type=None):
         self.__dict__['_openbis'] = openbis_obj
         self.__dict__['_property_names'] = {}
-        if type is not None:
-            self.__dict__['_type'] = type
-            if 'propertyAssignments' in type.data \
-               and type.data['propertyAssignments'] is not None:
-                for prop in type.data['propertyAssignments']:
-                    property_name = prop['propertyType']['code'].lower()
-                    self._property_names[property_name]=prop['propertyType']
-                    self._property_names[property_name]['mandatory'] = prop['mandatory']
-                    self._property_names[property_name]['showInEditView'] = prop['showInEditView']
-                    if prop['propertyType']['dataType'] == 'CONTROLLEDVOCABULARY':
-                        pt = self._openbis.get_property_type(prop['propertyType']['code'])
-                        # get the vocabulary of a property type.
-                        # In some cases, the «code» of an assigned property is not identical to the «vocabulary» attribute
-                        voc = self._openbis.get_vocabulary(pt.vocabulary)
-                        terms = voc.get_terms()
-                        self._property_names[property_name]['terms'] = terms
+        if type is None:
+            return
+
+        self.__dict__['_type'] = type
+        if 'propertyAssignments' in type.data \
+        and type.data['propertyAssignments'] is not None:
+            for prop in type.data['propertyAssignments']:
+                property_name = prop['propertyType']['code'].lower()
+                self._property_names[property_name]=prop['propertyType']
+                self._property_names[property_name]['mandatory'] = prop['mandatory']
+                self._property_names[property_name]['showInEditView'] = prop['showInEditView']
+                if prop['propertyType']['dataType'] == 'CONTROLLEDVOCABULARY':
+                    pt = self._openbis.get_property_type(prop['propertyType']['code'])
+                    # get the vocabulary of a property type.
+                    # In some cases, the «code» of an assigned property is not identical to the «vocabulary» attribute
+                    voc = self._openbis.get_vocabulary(pt.vocabulary)
+                    terms = voc.get_terms()
+                    self._property_names[property_name]['terms'] = terms
 
     def _all_props(self):
         props = {}
