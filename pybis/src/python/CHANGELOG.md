@@ -1,3 +1,9 @@
+## Changes with pybis-1.17.0
+
+- added caching for often used but rarely updated openBIS objects.
+- if you need to create a lot of Samples, this will improve your speed a lot
+- by default, caching is enabled
+
 ## Changes with pybis-1.16.2
 
 - transaction.commit() now updates all added samples with their respective permIds
