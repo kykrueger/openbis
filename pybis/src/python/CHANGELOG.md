@@ -1,3 +1,7 @@
+## Changes with pybis-1.17.1
+
+- fixed datastore bug
+
 ## Changes with pybis-1.17.0
 
 - added caching for often used but rarely updated openBIS objects.
