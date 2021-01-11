@@ -5,8 +5,8 @@ pyBIS is a Python module for interacting with openBIS. pyBIS is designed to be m
 ## Dependencies and Requirements
 - pyBIS relies the openBIS API v3
 - openBIS version 16.05.2 or newer is required
-- 18.06.2 or later is recommended
-- pyBIS uses Python 3.5 or newer and the Pandas module
+- 19.06.5 or later is recommended
+- pyBIS uses Python 3.6 or newer and the Pandas module
 
 ## Installation
 
@@ -104,7 +104,7 @@ print(f"Session is active: {o.is_session_active()"}
 
 ### Caching
 
-With `pyBIS 1.17.0`, a lot of caching has been introduce to improve the speed of object lookups that do not change often. If you encounter any problems, you can turn it off like this:
+With `pyBIS 1.17.0`, a lot of caching has been introduced to improve the speed of object lookups that do not change often. If you encounter any problems, you can turn it off like this:
 
 ```python
 o = Openbis('https://example.com', use_cache=False)
