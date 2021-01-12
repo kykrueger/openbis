@@ -24,15 +24,22 @@ import ch.ethz.sis.microservices.download.server.services.Service;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class StatisticsReceiverHandler extends Service
 {
 
     private static final Logger LOGGER = LogManager.getLogger(StatisticsReceiverHandler.class);
+
+    private static final String STATISTICS_FILE_PATH_PARAM = "statisticsFilePath";
 
     static final String SERVER_ID_PARAM = "serverId";
 
@@ -49,10 +56,10 @@ public class StatisticsReceiverHandler extends Service
     protected void doAction(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException
     {
-//        // Service Configuration
+        // Service Configuration
 //        final String openbisURL = this.getServiceConfig().getParameters().get("openbis-url");
-//        final String datastoreURL = this.getServiceConfig().getParameters().get("datastore-url");
 //        final int servicesTimeout = Integer.parseInt(this.getServiceConfig().getParameters().get("services-timeout"));
+        final String statisticsFilePath = this.getServiceConfig().getParameters().get(STATISTICS_FILE_PATH_PARAM);
 
         // Request parameters
         try
@@ -67,12 +74,38 @@ public class StatisticsReceiverHandler extends Service
             LOGGER.info(String.format("Received following data. [serverId=%s, submissionTimestamp=%d, " +
                             "totalUsersCount=%d, activeUsersCount=%d, ipAddress=%s, geolocation=%s]",
                     serverId, submissionTimestamp, totalUsersCount, activeUsersCount, ipAddress, geolocation));
+
+            final String csvLine = convertToCSV(serverId, String.valueOf(submissionTimestamp),
+                    String.valueOf(totalUsersCount), String.valueOf(activeUsersCount), ipAddress, geolocation);
+
+            final File statisticsFile = new File(statisticsFilePath);
+            statisticsFile.getParentFile().mkdirs();
+            statisticsFile.createNewFile();
+            try (final PrintWriter pw = new PrintWriter(new FileOutputStream(statisticsFile, true))) {
+                pw.println(csvLine);
+            }
+
             success(response);
         } catch (final Exception ex)
         {
             LOGGER.catching(ex);
             failure(response);
         }
+    }
+
+    private static String convertToCSV(String... data) {
+        return Stream.of(data)
+                .map(StatisticsReceiverHandler::escapeSpecialCharacters)
+                .collect(Collectors.joining(","));
+    }
+
+    private static String escapeSpecialCharacters(String data) {
+        String escapedData = data.replaceAll("\\R", " ");
+        if (data.contains(",") || data.contains("\"") || data.contains("'")) {
+            data = data.replace("\"", "\"\"");
+            escapedData = "\"" + data + "\"";
+        }
+        return escapedData;
     }
 
     private static <T> T getParameterOfType(final HttpServletRequest request, final String parameterName,

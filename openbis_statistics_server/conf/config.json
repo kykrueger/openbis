@@ -7,7 +7,8 @@
 			"parameters" : {
 				"openbis-url" : "http://localhost:8888/openbis/openbis/rmi-application-server-v3",
 				"datastore-url" : "http://localhost:8889/datastore_server/rmi-data-store-server-v3",
-				"services-timeout" : "10000"
+				"services-timeout" : "10000",
+				"statisticsFilePath" : "/Users/localadmin/obis_data/statistics.csv"
 			}
 		}
 	]
