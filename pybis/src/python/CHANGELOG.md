@@ -1,3 +1,7 @@
+## Changes with pybis-1.17.2
+
+- fixed vocabularies bug
+
 ## Changes with pybis-1.17.1
 
 - fixed datastore bug
