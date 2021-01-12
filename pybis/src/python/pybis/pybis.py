@@ -2744,7 +2744,10 @@ class Openbis:
         else:
             parse_jackson(resp)
             for ident in resp:
-                vocabulary = Vocabulary( openbis_obj=self, data=resp[ident])
+                data = resp[ident]
+                if only_data:
+                    return data
+                vocabulary = Vocabulary( openbis_obj=self, data=data)
                 if self.use_cache:
                     self._object_cache(entity='vocabulary', code=code, value=vocabulary)
                 return vocabulary
