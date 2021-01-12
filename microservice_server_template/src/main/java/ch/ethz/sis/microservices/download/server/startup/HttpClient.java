@@ -11,7 +11,18 @@ import java.util.Map;
 
 public class HttpClient
 {
-    public static byte[] doGet(String urlAsString, Map<String, String> parameters) throws Exception
+    public static byte[] doGet(final String urlAsString, final Map<String, String> parameters) throws Exception
+    {
+        return doAction(urlAsString, parameters, "GET");
+    }
+
+    public static byte[] doPost(final String urlAsString, final Map<String, String> parameters) throws Exception
+    {
+        return doAction(urlAsString, parameters, "POST");
+    }
+
+    public static byte[] doAction(final String urlAsString, final Map<String, String> parameters, final String method)
+            throws Exception
     {
         StringBuilder parametersAsString = new StringBuilder();
         boolean first = true;
@@ -35,7 +46,7 @@ public class HttpClient
         con.setUseCaches(false);
 
         HttpURLConnection http = (HttpURLConnection) con;
-        http.setRequestMethod("GET");
+        http.setRequestMethod(method);
         http.setDoOutput(true);
 
         // OutputStream os = con.getOutputStream();
