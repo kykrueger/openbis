@@ -1,6 +1,7 @@
-## Changes with pybis-1.17.2
+## Changes with pybis-1.17.3
 
 - fixed vocabularies bug
+- fixed updating vocabularies
 
 ## Changes with pybis-1.17.1
 
