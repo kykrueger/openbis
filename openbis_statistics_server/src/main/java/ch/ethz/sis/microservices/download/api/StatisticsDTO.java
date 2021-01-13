@@ -19,10 +19,13 @@ package ch.ethz.sis.microservices.download.api;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
-public class StatisticsDTO
+public class StatisticsDTO implements Serializable
 {
+    private static final long serialVersionUID = -2984621476335382352L;
 
     private String serverId;
 

@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.microservices.download.server.services.store;
 
+import ch.ethz.sis.microservices.download.api.StatisticsDTO;
+import ch.ethz.sis.microservices.download.server.json.jackson.JacksonObjectMapper;
 import ch.ethz.sis.microservices.download.server.logging.LogManager;
 import ch.ethz.sis.microservices.download.server.logging.log4j.Log4J2LogFactory;
 import ch.ethz.sis.microservices.download.server.startup.HttpClient;
@@ -24,8 +26,6 @@ import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static ch.ethz.sis.microservices.download.server.services.store.StatisticsReceiverHandler.*;
 
 public class StatisticsReceiverHandlerTest
 {
@@ -46,15 +46,18 @@ public class StatisticsReceiverHandlerTest
 
         final Map<String, String> parameters = new HashMap<>();
         parameters.put("sessionToken", sessionToken);
-        parameters.put(SERVER_ID_PARAM, "01-23-45-67-89-AB");
-        parameters.put(SUBMISSION_TIMESTAMP_PARAM, String.valueOf(System.currentTimeMillis()));
-        parameters.put(TOTAL_USERS_COUNT_PARAM, String.valueOf(20));
-        parameters.put(ACTIVE_USERS_COUNT_PARAM, String.valueOf(10));
-        parameters.put(IP_ADDRESS_PARAM, "127.0.0.1");
-        parameters.put(GEOLOCATION_PARAM, "0.0,0.0");
 
+        final StatisticsDTO statisticsDTO = new StatisticsDTO();
+        statisticsDTO.setServerId("01-23-45-67-89-AB");
+        statisticsDTO.setSubmissionTimestamp(System.currentTimeMillis());
+        statisticsDTO.setTotalUsersCount(20);
+        statisticsDTO.setActiveUsersCount(10);
+        statisticsDTO.setIdAddress("127.0.0.1");
+        statisticsDTO.setGeolocation("0.0,0.0");
+
+        final byte[] body = JacksonObjectMapper.getInstance().writeValue(statisticsDTO);
         final long start = System.currentTimeMillis();
-        final byte[] response = HttpClient.doPost("http://localhost:8080/statistics", parameters);
+        final byte[] response = HttpClient.doPost("http://localhost:8080/statistics", parameters, body);
         final long end = System.currentTimeMillis();
         System.out.println("Response Size: " + response.length);
         System.out.println("Time: " + (end - start) + " ms");

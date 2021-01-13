@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.microservices.download.server.services.store;
 
+import ch.ethz.sis.microservices.download.api.StatisticsDTO;
 import ch.ethz.sis.microservices.download.server.json.jackson.JacksonObjectMapper;
 import ch.ethz.sis.microservices.download.server.logging.LogManager;
 import ch.ethz.sis.microservices.download.server.logging.Logger;
@@ -24,10 +25,7 @@ import ch.ethz.sis.microservices.download.server.services.Service;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -64,12 +62,15 @@ public class StatisticsReceiverHandler extends Service
         // Request parameters
         try
         {
-            final String serverId = request.getParameter(SERVER_ID_PARAM);
-            final Long submissionTimestamp = getParameterOfType(request, SUBMISSION_TIMESTAMP_PARAM, Long::valueOf);
-            final Integer totalUsersCount = getParameterOfType(request, TOTAL_USERS_COUNT_PARAM, Integer::valueOf);
-            final Integer activeUsersCount = getParameterOfType(request, ACTIVE_USERS_COUNT_PARAM, Integer::valueOf);
-            final String ipAddress = request.getParameter(IP_ADDRESS_PARAM);
-            final String geolocation = request.getParameter(GEOLOCATION_PARAM);
+            final StatisticsDTO statisticsDTO = JacksonObjectMapper.getInstance().readValue(request.getInputStream(),
+                    StatisticsDTO.class);
+
+            final String serverId = statisticsDTO.getServerId();
+            final Long submissionTimestamp = statisticsDTO.getSubmissionTimestamp();
+            final Integer totalUsersCount = statisticsDTO.getTotalUsersCount();
+            final Integer activeUsersCount = statisticsDTO.getActiveUsersCount();
+            final String ipAddress = statisticsDTO.getIdAddress();
+            final String geolocation = statisticsDTO.getGeolocation();
 
             LOGGER.info(String.format("Received following data. [serverId=%s, submissionTimestamp=%d, " +
                             "totalUsersCount=%d, activeUsersCount=%d, ipAddress=%s, geolocation=%s]",

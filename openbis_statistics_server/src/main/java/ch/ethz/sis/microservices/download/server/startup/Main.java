@@ -35,7 +35,7 @@ public class Main
 
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
 
-    public static void main(String[] args) throws Exception
+    public static void main(final String[] args) throws Exception
     {
         LOGGER.info("Current Workspace: " + (new File("").getAbsolutePath()));
 

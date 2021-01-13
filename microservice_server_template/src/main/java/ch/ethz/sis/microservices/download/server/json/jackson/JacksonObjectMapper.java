@@ -1,6 +1,6 @@
 package ch.ethz.sis.microservices.download.server.json.jackson;
 
-import java.io.FileInputStream;
+import java.io.InputStream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -39,13 +39,13 @@ public class JacksonObjectMapper implements JSONObjectMapper
     }
 
     @Override
-    public <T> T readValue(FileInputStream src, Class<T> valueType) throws Exception
+    public <T> T readValue(final InputStream src, final Class<T> valueType) throws Exception
     {
         return objectMapper.readValue(src, valueType);
     }
 
     @Override
-    public byte[] writeValue(Object value) throws Exception
+    public byte[] writeValue(final Object value) throws Exception
     {
         return objectMapper.writeValueAsBytes(value);
     }
