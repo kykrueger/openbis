@@ -115,7 +115,11 @@ class Vocabulary(
                 "@type": "as.dto.vocabulary.id.VocabularyPermId",
                 "permId" : self.code
             }
-            request['params'][1][0]['chosenFromList'] = 1 if self.chosenFromList else 0
+            request['params'][1][0]['chosenFromList'] = {
+                "value": self.chosenFromList,
+                "isModified": True,
+                "@type": "as.dto.common.update.FieldUpdateValue"
+            }
             if terms:
                 request['params'][1][0]['terms'] = terms 
             self.openbis._post_request(self.openbis.as_v3, request)
