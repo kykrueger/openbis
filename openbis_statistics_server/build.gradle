@@ -10,8 +10,7 @@ repositories {
 
 dependencies {
     compile project(':microservice_server_template')
-    compile 'lombok:lombok:1.18.12', 'openbis:openbis-v3-api-batteries-included:20.10.0'
-    annotationProcessor 'lombok:lombok:1.18.12'
+    compile 'openbis:openbis-v3-api-batteries-included:20.10.0'
 }
 
 mainClassName = "ch.ethz.sis.microservices.download.server.startup.Main"

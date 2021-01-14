@@ -21,8 +21,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
-@Data
-@NoArgsConstructor
 public class StatisticsDTO implements Serializable
 {
     private static final long serialVersionUID = -2984621476335382352L;
@@ -39,4 +37,63 @@ public class StatisticsDTO implements Serializable
 
     private String geolocation;
 
+    public String getServerId()
+    {
+        return serverId;
+    }
+
+    public void setServerId(final String serverId)
+    {
+        this.serverId = serverId;
+    }
+
+    public Long getSubmissionTimestamp()
+    {
+        return submissionTimestamp;
+    }
+
+    public void setSubmissionTimestamp(final Long submissionTimestamp)
+    {
+        this.submissionTimestamp = submissionTimestamp;
+    }
+
+    public int getTotalUsersCount()
+    {
+        return totalUsersCount;
+    }
+
+    public void setTotalUsersCount(final int totalUsersCount)
+    {
+        this.totalUsersCount = totalUsersCount;
+    }
+
+    public int getActiveUsersCount()
+    {
+        return activeUsersCount;
+    }
+
+    public void setActiveUsersCount(final int activeUsersCount)
+    {
+        this.activeUsersCount = activeUsersCount;
+    }
+
+    public String getIdAddress()
+    {
+        return idAddress;
+    }
+
+    public void setIdAddress(final String idAddress)
+    {
+        this.idAddress = idAddress;
+    }
+
+    public String getGeolocation()
+    {
+        return geolocation;
+    }
+
+    public void setGeolocation(final String geolocation)
+    {
+        this.geolocation = geolocation;
+    }
 }

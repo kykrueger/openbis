@@ -53,7 +53,7 @@ public class StatisticsReceiverHandlerTest
         statisticsDTO.setTotalUsersCount(20);
         statisticsDTO.setActiveUsersCount(10);
         statisticsDTO.setIdAddress("127.0.0.1");
-        statisticsDTO.setGeolocation("0.0,0.0");
+        statisticsDTO.setGeolocation("CH");
 
         final byte[] body = JacksonObjectMapper.getInstance().writeValue(statisticsDTO);
         final long start = System.currentTimeMillis();
