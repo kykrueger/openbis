@@ -19,7 +19,14 @@ package ch.ethz.sis.microservices.download.server.services.store;
 import ch.ethz.sis.microservices.download.server.json.jackson.JacksonObjectMapper;
 import ch.ethz.sis.microservices.download.server.logging.LogManager;
 import ch.ethz.sis.microservices.download.server.logging.log4j.Log4J2LogFactory;
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
+import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
+import ch.systemsx.cisd.openbis.BuildAndEnvironmentInfo;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 
@@ -43,17 +50,23 @@ public class StatisticsReceiverHandlerTest
     public static void main(String[] args) throws Exception
     {
         // Obtain session token from openBIS
-//        final int timeout = 10000;
-//        final IApplicationServerApi v3As = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class,
-//                "http://localhost:8888/openbis/openbis/rmi-application-server-v3", timeout);
-//        final String sessionToken = v3As.login("admin", "admin");
+        final int timeout = 10000;
+        final IApplicationServerApi applicationServerApi = HttpInvokerUtils.createServiceStub(
+                IApplicationServerApi.class,
+                "http://localhost:8888/openbis/openbis/rmi-application-server-v3", timeout);
+        final String sessionToken = applicationServerApi.login("admin", "admin");
+
+        final PersonSearchCriteria personSearchCriteria = new PersonSearchCriteria();
+        final SearchResult<Person> personSearchResult = applicationServerApi.searchPersons(sessionToken,
+                personSearchCriteria, new PersonFetchOptions());
+        final long personsCount = personSearchResult.getObjects().stream().filter(Person::isActive).count();
 
         final Map<StatisticsKeys, String> statisticsMap = new HashMap<>(5);
         statisticsMap.put(StatisticsKeys.SERVER_ID, "01-23-45-67-89-AB");
         statisticsMap.put(StatisticsKeys.SUBMISSION_TIMESTAMP, DATE_FORMAT.format(new Date()));
-        statisticsMap.put(StatisticsKeys.USERS_COUNT, String.valueOf(20));
+        statisticsMap.put(StatisticsKeys.USERS_COUNT, String.valueOf(personsCount));
         statisticsMap.put(StatisticsKeys.COUNTRY_CODE, "CH");
-        statisticsMap.put(StatisticsKeys.OPENBIS_VERSION, "20.10.1");
+        statisticsMap.put(StatisticsKeys.OPENBIS_VERSION, BuildAndEnvironmentInfo.INSTANCE.getVersion());
 
         final byte[] body = JacksonObjectMapper.getInstance().writeValue(statisticsMap);
         final long start = System.currentTimeMillis();
