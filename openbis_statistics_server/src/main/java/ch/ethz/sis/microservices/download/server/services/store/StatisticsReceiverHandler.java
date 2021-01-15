@@ -16,16 +16,21 @@
 
 package ch.ethz.sis.microservices.download.server.services.store;
 
-import ch.ethz.sis.microservices.download.api.StatisticsDTO;
 import ch.ethz.sis.microservices.download.server.json.jackson.JacksonObjectMapper;
 import ch.ethz.sis.microservices.download.server.logging.LogManager;
 import ch.ethz.sis.microservices.download.server.logging.Logger;
 import ch.ethz.sis.microservices.download.server.services.Service;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -37,52 +42,38 @@ public class StatisticsReceiverHandler extends Service
 
     private static final Logger LOGGER = LogManager.getLogger(StatisticsReceiverHandler.class);
 
+    static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
     private static final String STATISTICS_FILE_PATH_PARAM = "statisticsFilePath";
-
-    static final String SERVER_ID_PARAM = "serverId";
-
-    static final String SUBMISSION_TIMESTAMP_PARAM = "submissionTimestamp";
-
-    static final String TOTAL_USERS_COUNT_PARAM = "totalUsersCount";
-
-    static final String ACTIVE_USERS_COUNT_PARAM = "activeUsersCount";
-
-    static final String IP_ADDRESS_PARAM = "ipAddress";
-
-    static final String GEOLOCATION_PARAM = "geolocation";
 
     protected void doAction(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException
     {
-        // Service Configuration
-//        final String openbisURL = this.getServiceConfig().getParameters().get("openbis-url");
-//        final int servicesTimeout = Integer.parseInt(this.getServiceConfig().getParameters().get("services-timeout"));
         final String statisticsFilePath = this.getServiceConfig().getParameters().get(STATISTICS_FILE_PATH_PARAM);
 
-        // Request parameters
         try
         {
-            final StatisticsDTO statisticsDTO = JacksonObjectMapper.getInstance().readValue(request.getInputStream(),
-                    StatisticsDTO.class);
+            final Map<StatisticsKeys, String> statisticsMap = JacksonObjectMapper.getInstance().readValue(
+                    request.getInputStream(), new TypeReference<HashMap<StatisticsKeys, String>>() {});
 
-            final String serverId = statisticsDTO.getServerId();
-            final Long submissionTimestamp = statisticsDTO.getSubmissionTimestamp();
-            final Integer totalUsersCount = statisticsDTO.getTotalUsersCount();
-            final Integer activeUsersCount = statisticsDTO.getActiveUsersCount();
-            final String ipAddress = statisticsDTO.getIdAddress();
-            final String geolocation = statisticsDTO.getGeolocation();
+            final String serverId = statisticsMap.get(StatisticsKeys.SERVER_ID);
+            final Date submissionTimestamp = DATE_FORMAT.parse(statisticsMap.get(StatisticsKeys.SUBMISSION_TIMESTAMP));
+            final Integer usersCount = Integer.valueOf(statisticsMap.get(StatisticsKeys.USERS_COUNT));
+            final String countryCode = statisticsMap.get(StatisticsKeys.COUNTRY_CODE);
+            final String openbisVersion = statisticsMap.get(StatisticsKeys.OPENBIS_VERSION);
 
-            LOGGER.info(String.format("Received following data. [serverId=%s, submissionTimestamp=%d, " +
-                            "totalUsersCount=%d, activeUsersCount=%d, ipAddress=%s, geolocation=%s]",
-                    serverId, submissionTimestamp, totalUsersCount, activeUsersCount, ipAddress, geolocation));
+            LOGGER.info(String.format("Received following data. [serverId='%s', submissionTimestamp='%s', " +
+                            "usersCount=%d, countryCode='%s', openbisVersion='%s']",
+                    serverId, DATE_FORMAT.format(submissionTimestamp), usersCount, countryCode, openbisVersion));
 
-            final String csvLine = convertToCSV(serverId, String.valueOf(submissionTimestamp),
-                    String.valueOf(totalUsersCount), String.valueOf(activeUsersCount), ipAddress, geolocation);
+            final String csvLine = convertToCSV(serverId, DATE_FORMAT.format(submissionTimestamp),
+                    String.valueOf(usersCount), countryCode, openbisVersion);
 
             final File statisticsFile = new File(statisticsFilePath);
             statisticsFile.getParentFile().mkdirs();
             statisticsFile.createNewFile();
-            try (final PrintWriter pw = new PrintWriter(new FileOutputStream(statisticsFile, true))) {
+            try (final PrintWriter pw = new PrintWriter(new FileOutputStream(statisticsFile, true)))
+            {
                 pw.println(csvLine);
             }
 

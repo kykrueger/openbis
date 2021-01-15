@@ -16,21 +16,20 @@
 
 package ch.ethz.sis.microservices.download.server.services.store;
 
-import ch.ethz.sis.microservices.download.api.StatisticsDTO;
 import ch.ethz.sis.microservices.download.server.json.jackson.JacksonObjectMapper;
 import ch.ethz.sis.microservices.download.server.logging.LogManager;
 import ch.ethz.sis.microservices.download.server.logging.log4j.Log4J2LogFactory;
-import ch.ethz.sis.microservices.download.server.startup.HttpClient;
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
-import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+
+import static ch.ethz.sis.microservices.download.server.services.store.StatisticsReceiverHandler.DATE_FORMAT;
 
 public class StatisticsReceiverHandlerTest
 {
@@ -44,24 +43,22 @@ public class StatisticsReceiverHandlerTest
     public static void main(String[] args) throws Exception
     {
         // Obtain session token from openBIS
-        final int timeout = 10000;
-        final IApplicationServerApi v3As = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class,
-                "http://localhost:8888/openbis/openbis/rmi-application-server-v3", timeout);
-        final String sessionToken = v3As.login("admin", "admin");
+//        final int timeout = 10000;
+//        final IApplicationServerApi v3As = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class,
+//                "http://localhost:8888/openbis/openbis/rmi-application-server-v3", timeout);
+//        final String sessionToken = v3As.login("admin", "admin");
 
-        final StatisticsDTO statisticsDTO = new StatisticsDTO();
-        statisticsDTO.setServerId("01-23-45-67-89-AB");
-        statisticsDTO.setSubmissionTimestamp(System.currentTimeMillis());
-        statisticsDTO.setTotalUsersCount(20);
-        statisticsDTO.setActiveUsersCount(10);
-        statisticsDTO.setIdAddress("127.0.0.1");
-        statisticsDTO.setGeolocation("CH");
+        final Map<StatisticsKeys, String> statisticsMap = new HashMap<>(5);
+        statisticsMap.put(StatisticsKeys.SERVER_ID, "01-23-45-67-89-AB");
+        statisticsMap.put(StatisticsKeys.SUBMISSION_TIMESTAMP, DATE_FORMAT.format(new Date()));
+        statisticsMap.put(StatisticsKeys.USERS_COUNT, String.valueOf(20));
+        statisticsMap.put(StatisticsKeys.COUNTRY_CODE, "CH");
+        statisticsMap.put(StatisticsKeys.OPENBIS_VERSION, "20.10.1");
 
-        final byte[] body = JacksonObjectMapper.getInstance().writeValue(statisticsDTO);
+        final byte[] body = JacksonObjectMapper.getInstance().writeValue(statisticsMap);
         final long start = System.currentTimeMillis();
 
         final Request request = JettyHttpClientFactory.getHttpClient().POST("http://localhost:8080/statistics")
-                .param("sessionToken", sessionToken)
                 .content(new BytesContentProvider(body));
         final byte[] response;
         try
