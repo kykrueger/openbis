@@ -47,19 +47,19 @@ public class Monitor
             }
             boolean isSessionActive = v3.isSessionActive(sessionToken);
 
-            System.out.println("sessionToken: " + sessionToken);
-            System.out.println("isSessionActive: " + isSessionActive);
-
+            System.out.println("Login [AS]: " + isSessionActive);
 
             // Search for the dataset
-            Map<IDataSetId, DataSet> results = v3.getDataSets(sessionToken, Arrays.asList(new DataSetPermId(args[4])), new DataSetFetchOptions());
+            Map<IDataSetId, DataSet> asSearchResults = v3.getDataSets(sessionToken, Arrays.asList(new DataSetPermId(args[4])), new DataSetFetchOptions());
+            System.out.println("Dataset Search [AS]: " + (asSearchResults.size() == 1));
 
             DataSetFileSearchCriteria criteria = new DataSetFileSearchCriteria();
             criteria.withDataSet().withCode().thatEquals(args[4]);
-            SearchResult<DataSetFile> files = dssv3.searchFiles(sessionToken, criteria, new DataSetFileFetchOptions());
+            SearchResult<DataSetFile> dssFileListing = dssv3.searchFiles(sessionToken, criteria, new DataSetFileFetchOptions());
 
-            System.out.println(!results.isEmpty() && files.getTotalCount() > 0);
+            System.out.println("File Search [DSS]: " + (dssFileListing.getTotalCount() > 0));
             v3.logout(sessionToken);
+            System.out.println("ALL OK: " + (isSessionActive && (asSearchResults.size() == 1) && (dssFileListing.getTotalCount() > 0)));
         } catch(Exception ex) {
             throw new RuntimeException(ex);
         }

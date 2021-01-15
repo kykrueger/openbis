@@ -1,8 +1,10 @@
-# MICROSERVICE SERVER #
+# MONITOR TOOL #
 
 ## Introduction ##
 
-This project is supposed to be used to monitor openBIS.
+This tool monitors openBIS is up making a series of API calls.
+
+It logs in on the AS, fetches a Dataset definition from the AS and returns a file listings from the DSS.
 
 ## Build ##
 
@@ -20,7 +22,8 @@ openbis-monitor-tool % ./bin/openbis-monitor-tool https://openbis-eln.ethz.ch/ 3
 SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
 SLF4J: Defaulting to no-operation (NOP) logger implementation
 SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
-sessionToken: user_id-210115124729932xA447FC439B489276083A5B201F521A6D
-isSessionActive: true
-true
+Login [AS]: true
+Dataset Search [AS]: true
+File Search [DSS]: true
+ALL OK: true
 
