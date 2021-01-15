@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriter
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.openbis.BuildAndEnvironmentInfo;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 
@@ -76,7 +77,14 @@ public class StatisticsReceiverHandlerTest
         final byte[] response;
         try
         {
-            response = request.send().getContent();
+            final ContentResponse contentResponse = request.send();
+            final int statusCode = contentResponse.getStatus();
+            if (statusCode >= 400)
+            {
+                throw new RuntimeException(String.format("Error code received: %d (%s)",
+                        statusCode, contentResponse.getReason()));
+            }
+            response = contentResponse.getContent();
         } catch (InterruptedException | TimeoutException | ExecutionException e)
         {
             throw new RuntimeException("Error sending request.", e);

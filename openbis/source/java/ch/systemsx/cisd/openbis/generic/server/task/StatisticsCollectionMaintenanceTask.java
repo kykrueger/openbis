@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 
@@ -60,7 +61,7 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
         this(CommonServiceProvider.getApplicationServerApi());
     }
 
-    public StatisticsCollectionMaintenanceTask(final IApplicationServerApi applicationServerApi)
+    StatisticsCollectionMaintenanceTask(final IApplicationServerApi applicationServerApi)
     {
         super(false);
         this.applicationServerApi = applicationServerApi;
@@ -74,49 +75,61 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
     @Override
     public void execute()
     {
-        System.out.println("Statistics collection executed.");
-
-        // Obtain session token from openBIS
-        final String sessionToken = applicationServerApi.login("admin", "admin");
-
-        final long personsCount = getPersonsCount(sessionToken);
-
-        // TODO: Use real data.
-        final Map<StatisticsKeys, String> statisticsMap = new HashMap<>(5);
-        statisticsMap.put(StatisticsKeys.SERVER_ID, getThisServerId());
-        statisticsMap.put(StatisticsKeys.SUBMISSION_TIMESTAMP, DATE_FORMAT.format(new Date()));
-        statisticsMap.put(StatisticsKeys.USERS_COUNT, String.valueOf(personsCount));
-        statisticsMap.put(StatisticsKeys.COUNTRY_CODE, "CH");
-        statisticsMap.put(StatisticsKeys.OPENBIS_VERSION, BuildAndEnvironmentInfo.INSTANCE.getVersion());
-
-        final byte[] body;
-        try
+        if (shouldExecute())
         {
-            body = JacksonObjectMapper.getInstance().writeValue(statisticsMap);
-        } catch (final JsonProcessingException e)
-        {
-            throw new RuntimeException("Error mapping JSON object.", e);
-        }
+            notificationLog.info("Statistics collection execution started.");
+
+            // Obtain session token from openBIS
+            final String sessionToken = applicationServerApi.login("admin", "admin");
+
+            final long personsCount = getPersonsCount(sessionToken);
+
+            // TODO: Use real data.
+            final Map<StatisticsKeys, String> statisticsMap = new HashMap<>(5);
+            statisticsMap.put(StatisticsKeys.SERVER_ID, getThisServerId());
+            statisticsMap.put(StatisticsKeys.SUBMISSION_TIMESTAMP, DATE_FORMAT.format(new Date()));
+            statisticsMap.put(StatisticsKeys.USERS_COUNT, String.valueOf(personsCount));
+            statisticsMap.put(StatisticsKeys.COUNTRY_CODE, "CH");
+            statisticsMap.put(StatisticsKeys.OPENBIS_VERSION, BuildAndEnvironmentInfo.INSTANCE.getVersion());
+
+            final byte[] body;
+            try
+            {
+                body = JacksonObjectMapper.getInstance().writeValue(statisticsMap);
+            } catch (final JsonProcessingException e)
+            {
+                throw new RuntimeException("Error mapping JSON object.", e);
+            }
 
 //        final long start = System.currentTimeMillis();
 
-        final Request request = JettyHttpClientFactory.getHttpClient()
-                // TODO: make the address configurable.
-                .POST("http://localhost:8080/statistics")
-                .content(new BytesContentProvider(body));
-        final byte[] response;
-        try
-        {
-            response = request.send().getContent();
-        } catch (final InterruptedException | TimeoutException | ExecutionException e)
-        {
-            throw new RuntimeException("Error sending request.", e);
-        }
+            final Request request = JettyHttpClientFactory.getHttpClient()
+                    // TODO: make the address configurable.
+                    .POST("http://localhost:8080/statistics")
+                    .content(new BytesContentProvider(body));
+            final byte[] response;
+            try
+            {
+                final ContentResponse contentResponse = request.send();
+                response = contentResponse.getContent();
+                final int statusCode = contentResponse.getStatus();
+                if (statusCode >= 400)
+                {
+                    notificationLog.error(String.format("Error code received: %d (%s)",
+                            statusCode, contentResponse.getReason()));
+                }
+            } catch (final InterruptedException | TimeoutException | ExecutionException e)
+            {
+                notificationLog.error("Error sending request.", e);
+            }
 
 //        final long end = System.currentTimeMillis();
 //        System.out.println("Response Size: " + response.length);
 //        System.out.println("Time: " + (end - start) + " ms");
 //        System.out.println("Response: " + new String(response));
+
+            notificationLog.info("Statistics collection execution finished.");
+        }
     }
 
     /**

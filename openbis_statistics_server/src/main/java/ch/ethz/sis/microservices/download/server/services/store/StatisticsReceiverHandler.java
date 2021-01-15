@@ -66,7 +66,7 @@ public class StatisticsReceiverHandler extends Service
                             "usersCount=%d, countryCode='%s', openbisVersion='%s']",
                     serverId, DATE_FORMAT.format(submissionTimestamp), usersCount, countryCode, openbisVersion));
 
-            final String csvLine = convertToCSV(serverId, DATE_FORMAT.format(submissionTimestamp),
+            final String csvLine = convertToCSV(serverId, DATE_FORMAT.format(new Date()),
                     String.valueOf(usersCount), countryCode, openbisVersion);
 
             final File statisticsFile = new File(statisticsFilePath);
@@ -135,12 +135,12 @@ public class StatisticsReceiverHandler extends Service
 
     protected void success(final HttpServletResponse response) throws ServletException, IOException
     {
-        writeOutput(response, HttpServletResponse.SC_OK, true);
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 
     protected void failure(final HttpServletResponse response) throws ServletException, IOException
     {
-        writeOutput(response, HttpServletResponse.SC_OK, false);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
 }
