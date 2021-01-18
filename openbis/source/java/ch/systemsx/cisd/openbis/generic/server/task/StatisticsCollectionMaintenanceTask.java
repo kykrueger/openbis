@@ -148,8 +148,15 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
             final String collectStatistics = ((ExposablePropertyPlaceholderConfigurer) CommonServiceProvider
                     .tryToGetBean(PROPERTY_CONFIGURER_BEAN_NAME))
                     .getResolvedProps().getProperty("collect-statistics");
-            if ("true".equals(collectStatistics) || collectStatistics == null)
+            final boolean propertyIsMissing = collectStatistics == null || collectStatistics.isEmpty();
+            if ("true".equals(collectStatistics) || propertyIsMissing)
             {
+                if (propertyIsMissing)
+                {
+                    operationLog.warn("The collect-statistics property is missing. " +
+                            "Statistics data is sent by default.");
+                }
+
                 if (firstCall)
                 {
                     firstCall = false;
