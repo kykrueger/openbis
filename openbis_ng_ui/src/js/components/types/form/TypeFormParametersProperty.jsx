@@ -9,6 +9,7 @@ import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
+import TypeFormUtil from '@src/js/components/types/form/TypeFormUtil.js'
 import users from '@src/js/common/consts/users.js'
 import openbis from '@src/js/services/openbis.js'
 import messages from '@src/js/common/messages.js'
@@ -354,37 +355,40 @@ class TypeFormParametersProperty extends React.PureComponent {
 
       const SUFFIX = ' (' + messages.get(messages.CONVERTED) + ')'
       options.push({
-        label: originalValue,
+        label: TypeFormUtil.getDataTypeLabel(originalValue),
         value: originalValue
       })
       if (originalValue !== openbis.DataType.VARCHAR) {
         options.push({
-          label: openbis.DataType.VARCHAR + SUFFIX,
+          label:
+            TypeFormUtil.getDataTypeLabel(openbis.DataType.VARCHAR) + SUFFIX,
           value: openbis.DataType.VARCHAR
         })
       }
       if (originalValue !== openbis.DataType.MULTILINE_VARCHAR) {
         options.push({
-          label: openbis.DataType.MULTILINE_VARCHAR + SUFFIX,
+          label:
+            TypeFormUtil.getDataTypeLabel(openbis.DataType.MULTILINE_VARCHAR) +
+            SUFFIX,
           value: openbis.DataType.MULTILINE_VARCHAR
         })
       }
       if (originalValue === openbis.DataType.TIMESTAMP) {
         options.push({
-          label: openbis.DataType.DATE + SUFFIX,
+          label: TypeFormUtil.getDataTypeLabel(openbis.DataType.DATE) + SUFFIX,
           value: openbis.DataType.DATE
         })
       }
       if (originalValue === openbis.DataType.INTEGER) {
         options.push({
-          label: openbis.DataType.REAL + SUFFIX,
+          label: TypeFormUtil.getDataTypeLabel(openbis.DataType.REAL) + SUFFIX,
           value: openbis.DataType.REAL
         })
       }
     } else {
       openbis.DataType.values.map(dataType => {
         options.push({
-          label: dataType,
+          label: TypeFormUtil.getDataTypeLabel(dataType),
           value: dataType
         })
       })

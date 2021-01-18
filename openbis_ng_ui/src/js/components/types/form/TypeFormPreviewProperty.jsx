@@ -8,6 +8,7 @@ import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
+import TypeFormUtil from '@src/js/components/types/form/TypeFormUtil.js'
 import openbis from '@src/js/services/openbis.js'
 import actions from '@src/js/store/actions/actions.js'
 import messages from '@src/js/common/messages.js'
@@ -514,7 +515,9 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   getDataType() {
-    return this.props.property.dataType.value || EMPTY
+    return (
+      TypeFormUtil.getDataTypeLabel(this.props.property.dataType.value) || EMPTY
+    )
   }
 
   getMandatory() {

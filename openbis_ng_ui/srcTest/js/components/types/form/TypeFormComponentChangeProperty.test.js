@@ -474,7 +474,7 @@ async function testConvertProperty() {
           value: 'SAMPLE',
           enabled: true,
           options: [
-            { label: openbis.DataType.SAMPLE },
+            { label: 'OBJECT' },
             { label: openbis.DataType.VARCHAR + suffix },
             { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
           ]
