@@ -34,7 +34,7 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -49,8 +49,6 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
 
     /* One day interval. */
     public static final int DEFAULT_MAINTENANCE_TASK_INTERVAL = 86400;
-
-    static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     /** ID of this openBIS server. */
     private static final String SERVER_ID_DOCUMENT_VERSION_FILE_PATH = "etc/instance-id";
@@ -210,14 +208,11 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
         }
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private String readIdFromFile(final File file)
     {
-        try (final FileInputStream fileInputStream = new FileInputStream(file))
+        try
         {
-            byte[] buffer = new byte[100];
-            fileInputStream.read(buffer);
-            return new String(buffer);
+            return new String(Files.readAllBytes(file.toPath()));
         } catch (final FileNotFoundException e)
         {
             operationLog.debug(String.format("File '%s' not found", file.getAbsolutePath()));
@@ -225,11 +220,6 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
         } catch (final IOException e)
         {
             operationLog.error(String.format("Error reading from file '%s'", file.getAbsolutePath()), e);
-            throw new RuntimeException(e);
-        } catch (final NumberFormatException e)
-        {
-            operationLog.error(String.format("Contents of the file '%s' cannot be parsed as integer",
-                    file.getAbsolutePath()));
             throw new RuntimeException(e);
         }
     }
