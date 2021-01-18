@@ -22,6 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
+import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.openbis.BuildAndEnvironmentInfo;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,6 +38,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+
+import static ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME;
 
 public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
 {
@@ -104,7 +107,7 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
 //        final long start = System.currentTimeMillis();
 
             final Request request = JettyHttpClientFactory.getHttpClient()
-                    // TODO: make the address configurable.
+                    // TODO: change it to the address of the real server.
                     .POST("http://localhost:8080/statistics")
                     .content(new BytesContentProvider(body));
             final byte[] response;
@@ -139,14 +142,25 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
      */
     private boolean shouldExecute()
     {
-        if (firstCall)
+        final String disableStatistics = System.getenv().get("DISABLE_OPENBIS_STATISTICS");
+        if (!"true".equals(disableStatistics))
         {
-            firstCall = false;
-            return true;
-        } else
-        {
-            return Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 1;
+            final String collectStatistics = ((ExposablePropertyPlaceholderConfigurer) CommonServiceProvider
+                    .tryToGetBean(PROPERTY_CONFIGURER_BEAN_NAME))
+                    .getResolvedProps().getProperty("collect-statistics");
+            if ("true".equals(collectStatistics) || collectStatistics == null)
+            {
+                if (firstCall)
+                {
+                    firstCall = false;
+                    return true;
+                } else
+                {
+                    return Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 1;
+                }
+            }
         }
+        return false;
     }
 
     private String getThisServerId()
