@@ -8,10 +8,10 @@
 import os
 from random import randrange
 
+import settings
 import systemtest.testcase
 import systemtest.util as util
 
-import settings
 
 
 class TestCase(systemtest.testcase.TestCase):

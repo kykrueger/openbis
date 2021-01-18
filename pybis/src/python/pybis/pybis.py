@@ -690,7 +690,6 @@ class Openbis:
         self.url = url_obj.geturl()
         self.port = url_obj.port
         self.hostname = url_obj.hostname
-        self.datastores = None
         self.download_prefix = os.path.join('data', self.hostname)
         self.as_v3 = '/openbis/openbis/rmi-application-server-v3.json'
         self.as_v1 = '/openbis/openbis/rmi-general-information-v1.json'
@@ -1226,7 +1225,7 @@ class Openbis:
         there might be multiple servers. If you upload a file, you need to specifiy the datastore you want
         the file uploaded to.
         """
-        if self.datastores:
+        if hasattr(self, 'datastores'):
             return self.datastores
 
         request = {
@@ -2745,7 +2744,10 @@ class Openbis:
         else:
             parse_jackson(resp)
             for ident in resp:
-                vocabulary = Vocabulary( openbis_obj=self, data=resp[ident])
+                data = resp[ident]
+                if only_data:
+                    return data
+                vocabulary = Vocabulary( openbis_obj=self, data=data)
                 if self.use_cache:
                     self._object_cache(entity='vocabulary', code=code, value=vocabulary)
                 return vocabulary

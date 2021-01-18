@@ -87,8 +87,12 @@ def isValidStoragePositionToInsertUpdate(context, parameters):
     storageBoxPositionNumCols = int(storageBoxPositionRowsAndCols[1]);
     for storageBoxSubPosition in storageBoxPosition.split(" "):
         storageBoxPositionRowNumber = getNumberFromLetter(storageBoxSubPosition[0]);
+        if storageBoxPositionRowNumber is None:
+            raise UserFailureException("Incorrect format for box position found ''" + storageBoxSubPosition + "'. The first character should be a letter.");
         if storageBoxPositionRowNumber > storageBoxPositionNumRows:
             raise UserFailureException("Row don't fit on the box for position: " + storageBoxSubPosition);
+        if not storageBoxSubPosition[1:].isdigit():
+            raise UserFailureException("Incorrect format for box position found ''" + storageBoxSubPosition + "'. After the first character only digits are allowed.");
         storageBoxPositionColNumber = int(storageBoxSubPosition[1:]);
         if storageBoxPositionColNumber > storageBoxPositionNumCols:
             raise UserFailureException("Column don't fit on the box for position: " + storageBoxSubPosition);
