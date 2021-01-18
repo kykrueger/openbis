@@ -35,6 +35,7 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -90,10 +91,10 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
             // TODO: Use real data.
             final Map<StatisticsKeys, String> statisticsMap = new HashMap<>(5);
             statisticsMap.put(StatisticsKeys.SERVER_ID, getThisServerId());
-            statisticsMap.put(StatisticsKeys.SUBMISSION_TIMESTAMP, DATE_FORMAT.format(new Date()));
             statisticsMap.put(StatisticsKeys.USERS_COUNT, String.valueOf(personsCount));
             statisticsMap.put(StatisticsKeys.COUNTRY_CODE, "CH");
             statisticsMap.put(StatisticsKeys.OPENBIS_VERSION, BuildAndEnvironmentInfo.INSTANCE.getVersion());
+            statisticsMap.put(StatisticsKeys.SUBMISSION_TIMESTAMP, Instant.now().toString());
 
             final byte[] body;
             try
@@ -118,12 +119,12 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
                 final int statusCode = contentResponse.getStatus();
                 if (statusCode >= 400)
                 {
-                    notificationLog.error(String.format("Error code received: %d (%s)",
-                            statusCode, contentResponse.getReason()));
+                    notificationLog.error(String.format("Error sending statistics collection request. " +
+                                    "Error code received: %d (%s)", statusCode, contentResponse.getReason()));
                 }
             } catch (final InterruptedException | TimeoutException | ExecutionException e)
             {
-                notificationLog.error("Error sending request.", e);
+                notificationLog.error("Error sending statistics collection request.", e);
             }
 
 //        final long end = System.currentTimeMillis();
