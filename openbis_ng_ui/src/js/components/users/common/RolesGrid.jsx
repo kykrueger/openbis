@@ -12,9 +12,6 @@ import logger from '@src/js/common/logger.js'
 const styles = theme => ({
   inherited: {
     color: theme.palette.hint.main
-  },
-  implicit: {
-    fontStyle: 'italic'
   }
 })
 
@@ -183,27 +180,11 @@ class RolesGrid extends React.PureComponent {
   }
 
   renderSpaceValue({ value, row }) {
-    if (!row.space.value && value) {
-      return (
-        <div className={this.props.classes.implicit}>
-          {this.renderDefault({ value, row })}
-        </div>
-      )
-    } else {
-      return this.renderDefault({ value, row })
-    }
+    return this.renderDefault({ value, row })
   }
 
   renderProjectValue({ value, row }) {
-    if (!row.project.value && value) {
-      return (
-        <div className={this.props.classes.implicit}>
-          {this.renderDefault({ value, row })}
-        </div>
-      )
-    } else {
-      return this.renderDefault({ value, row })
-    }
+    return this.renderDefault({ value, row })
   }
 
   renderRoleValue({ value, row }) {
