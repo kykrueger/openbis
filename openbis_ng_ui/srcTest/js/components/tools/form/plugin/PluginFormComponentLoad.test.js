@@ -48,7 +48,10 @@ async function testLoadNew(pluginType) {
       }
     },
     parameters: {
-      title: 'Plugin',
+      title:
+        pluginType === openbis.PluginType.DYNAMIC_PROPERTY
+          ? 'New Dynamic Property Plugin'
+          : 'New Entity Validation Plugin',
       name: {
         label: 'Name',
         value: null,
@@ -123,7 +126,10 @@ async function testLoadExistingJython(plugin) {
       }
     },
     parameters: {
-      title: 'Plugin',
+      title:
+        plugin.getPluginType() === openbis.PluginType.DYNAMIC_PROPERTY
+          ? 'Dynamic Property Plugin'
+          : 'Entity Validation Plugin',
       name: {
         label: 'Name',
         value: plugin.getName(),
@@ -189,7 +195,10 @@ async function testLoadExistingJython(plugin) {
       }
     },
     parameters: {
-      title: 'Plugin',
+      title:
+        plugin.getPluginType() === openbis.PluginType.DYNAMIC_PROPERTY
+          ? 'Dynamic Property Plugin'
+          : 'Entity Validation Plugin',
       name: {
         label: 'Name',
         value: plugin.getName(),
@@ -253,7 +262,10 @@ async function testLoadExistingPredeployed(plugin) {
   form.expectJSON({
     script: null,
     parameters: {
-      title: 'Plugin',
+      title:
+        plugin.getPluginType() === openbis.PluginType.DYNAMIC_PROPERTY
+          ? 'Dynamic Property Plugin'
+          : 'Entity Validation Plugin',
       messages: [
         {
           text: 'The plugin is disabled.',

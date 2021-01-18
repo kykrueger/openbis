@@ -6,6 +6,7 @@ import Grid from '@src/js/components/common/grid/Grid.jsx'
 import UserGroupLink from '@src/js/components/common/link/UserGroupLink.jsx'
 import openbis from '@src/js/services/openbis.js'
 import ids from '@src/js/common/consts/ids.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -17,7 +18,7 @@ const styles = theme => ({
   }
 })
 
-const ALL_VALUE = '(all)'
+const ALL_VALUE = '(' + messages.get(messages.ALL) + ')'
 
 class RolesGrid extends React.PureComponent {
   constructor(props) {
@@ -54,7 +55,7 @@ class RolesGrid extends React.PureComponent {
       <Grid
         id={id}
         controllerRef={controllerRef}
-        header='Roles'
+        header={messages.get(messages.ROLES)}
         columns={columns}
         rows={rows}
         selectedRowId={selectedRowId}
@@ -69,7 +70,7 @@ class RolesGrid extends React.PureComponent {
     return [
       {
         name: 'inheritedFrom',
-        label: 'Inherited From',
+        label: messages.get(messages.INHERITED_FROM),
         sort: id === ids.USER_ROLES_GRID_ID ? 'asc' : null,
         getValue: this.getInheritedFromValue,
         renderValue: this.renderInheritedFromValue,
@@ -85,7 +86,7 @@ class RolesGrid extends React.PureComponent {
       },
       {
         name: 'level',
-        label: 'Level',
+        label: messages.get(messages.LEVEL),
         sort: id === ids.USER_GROUP_ROLES_GRID_ID ? 'asc' : null,
         getValue: this.getLevelValue,
         renderValue: this.renderLevelValue,
@@ -100,7 +101,7 @@ class RolesGrid extends React.PureComponent {
       },
       {
         name: 'space',
-        label: 'Space',
+        label: messages.get(messages.SPACE),
         getValue: this.getSpaceValue,
         renderValue: this.renderSpaceValue,
         compareValue: params => {
@@ -114,7 +115,7 @@ class RolesGrid extends React.PureComponent {
       },
       {
         name: 'project',
-        label: 'Project',
+        label: messages.get(messages.PROJECT),
         getValue: this.getProjectValue,
         renderValue: this.renderProjectValue,
         compareValue: params => {
@@ -128,7 +129,7 @@ class RolesGrid extends React.PureComponent {
       },
       {
         name: 'role',
-        label: 'Role',
+        label: messages.get(messages.ROLE),
         getValue: this.getRoleValue,
         renderValue: this.renderRoleValue,
         compareValue: params => {

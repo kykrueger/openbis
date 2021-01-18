@@ -5,6 +5,7 @@ import Button from '@src/js/components/common/form/Button.jsx'
 import TypeFormControllerStrategies from '@src/js/components/types/form/TypeFormControllerStrategies.js'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import users from '@src/js/common/consts/users.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 class TypeFormButtons extends React.PureComponent {
@@ -40,20 +41,20 @@ class TypeFormButtons extends React.PureComponent {
         <React.Fragment>
           <Button
             name='addSection'
-            label='Add Section'
+            label={messages.get(messages.ADD_SECTION)}
             styles={{ root: classes.button }}
             onClick={onAddSection}
           />
           <Button
             name='addProperty'
-            label='Add Property'
+            label={messages.get(messages.ADD_PROPERTY)}
             styles={{ root: classes.button }}
             disabled={!this.isSectionOrPropertySelected()}
             onClick={onAddProperty}
           />
           <Button
             name='remove'
-            label='Remove'
+            label={messages.get(messages.REMOVE)}
             styles={{ root: classes.button }}
             disabled={
               !(

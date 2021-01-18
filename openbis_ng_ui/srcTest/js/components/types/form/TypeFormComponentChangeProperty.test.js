@@ -61,7 +61,7 @@ async function testChangeProperty() {
     },
     buttons: {
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }
@@ -99,7 +99,7 @@ async function testChangeProperty() {
           mode: 'edit'
         },
         vocabulary: {
-          label: 'Vocabulary',
+          label: 'Vocabulary Type',
           value: null,
           enabled: true,
           mode: 'edit'
@@ -111,7 +111,7 @@ async function testChangeProperty() {
     },
     buttons: {
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }
@@ -157,7 +157,7 @@ async function testChangeProperty() {
     },
     buttons: {
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }
@@ -208,7 +208,7 @@ async function testChangeProperty() {
     },
     buttons: {
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }
@@ -244,7 +244,7 @@ async function testConvertProperty() {
 
   common.facade.loadType.mockReturnValue(Promise.resolve(type))
 
-  const suffix = ' (converted)'
+  const suffix = ' (Converted)'
   let index = 0
 
   const form = await common.mount({

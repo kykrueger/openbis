@@ -4,6 +4,7 @@ import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
 import users from '@src/js/common/consts/users.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 class VocabularyFormButtons extends React.PureComponent {
@@ -36,13 +37,13 @@ class VocabularyFormButtons extends React.PureComponent {
         <React.Fragment>
           <Button
             name='addTerm'
-            label='Add Term'
+            label={messages.get(messages.ADD_TERM)}
             styles={{ root: classes.button }}
             onClick={onAdd}
           />
           <Button
             name='removeTerm'
-            label='Remove Term'
+            label={messages.get(messages.REMOVE_TERM)}
             styles={{ root: classes.button }}
             disabled={!this.isNonSystemInternalTermSelected()}
             onClick={onRemove}

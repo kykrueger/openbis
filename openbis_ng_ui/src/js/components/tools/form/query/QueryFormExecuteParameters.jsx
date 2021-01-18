@@ -4,6 +4,7 @@ import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import QueryFormSelectionType from '@src/js/components/tools/form/query/QueryFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -33,7 +34,7 @@ class QueryFormExecuteParameters extends React.PureComponent {
     if (names.length > 0) {
       return (
         <Container>
-          <Header>Parameters</Header>
+          <Header>{messages.get(messages.PARAMETERS)}</Header>
           {names.map(name => this.renderParameter(name, values[name]))}
         </Container>
       )

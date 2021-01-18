@@ -2,6 +2,7 @@ import _ from 'lodash'
 import React from 'react'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 class TypeFormDialogRemoveProperty extends React.Component {
@@ -29,14 +30,14 @@ class TypeFormDialogRemoveProperty extends React.Component {
   }
 
   getTitle(property) {
-    return `Do you want to remove "${property.code.value}" property?`
+    return messages.get(messages.CONFIRMATION_REMOVE, property.code.value)
   }
 
   getContent(object, property) {
     if (property.usages > 0) {
-      return `This property assignment is already used by existing entities of "${object.id}" type. Removing it is also going to remove ${property.usages} existing property value(s) - data will be lost! Are you sure you want to proceed?`
+      return messages.get(messages.PROPERTY_IS_USED, object.id, property.usages)
     } else {
-      return `This property assignment is not yet used by any entities of "${object.id}" type.`
+      return messages.get(messages.PROPERTY_IS_NOT_USED, object.id)
     }
   }
 

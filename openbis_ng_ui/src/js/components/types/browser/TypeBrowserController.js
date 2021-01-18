@@ -6,6 +6,7 @@ import objectType from '@src/js/common/consts/objectType.js'
 import objectOperation from '@src/js/common/consts/objectOperation.js'
 import BrowserController from '@src/js/components/common/browser/BrowserController.js'
 import users from '@src/js/common/consts/users'
+import messages from '@src/js/common/messages.js'
 
 export default class TypeBrowserController extends BrowserController {
   doGetPage() {
@@ -90,7 +91,7 @@ export default class TypeBrowserController extends BrowserController {
         let nodes = [
           {
             id: 'objectTypes',
-            text: 'Object Types',
+            text: messages.get(messages.OBJECT_TYPES),
             object: { type: objectType.OVERVIEW, id: objectType.OBJECT_TYPE },
             children: objectTypeNodes,
             childrenType: objectType.NEW_OBJECT_TYPE,
@@ -98,7 +99,7 @@ export default class TypeBrowserController extends BrowserController {
           },
           {
             id: 'collectionTypes',
-            text: 'Collection Types',
+            text: messages.get(messages.COLLECTION_TYPES),
             object: {
               type: objectType.OVERVIEW,
               id: objectType.COLLECTION_TYPE
@@ -109,7 +110,7 @@ export default class TypeBrowserController extends BrowserController {
           },
           {
             id: 'dataSetTypes',
-            text: 'Data Set Types',
+            text: messages.get(messages.DATA_SET_TYPES),
             object: { type: objectType.OVERVIEW, id: objectType.DATA_SET_TYPE },
             children: dataSetTypeNodes,
             childrenType: objectType.NEW_DATA_SET_TYPE,
@@ -117,7 +118,7 @@ export default class TypeBrowserController extends BrowserController {
           },
           {
             id: 'materialTypes',
-            text: 'Material Types',
+            text: messages.get(messages.MATERIAL_TYPES),
             object: { type: objectType.OVERVIEW, id: objectType.MATERIAL_TYPE },
             children: materialTypeNodes,
             childrenType: objectType.NEW_MATERIAL_TYPE,
@@ -125,7 +126,7 @@ export default class TypeBrowserController extends BrowserController {
           },
           {
             id: 'vocabularyTypes',
-            text: 'Vocabulary Types',
+            text: messages.get(messages.VOCABULARY_TYPES),
             object: {
               type: objectType.OVERVIEW,
               id: objectType.VOCABULARY_TYPE

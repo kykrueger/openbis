@@ -10,6 +10,7 @@ import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import QueryFormSelectionType from '@src/js/components/tools/form/query/QueryFormSelectionType.js'
 import openbis from '@src/js/services/openbis.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -84,7 +85,7 @@ class QueryFormParameters extends React.PureComponent {
 
     return (
       <Container>
-        <Header>Query</Header>
+        {this.renderHeader(query)}
         {this.renderMessagePublic(query)}
         {this.renderName(query)}
         {this.renderDescription(query)}
@@ -94,6 +95,11 @@ class QueryFormParameters extends React.PureComponent {
         {this.renderPublic(query)}
       </Container>
     )
+  }
+
+  renderHeader(query) {
+    const message = query.original ? messages.QUERY : messages.NEW_QUERY
+    return <Header>{messages.get(message)}</Header>
   }
 
   renderMessagePublic(query) {
@@ -110,12 +116,7 @@ class QueryFormParameters extends React.PureComponent {
         return (
           <div className={classes.field}>
             <Message type='warning'>
-              Security warning: this query is public (i.e. visible to other
-              users) and is defined for a database that is not assigned to any
-              space. Please make sure the query returns only data that can be
-              seen by every user or the results contain one of the special
-              columns (i.e. experiment_key/sample_key/data_set_key) that will be
-              used for an automatic query results filtering.
+              {messages.get(messages.QUERY_PUBLIC_WARNING)}
             </Message>
           </div>
         )
@@ -136,7 +137,7 @@ class QueryFormParameters extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.name}
-          label='Name'
+          label={messages.get(messages.NAME)}
           name='name'
           mandatory={true}
           error={error}
@@ -163,7 +164,7 @@ class QueryFormParameters extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.description}
-          label='Description'
+          label={messages.get(messages.DESCRIPTION)}
           name='description'
           error={error}
           disabled={!enabled}
@@ -192,7 +193,9 @@ class QueryFormParameters extends React.PureComponent {
         return {
           label:
             queryDatabase.label +
-            ' (space: ' +
+            ' (' +
+            messages.get(messages.SPACE) +
+            ': ' +
             _.get(queryDatabase, 'space.code', 'none') +
             ')',
           value: queryDatabase.name
@@ -204,7 +207,7 @@ class QueryFormParameters extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.databaseId}
-          label='Database'
+          label={messages.get(messages.DATABASE)}
           name='databaseId'
           mandatory={true}
           error={error}
@@ -241,7 +244,7 @@ class QueryFormParameters extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.queryType}
-          label='Query Type'
+          label={messages.get(messages.QUERY_TYPE)}
           name='queryType'
           mandatory={true}
           error={error}
@@ -288,7 +291,7 @@ class QueryFormParameters extends React.PureComponent {
       <div className={classes.field}>
         <AutocompleterField
           reference={this.references.entityTypeCodePattern}
-          label='Entity Type Pattern'
+          label={messages.get(messages.ENTITY_TYPE_PATTERN)}
           name='entityTypeCodePattern'
           options={options}
           error={error}
@@ -316,7 +319,7 @@ class QueryFormParameters extends React.PureComponent {
       <div className={classes.field}>
         <CheckboxField
           reference={this.references.publicFlag}
-          label='Public'
+          label={messages.get(messages.PUBLIC)}
           name='publicFlag'
           error={error}
           disabled={!enabled}

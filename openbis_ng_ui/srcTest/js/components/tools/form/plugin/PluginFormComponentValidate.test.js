@@ -35,7 +35,10 @@ async function testValidate(pluginType) {
       }
     },
     parameters: {
-      title: 'Plugin',
+      title:
+        pluginType === openbis.PluginType.DYNAMIC_PROPERTY
+          ? 'New Dynamic Property Plugin'
+          : 'New Entity Validation Plugin',
       name: {
         label: 'Name',
         value: null,

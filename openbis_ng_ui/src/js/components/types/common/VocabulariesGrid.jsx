@@ -1,6 +1,7 @@
 import React from 'react'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import VocabularyLink from '@src/js/components/common/link/VocabularyLink.jsx'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 class VocabulariesGrid extends React.PureComponent {
@@ -19,11 +20,11 @@ class VocabulariesGrid extends React.PureComponent {
       <Grid
         id={id}
         controllerRef={controllerRef}
-        header={'Vocabulary Types'}
+        header={messages.get(messages.VOCABULARY_TYPES)}
         columns={[
           {
             name: 'code',
-            label: 'Code',
+            label: messages.get(messages.CODE),
             sort: 'asc',
             getValue: ({ row }) => row.code,
             renderValue: ({ row }) => {
@@ -32,12 +33,12 @@ class VocabulariesGrid extends React.PureComponent {
           },
           {
             name: 'description',
-            label: 'Description',
+            label: messages.get(messages.DESCRIPTION),
             getValue: ({ row }) => row.description
           },
           {
             name: 'urlTemplate',
-            label: 'URL Template',
+            label: messages.get(messages.URL_TEMPLATE),
             getValue: ({ row }) => row.urlTemplate
           }
         ]}

@@ -42,7 +42,7 @@ async function testLoadNew() {
       }
     },
     parameters: {
-      title: 'Query',
+      title: 'New Query',
       name: {
         label: 'Name',
         value: null,
@@ -62,13 +62,13 @@ async function testLoadNew() {
         mode: 'edit',
         options: [
           {
-            label: `${testDatabase.getLabel()} (space: ${
+            label: `${testDatabase.getLabel()} (Space: ${
               testDatabase.space.code
             })`,
             value: testDatabase.getName()
           },
           {
-            label: `${anotherDatabase.getLabel()} (space: none)`,
+            label: `${anotherDatabase.getLabel()} (Space: none)`,
             value: anotherDatabase.getName()
           }
         ]

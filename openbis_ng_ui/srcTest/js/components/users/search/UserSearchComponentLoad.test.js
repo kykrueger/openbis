@@ -117,7 +117,7 @@ async function testLoadWithSearchText(resultsFound) {
     form.expectJSON({
       messages: [
         {
-          text: 'No results found.',
+          text: 'No results found',
           type: 'info'
         }
       ],

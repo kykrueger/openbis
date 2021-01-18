@@ -69,7 +69,7 @@ async function doTestInternal(
   form.expectJSON({
     parameters: {
       type: {
-        title: 'Type',
+        title: 'Object Type',
         code: {
           value: type.getCode(),
           enabled: false

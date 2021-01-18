@@ -128,7 +128,7 @@ async function testFollowSelectedTerm() {
           {
             type: 'warning',
             text:
-              'The selected term is currently not visible in the term list due to the chosen filtering and paging.'
+              'The selected object is currently not visible in the list due to the chosen filtering and paging.'
           }
         ]
       }
@@ -209,7 +209,7 @@ async function testFollowSelectedTerm() {
           {
             type: 'warning',
             text:
-              'The selected term is currently not visible in the term list due to the chosen filtering and paging.'
+              'The selected object is currently not visible in the list due to the chosen filtering and paging.'
           }
         ]
       }

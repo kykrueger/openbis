@@ -100,7 +100,7 @@ async function testAddUser() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }
@@ -155,7 +155,7 @@ async function testAddUser() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

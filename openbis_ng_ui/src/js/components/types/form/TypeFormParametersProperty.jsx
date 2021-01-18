@@ -11,6 +11,7 @@ import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelecti
 import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
 import users from '@src/js/common/consts/users.js'
 import openbis from '@src/js/services/openbis.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -100,7 +101,7 @@ class TypeFormParametersProperty extends React.PureComponent {
 
     return (
       <Container>
-        <Header>Property</Header>
+        <Header>{messages.get(messages.PROPERTY)}</Header>
         {this.renderMessageGlobal(property)}
         {this.renderMessageAssignments(property)}
         {this.renderMessageSystemInternal(property)}
@@ -128,8 +129,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return (
         <div className={classes.field}>
           <Message type='warning'>
-            This property is global. Changes will also influence other types
-            where this property is used.
+            {messages.get(messages.PROPERTY_IS_GLOBAL)}
           </Message>
         </div>
       )
@@ -141,23 +141,15 @@ class TypeFormParametersProperty extends React.PureComponent {
   renderMessageAssignments(property) {
     const { classes } = this.props
 
-    function types(number) {
-      return number === 0 || number > 1 ? `${number} types` : `${number} type`
-    }
-
-    function message(property) {
-      return `This property is already assigned to ${types(
-        property.assignments
-      )}.`
-    }
-
     if (
       (property.original && property.assignments > 1) ||
       (!property.original && property.assignments > 0)
     ) {
       return (
         <div className={classes.field}>
-          <Message type='info'>{message(property)}</Message>
+          <Message type='info'>
+            {messages.get(messages.PROPERTY_IS_ASSIGNED, property.assignments)}
+          </Message>
         </div>
       )
     } else {
@@ -178,12 +170,14 @@ class TypeFormParametersProperty extends React.PureComponent {
       return (
         <div className={classes.field}>
           <Message type='lock'>
-            This is a system internal property.
+            {messages.get(messages.PROPERTY_IS_INTERNAL)}
             {systemInternalPropertyType
-              ? ' The property parameters cannot be changed.'
+              ? ' ' +
+                messages.get(messages.PROPERTY_PARAMETERS_CANNOT_BE_CHANGED)
               : ''}
             {systemInternalAssignment
-              ? ' The property assignment cannot be removed.'
+              ? ' ' +
+                messages.get(messages.PROPERTY_ASSIGNMENT_CANNOT_BE_REMOVED)
               : ''}
           </Message>
         </div>
@@ -201,8 +195,14 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
 
     const options = [
-      { label: 'Local', value: TypeFormPropertyScope.LOCAL },
-      { label: 'Global', value: TypeFormPropertyScope.GLOBAL }
+      {
+        label: messages.get(messages.LOCAL),
+        value: TypeFormPropertyScope.LOCAL
+      },
+      {
+        label: messages.get(messages.GLOBAL),
+        value: TypeFormPropertyScope.GLOBAL
+      }
     ]
 
     const { mode, classes } = this.props
@@ -210,7 +210,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.scope}
-          label='Scope'
+          label={messages.get(messages.SCOPE)}
           name='scope'
           mandatory={true}
           error={error}
@@ -238,7 +238,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.label}
-          label='Label'
+          label={messages.get(messages.LABEL)}
           name='label'
           mandatory={true}
           error={error}
@@ -267,7 +267,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         <div className={classes.field}>
           <TextField
             reference={this.references.code}
-            label='Code'
+            label={messages.get(messages.CODE)}
             name='code'
             mandatory={true}
             error={error}
@@ -291,7 +291,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         <div className={classes.field}>
           <AutocompleterField
             reference={this.references.code}
-            label='Code'
+            label={messages.get(messages.CODE)}
             name='code'
             options={options}
             mandatory={true}
@@ -321,7 +321,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.description}
-          label='Description'
+          label={messages.get(messages.DESCRIPTION)}
           name='description'
           mandatory={true}
           error={error}
@@ -352,7 +352,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         dataType: { value: originalValue }
       } = property.originalGlobal || property.original
 
-      const SUFFIX = ' (converted)'
+      const SUFFIX = ' (' + messages.get(messages.CONVERTED) + ')'
       options.push({
         label: originalValue,
         value: originalValue
@@ -395,7 +395,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.dataType}
-          label='Data Type'
+          label={messages.get(messages.DATA_TYPE)}
           name='dataType'
           mandatory={true}
           error={error}
@@ -436,7 +436,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.vocabulary}
-          label='Vocabulary'
+          label={messages.get(messages.VOCABULARY_TYPE)}
           name='vocabulary'
           mandatory={true}
           error={error}
@@ -477,14 +477,14 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.materialType}
-          label='Material Type'
+          label={messages.get(messages.MATERIAL_TYPE)}
           name='materialType'
           error={error}
           disabled={!enabled}
           value={value}
           options={options}
           emptyOption={{
-            label: '(all)',
+            label: '(' + messages.get(messages.ALL) + ')',
             selectable: true
           }}
           mode={mode}
@@ -521,14 +521,14 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.sampleType}
-          label='Sample Type'
+          label={messages.get(messages.OBJECT_TYPE)}
           name='sampleType'
           error={error}
           disabled={!enabled}
           value={value}
           options={options}
           emptyOption={{
-            label: '(all)',
+            label: '(' + messages.get(messages.ALL) + ')',
             selectable: true
           }}
           mode={mode}
@@ -553,7 +553,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.schema}
-          label='XML Schema'
+          label={messages.get(messages.XML_SCHEMA)}
           name='schema'
           error={error}
           disabled={!enabled}
@@ -581,7 +581,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.transformation}
-          label='XSLT Script'
+          label={messages.get(messages.XSLT_SCRIPT)}
           name='transformation'
           error={error}
           disabled={!enabled}
@@ -621,7 +621,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.plugin}
-          label='Dynamic Plugin'
+          label={messages.get(messages.DYNAMIC_PROPERTY_PLUGIN)}
           name='plugin'
           error={error}
           disabled={!enabled}
@@ -651,7 +651,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <CheckboxField
           reference={this.references.mandatory}
-          label='Mandatory'
+          label={messages.get(messages.MANDATORY)}
           name='mandatory'
           error={error}
           disabled={!enabled}
@@ -679,7 +679,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.initialValueForExistingEntities}
-          label='Initial Value'
+          label={messages.get(messages.INITIAL_VALUE)}
           name='initialValueForExistingEntities'
           mandatory={true}
           error={error}
@@ -706,7 +706,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <CheckboxField
           reference={this.references.showInEditView}
-          label='Visible'
+          label={messages.get(messages.VISIBLE)}
           name='showInEditView'
           error={error}
           disabled={!enabled}

@@ -50,8 +50,8 @@ async function testAddRole() {
         {
           values: {
             level: instanceObserverAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverAssignment.getRole()
           },
           selected: false
@@ -60,7 +60,7 @@ async function testAddRole() {
           values: {
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: false
@@ -102,8 +102,8 @@ async function testAddRole() {
         {
           values: {
             level: instanceObserverAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverAssignment.getRole()
           },
           selected: false
@@ -112,7 +112,7 @@ async function testAddRole() {
           values: {
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: false
@@ -160,7 +160,7 @@ async function testAddRole() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }
@@ -184,8 +184,8 @@ async function testAddRole() {
         {
           values: {
             level: instanceObserverAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverAssignment.getRole()
           },
           selected: false
@@ -194,7 +194,7 @@ async function testAddRole() {
           values: {
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: false
@@ -203,7 +203,7 @@ async function testAddRole() {
           values: {
             level: openbis.RoleLevel.SPACE,
             space: testSpace.code,
-            project: '(all)',
+            project: '(All)',
             role: openbis.Role.ADMIN
           },
           selected: true
@@ -261,7 +261,7 @@ async function testAddRole() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

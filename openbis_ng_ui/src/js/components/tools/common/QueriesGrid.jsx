@@ -2,6 +2,7 @@ import React from 'react'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import QueryLink from '@src/js/components/common/link/QueryLink.jsx'
 import UserLink from '@src/js/components/common/link/UserLink.jsx'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 class QueriesGrid extends React.PureComponent {
@@ -20,11 +21,11 @@ class QueriesGrid extends React.PureComponent {
       <Grid
         id={id}
         controllerRef={controllerRef}
-        header='Queries'
+        header={messages.get(messages.QUERIES)}
         columns={[
           {
             name: 'name',
-            label: 'Name',
+            label: messages.get(messages.NAME),
             sort: 'asc',
             getValue: ({ row }) => row.name.value,
             renderValue: ({ value }) => {
@@ -33,32 +34,32 @@ class QueriesGrid extends React.PureComponent {
           },
           {
             name: 'description',
-            label: 'Description',
+            label: messages.get(messages.DESCRIPTION),
             getValue: ({ row }) => row.description.value
           },
           {
             name: 'database',
-            label: 'Database',
+            label: messages.get(messages.DATABASE),
             getValue: ({ row }) => row.database.value
           },
           {
             name: 'queryType',
-            label: 'Query Type',
+            label: messages.get(messages.QUERY_TYPE),
             getValue: ({ row }) => row.queryType.value
           },
           {
             name: 'entityTypeCodePattern',
-            label: 'Entity Type Pattern',
+            label: messages.get(messages.ENTITY_TYPE_PATTERN),
             getValue: ({ row }) => row.entityTypeCodePattern.value
           },
           {
             name: 'publicFlag',
-            label: 'Public',
+            label: messages.get(messages.PUBLIC),
             getValue: ({ row }) => row.publicFlag.value
           },
           {
             name: 'registrator',
-            label: 'Registrator',
+            label: messages.get(messages.REGISTRATOR),
             getValue: ({ row }) => row.registrator.value,
             renderValue: ({ value }) => {
               return <UserLink userId={value} />

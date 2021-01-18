@@ -11,6 +11,7 @@ import store from '@src/js/store/store.js'
 import actions from '@src/js/store/actions/actions.js'
 import openbis from '@src/js/services/openbis.js'
 import util from '@src/js/common/util.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 class TypeSearch extends React.Component {
@@ -252,7 +253,9 @@ class TypeSearch extends React.Component {
       materialTypes.length === 0 &&
       vocabularyTypes.length === 0
     ) {
-      return <Message type='info'>No results found.</Message>
+      return (
+        <Message type='info'>{messages.get(messages.NO_RESULTS_FOUND)}</Message>
+      )
     } else {
       return null
     }

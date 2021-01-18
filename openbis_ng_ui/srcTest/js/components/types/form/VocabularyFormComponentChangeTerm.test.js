@@ -75,7 +75,7 @@ async function testChangeTerm() {
     },
     buttons: {
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

@@ -5,6 +5,7 @@ import Header from '@src/js/components/common/form/Header.jsx'
 import Typography from '@material-ui/core/Typography'
 import Loading from '@src/js/components/common/loading/Loading.jsx'
 import openbis from '@src/js/services/openbis.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -29,7 +30,7 @@ class PluginFormEvaluateResults extends React.PureComponent {
         <Loading loading={loading}>
           {loaded && (
             <Container>
-              <Header>Result</Header>
+              <Header>{messages.get(messages.RESULT)}</Header>
               {this.renderResult()}
             </Container>
           )}

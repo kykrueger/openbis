@@ -47,7 +47,7 @@ async function testChangeRole() {
           values: {
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: false
@@ -56,7 +56,7 @@ async function testChangeRole() {
           values: {
             level: testSpacePowerUserAssignment.getRoleLevel(),
             space: testSpacePowerUserAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserAssignment.getRole()
           },
           selected: true
@@ -98,8 +98,8 @@ async function testChangeRole() {
         {
           values: {
             level: openbis.RoleLevel.INSTANCE,
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: openbis.Role.ADMIN
           },
           selected: true
@@ -108,7 +108,7 @@ async function testChangeRole() {
           values: {
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: false
