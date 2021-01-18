@@ -42,14 +42,26 @@ public class StatisticsReceiverHandler extends Service
 
     private static final Logger LOGGER = LogManager.getLogger(StatisticsReceiverHandler.class);
 
-    static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
-    private static final String STATISTICS_FILE_PATH_PARAM = "statisticsFilePath";
+    static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+
+    private static final String STATISTICS_FILE_SUFFIX = "-statistics.csv";
+
+    private static final String FLAGGED_STATISTICS_FILE_SUFFIX = "-statistics-flagged.csv";
+
+    private static final String STATISTICS_FOLDER_PATH_PARAM = "statisticsFolderPath";
 
     protected void doAction(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException
     {
-        final String statisticsFilePath = this.getServiceConfig().getParameters().get(STATISTICS_FILE_PATH_PARAM);
+        final String todaysDate = DATE_FORMAT.format(new Date());
+        final String statisticsFolderParam = this.getServiceConfig().getParameters().get(STATISTICS_FOLDER_PATH_PARAM);
+        final String statisticsFilePath = statisticsFolderParam + FILE_SEPARATOR + todaysDate + STATISTICS_FILE_SUFFIX;
+        final String flaggedStatisticsFilePath = statisticsFolderParam + FILE_SEPARATOR + todaysDate
+                + FLAGGED_STATISTICS_FILE_SUFFIX;
 
         try
         {
@@ -57,16 +69,17 @@ public class StatisticsReceiverHandler extends Service
                     request.getInputStream(), new TypeReference<HashMap<StatisticsKeys, String>>() {});
 
             final String serverId = statisticsMap.get(StatisticsKeys.SERVER_ID);
-            final Date submissionTimestamp = DATE_FORMAT.parse(statisticsMap.get(StatisticsKeys.SUBMISSION_TIMESTAMP));
+            final Date submissionTimestamp = TIMESTAMP_FORMAT.parse(
+                    statisticsMap.get(StatisticsKeys.SUBMISSION_TIMESTAMP));
             final Integer usersCount = Integer.valueOf(statisticsMap.get(StatisticsKeys.USERS_COUNT));
             final String countryCode = statisticsMap.get(StatisticsKeys.COUNTRY_CODE);
             final String openbisVersion = statisticsMap.get(StatisticsKeys.OPENBIS_VERSION);
 
             LOGGER.info(String.format("Received following data. [serverId='%s', submissionTimestamp='%s', " +
                             "usersCount=%d, countryCode='%s', openbisVersion='%s']",
-                    serverId, DATE_FORMAT.format(submissionTimestamp), usersCount, countryCode, openbisVersion));
+                    serverId, TIMESTAMP_FORMAT.format(submissionTimestamp), usersCount, countryCode, openbisVersion));
 
-            final String csvLine = convertToCSV(serverId, DATE_FORMAT.format(new Date()),
+            final String csvLine = convertToCSV(serverId, TIMESTAMP_FORMAT.format(new Date()),
                     String.valueOf(usersCount), countryCode, openbisVersion);
 
             final File statisticsFile = new File(statisticsFilePath);
