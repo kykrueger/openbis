@@ -5,16 +5,12 @@
 			"className" : "ch.ethz.sis.microservices.download.server.services.store.StatisticsReceiverHandler",
 			"url" : "/statistics",
 			"parameters" : {
-				"services-timeout" : "10000",
 				"statisticsFolderPath" : "/Users/localadmin/obis_data"
 			}
 		},
 		{
 			"className" : "ch.ethz.sis.microservices.download.server.services.store.PingHandler",
-			"url" : "/ping",
-			"parameters" : {
-				"services-timeout" : "10000"
-			}
+			"url" : "/ping"
 		}
 	]
 }
