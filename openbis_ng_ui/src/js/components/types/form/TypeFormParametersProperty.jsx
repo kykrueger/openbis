@@ -10,7 +10,6 @@ import Message from '@src/js/components/common/form/Message.jsx'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
 import TypeFormUtil from '@src/js/components/types/form/TypeFormUtil.js'
-import users from '@src/js/common/consts/users.js'
 import openbis from '@src/js/services/openbis.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
@@ -159,24 +158,17 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderMessageSystemInternal(property) {
-    const systemInternalAssignment =
-      property.internal.value &&
-      property.registratorOfAssignment.value === users.SYSTEM
-    const systemInternalPropertyType =
-      property.internal.value &&
-      property.registratorOfPropertyType.value === users.SYSTEM
-
-    if (systemInternalAssignment || systemInternalPropertyType) {
+    if (property.internal.value || property.assignmentInternal.value) {
       const { classes } = this.props
       return (
         <div className={classes.field}>
           <Message type='lock'>
             {messages.get(messages.PROPERTY_IS_INTERNAL)}
-            {systemInternalPropertyType
+            {property.internal.value
               ? ' ' +
                 messages.get(messages.PROPERTY_PARAMETERS_CANNOT_BE_CHANGED)
               : ''}
-            {systemInternalAssignment
+            {property.assignmentInternal.value
               ? ' ' +
                 messages.get(messages.PROPERTY_ASSIGNMENT_CANNOT_BE_REMOVED)
               : ''}

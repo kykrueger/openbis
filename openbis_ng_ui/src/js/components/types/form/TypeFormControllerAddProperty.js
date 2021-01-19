@@ -47,6 +47,7 @@ export default class TypeFormControllerAddProperty {
       }),
       code: FormUtil.createField(),
       internal: FormUtil.createField(),
+      assignmentInternal: FormUtil.createField(),
       label: FormUtil.createField(),
       description: FormUtil.createField(),
       dataType: FormUtil.createField(),

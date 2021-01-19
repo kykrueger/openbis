@@ -30,11 +30,7 @@ async function doTestInternal(
   propertyTypeRegistrator,
   propertyAssignmentRegistrator
 ) {
-  const isSystemInternalPropertyType =
-    propertyTypeInternal &&
-    propertyTypeRegistrator.userId === fixture.SYSTEM_USER_DTO.userId
-
-  const isSystemInternalPropertyAssignment =
+  const assignmentInternal =
     propertyTypeInternal &&
     propertyAssignmentRegistrator.userId === fixture.SYSTEM_USER_DTO.userId
 
@@ -95,33 +91,33 @@ async function doTestInternal(
         },
         dataType: {
           value: propertyType.getDataType(),
-          enabled: !isSystemInternalPropertyType
+          enabled: !propertyTypeInternal
         },
         label: {
           value: propertyType.getLabel(),
-          enabled: !isSystemInternalPropertyType
+          enabled: !propertyTypeInternal
         },
         description: {
           value: propertyType.getDescription(),
-          enabled: !isSystemInternalPropertyType
+          enabled: !propertyTypeInternal
         },
         plugin: {
           value: propertyAssignment.plugin.getName(),
-          enabled: !isSystemInternalPropertyAssignment
+          enabled: !assignmentInternal
         },
         mandatory: {
           value: propertyAssignment.isMandatory(),
-          enabled: !isSystemInternalPropertyAssignment
+          enabled: !assignmentInternal
         },
         visible: {
           value: propertyAssignment.isShowInEditView(),
-          enabled: !isSystemInternalPropertyAssignment
+          enabled: !assignmentInternal
         }
       }
     },
     buttons: {
       remove: {
-        enabled: !isSystemInternalPropertyAssignment
+        enabled: !assignmentInternal
       }
     }
   })
@@ -141,7 +137,7 @@ async function doTestInternal(
     },
     buttons: {
       remove: {
-        enabled: !isSystemInternalPropertyAssignment
+        enabled: !assignmentInternal
       }
     }
   })

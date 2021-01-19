@@ -160,24 +160,17 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       ? TypeFormPropertyScope.LOCAL
       : TypeFormPropertyScope.GLOBAL
 
-    const registratorOfAssignment = _.get(
+    const assignments =
+      (loadedAssignments && loadedAssignments[propertyType.code]) || 0
+
+    const assignmentRegistrator = _.get(
       loadedAssignment,
       'registrator.userId',
       null
     )
-    const registratorOfPropertyType = _.get(
-      propertyType,
-      'registrator.userId',
-      null
-    )
 
-    const assignments =
-      (loadedAssignments && loadedAssignments[propertyType.code]) || 0
-
-    const systemInternalAssignment =
-      internal && registratorOfAssignment === users.SYSTEM
-    const systemInternalPropertyType =
-      internal && registratorOfPropertyType === users.SYSTEM
+    const assignmentInternal =
+      internal && assignmentRegistrator === users.SYSTEM
 
     return {
       id: id,
@@ -194,27 +187,32 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
         visible: false,
         enabled: false
       }),
+      assignmentInternal: FormUtil.createField({
+        value: assignmentInternal,
+        visible: false,
+        enabled: false
+      }),
       label: FormUtil.createField({
         value: _.get(propertyType, 'label', null),
-        enabled: !systemInternalPropertyType
+        enabled: !internal
       }),
       description: FormUtil.createField({
         value: _.get(propertyType, 'description', null),
-        enabled: !systemInternalPropertyType
+        enabled: !internal
       }),
       dataType: FormUtil.createField({
         value: dataType,
-        enabled: !systemInternalPropertyType
+        enabled: !internal
       }),
       schema: FormUtil.createField({
         value: _.get(propertyType, 'schema', null),
         visible: dataType === openbis.DataType.XML,
-        enabled: !systemInternalPropertyType
+        enabled: !internal
       }),
       transformation: FormUtil.createField({
         value: _.get(propertyType, 'transformation', null),
         visible: dataType === openbis.DataType.XML,
-        enabled: !systemInternalPropertyType
+        enabled: !internal
       }),
       vocabulary: FormUtil.createField({
         value: _.get(propertyType, 'vocabulary.code', null),
@@ -233,33 +231,23 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       }),
       plugin: FormUtil.createField({
         value: plugin,
-        enabled: plugin && !systemInternalAssignment
+        enabled: plugin && !assignmentInternal
       }),
       mandatory: FormUtil.createField({
         value: _.get(loadedAssignment, 'mandatory', false),
-        enabled: !systemInternalAssignment
+        enabled: !assignmentInternal
       }),
       showInEditView: FormUtil.createField({
         value: _.get(loadedAssignment, 'showInEditView', true),
-        enabled: !systemInternalAssignment
+        enabled: !assignmentInternal
       }),
       showRawValueInForms: FormUtil.createField({
         value: _.get(loadedAssignment, 'showRawValueInForms', false),
-        enabled: !systemInternalAssignment
+        enabled: !assignmentInternal
       }),
       initialValueForExistingEntities: FormUtil.createField({
         visible: false,
-        enabled: !systemInternalAssignment
-      }),
-      registratorOfAssignment: FormUtil.createField({
-        value: registratorOfAssignment,
-        visible: false,
-        enabled: false
-      }),
-      registratorOfPropertyType: FormUtil.createField({
-        value: registratorOfPropertyType,
-        visible: false,
-        enabled: false
+        enabled: !assignmentInternal
       }),
       assignments,
       errors: 0

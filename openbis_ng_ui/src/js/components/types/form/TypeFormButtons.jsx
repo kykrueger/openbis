@@ -4,7 +4,6 @@ import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import TypeFormControllerStrategies from '@src/js/components/types/form/TypeFormControllerStrategies.js'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
-import users from '@src/js/common/consts/users.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
@@ -89,10 +88,7 @@ class TypeFormButtons extends React.PureComponent {
       )
       return !section.properties.some(propertyId => {
         const property = properties.find(property => property.id === propertyId)
-        return (
-          property.internal.value &&
-          property.registratorOfAssignment.value === users.SYSTEM
-        )
+        return property.assignmentInternal.value
       })
     } else {
       return false
@@ -106,10 +102,7 @@ class TypeFormButtons extends React.PureComponent {
       const property = properties.find(
         property => property.id === selection.params.id
       )
-      return !(
-        property.internal.value &&
-        property.registratorOfAssignment.value === users.SYSTEM
-      )
+      return !property.assignmentInternal.value
     } else {
       return false
     }
