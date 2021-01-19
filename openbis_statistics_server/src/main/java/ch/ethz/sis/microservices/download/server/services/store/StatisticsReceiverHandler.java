@@ -191,7 +191,7 @@ public class StatisticsReceiverHandler extends Service
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+    protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException,
             IOException
     {
         doAction(request, response);
