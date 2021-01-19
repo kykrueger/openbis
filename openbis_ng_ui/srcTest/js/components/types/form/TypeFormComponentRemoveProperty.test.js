@@ -16,7 +16,7 @@ async function testRemoveProperty() {
   common.facade.loadValidationPlugins.mockReturnValue(
     Promise.resolve([fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin])
   )
-  common.facade.loadUsages.mockReturnValue(Promise.resolve({}))
+  common.facade.loadPropertyUsages.mockReturnValue(Promise.resolve({}))
 
   const form = await common.mountExisting(fixture.TEST_SAMPLE_TYPE_DTO)
 

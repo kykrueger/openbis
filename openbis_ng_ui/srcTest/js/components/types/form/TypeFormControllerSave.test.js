@@ -175,6 +175,7 @@ async function doTestAddProperty(scope) {
 
 async function doTestUpdatePropertyAssignment(type, propertyType) {
   common.facade.loadType.mockReturnValue(Promise.resolve(type))
+  common.facade.loadTypeUsages.mockReturnValue(Promise.resolve(0))
   common.facade.executeOperations.mockReturnValue(Promise.resolve({}))
 
   await common.controller.load()
@@ -222,7 +223,7 @@ async function doTestUpdatePropertyTypeIfPossible(
 
 async function doTestDeleteProperty(type, propertyType) {
   common.facade.loadType.mockReturnValue(Promise.resolve(type))
-  common.facade.loadUsages.mockReturnValue(Promise.resolve({}))
+  common.facade.loadPropertyUsages.mockReturnValue(Promise.resolve({}))
   common.facade.executeOperations.mockReturnValue(Promise.resolve({}))
 
   await common.controller.load()
@@ -247,7 +248,7 @@ async function doTestDeleteProperty(type, propertyType) {
 
 async function doTestDeletePropertyLastAssignment(type, propertyType) {
   common.facade.loadType.mockReturnValue(Promise.resolve(type))
-  common.facade.loadUsages.mockReturnValue(Promise.resolve({}))
+  common.facade.loadPropertyUsages.mockReturnValue(Promise.resolve({}))
   common.facade.loadAssignments.mockReturnValue(
     Promise.resolve({
       [propertyType.getCode()]: 1

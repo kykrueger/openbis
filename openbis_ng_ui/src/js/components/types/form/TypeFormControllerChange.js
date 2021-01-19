@@ -239,22 +239,50 @@ export default class TypeFormControllerChange extends PageControllerChange {
 
     if (oldMandatory !== newMandatory) {
       const { type } = this.context.getState()
-      const typeIsUsed = type.usages > 0
+
+      const typeIsNew = !type.original
       const propertyIsNew = !newProperty.original
       const propertyIsMandatory = newProperty.mandatory.value
       const propertyWasMandatory = newProperty.original
         ? newProperty.original.mandatory.value
         : false
 
-      _.assign(newProperty, {
-        initialValueForExistingEntities: {
-          ...newProperty.initialValueForExistingEntities,
-          visible:
-            typeIsUsed &&
-            propertyIsMandatory &&
-            (propertyIsNew || !propertyWasMandatory)
-        }
-      })
+      if (
+        !typeIsNew &&
+        propertyIsMandatory &&
+        (propertyIsNew || !propertyWasMandatory)
+      ) {
+        const { object, facade } = this.controller
+
+        facade.loadTypeUsages(object).then(typeUsages => {
+          this.context.setState(state => {
+            const index = state.properties.findIndex(
+              property => property.id === newProperty.id
+            )
+            if (index === -1) {
+              return {}
+            }
+            const newProperties = Array.from(state.properties)
+            newProperties[index] = {
+              ...newProperties[index],
+              initialValueForExistingEntities: {
+                ...newProperties[index].initialValueForExistingEntities,
+                visible: typeUsages > 0
+              }
+            }
+            return {
+              properties: newProperties
+            }
+          })
+        })
+      } else {
+        _.assign(newProperty, {
+          initialValueForExistingEntities: {
+            ...newProperty.initialValueForExistingEntities,
+            visible: false
+          }
+        })
+      }
     }
   }
 
