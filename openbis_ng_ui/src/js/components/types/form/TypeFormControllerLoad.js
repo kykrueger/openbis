@@ -61,13 +61,10 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
     const properties = []
     let section = null
     let property = null
-    let sectionsCounter = 0
-    let propertiesCounter = 0
 
     if (loadedType && loadedType.propertyAssignments) {
       loadedType.propertyAssignments.forEach(loadedAssignment => {
         property = this._createProperty(
-          'property-' + propertiesCounter++,
           loadedType,
           loadedAssignment,
           loadedAssignments
@@ -78,10 +75,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
           !section ||
           section.name.value !== util.trim(loadedAssignment.section)
         ) {
-          section = this._createSection(
-            'section-' + sectionsCounter++,
-            loadedAssignment
-          )
+          section = this._createSection(loadedAssignment)
           sections.push(section)
         }
 
@@ -105,9 +99,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
     return this.context.setState(() => ({
       type,
       properties,
-      propertiesCounter,
       sections,
-      sectionsCounter,
       preview: {},
       selection: selection,
       assignments: loadedAssignments,
@@ -138,9 +130,9 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
     return type
   }
 
-  _createSection(id, loadedAssignment) {
+  _createSection(loadedAssignment) {
     return {
-      id: id,
+      id: _.uniqueId('section-'),
       name: FormUtil.createField({
         value: util.trim(loadedAssignment.section)
       }),
@@ -148,7 +140,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
     }
   }
 
-  _createProperty(id, loadedType, loadedAssignment, loadedAssignments) {
+  _createProperty(loadedType, loadedAssignment, loadedAssignments) {
     const propertyType = loadedAssignment.propertyType
 
     const code = _.get(propertyType, 'code', null)
@@ -173,7 +165,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       internal && assignmentRegistrator === users.SYSTEM
 
     return {
-      id: id,
+      id: _.uniqueId('property-'),
       scope: FormUtil.createField({
         value: scope,
         enabled: false
