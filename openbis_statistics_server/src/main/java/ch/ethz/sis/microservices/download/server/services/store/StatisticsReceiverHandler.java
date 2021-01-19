@@ -41,8 +41,6 @@ public class StatisticsReceiverHandler extends Service
 
     private static final Logger LOGGER = LogManager.getLogger(StatisticsReceiverHandler.class);
 
-    static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ");
-
     static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
@@ -61,7 +59,7 @@ public class StatisticsReceiverHandler extends Service
     private static final long ALLOWED_SEND_RECEIVE_TIME_DIFFERENCE = 10;
 
     /** Allowed time difference (in seconds) for repeated requests. */
-    private static final long ALLOWED_REPETITION_TIME_DIFFERENCE = 60;
+    private static final long ALLOWED_REPETITION_TIME_DIFFERENCE = 300;
 
     static
     {
@@ -105,16 +103,18 @@ public class StatisticsReceiverHandler extends Service
 
             final String serverIp = request.getRemoteAddr();
 
-            LOGGER.info(String.format("Received following data. [serverId='%s', submissionTimestamp='%s', " +
-                            "usersCount=%d, countryCode='%s', openbisVersion='%s', serverIp='%s']",
-                    serverId, submissionInstant.toString(), usersCount, countryCode, openbisVersion,
-                    serverIp));
+            LOGGER.traceAccess(String.format("Request headers: %s", getHeadersFromRequest(request)));
+            LOGGER.traceAccess(String.format("Request data: %s", statisticsMap.toString()));
 
             final String csvLine = convertToCSV(serverId, receivedInstant.toString(),
                     String.valueOf(usersCount), countryCode, openbisVersion);
 
+            LOGGER.traceAccess(String.format("Writing to CSV: '%s'", csvLine));
+
             final boolean callSuspicious = isCallSuspicious(serverId, serverIp, submissionInstant, receivedInstant);
             writeLineToFile(callSuspicious ? flaggedStatisticsFilePath : statisticsFilePath, csvLine);
+
+            LOGGER.traceAccess(String.format("callSuspicious=%b", callSuspicious));
 
             INSTANT_BY_SERVER_ID.put(serverId, receivedInstant);
             if (serverIp != null && !serverIp.isBlank())
@@ -128,6 +128,16 @@ public class StatisticsReceiverHandler extends Service
             LOGGER.catching(ex);
             failure(response);
         }
+    }
+
+    private static String getHeadersFromRequest(final HttpServletRequest request)
+    {
+        final StringBuilder builder = new StringBuilder();
+        final Enumeration<String> headerNames = request.getHeaderNames();
+        headerNames.asIterator().forEachRemaining(headerName ->
+                request.getHeaders(headerName).asIterator().forEachRemaining(headerValue ->
+                        builder.append(headerName).append(": ").append(headerValue).append(System.lineSeparator())));
+        return builder.toString();
     }
 
 //    private static String returnIpFromForwardedHeader(final String header)
