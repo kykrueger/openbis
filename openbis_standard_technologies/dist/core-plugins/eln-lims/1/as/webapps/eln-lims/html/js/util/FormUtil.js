@@ -1100,7 +1100,7 @@ var FormUtil = new function() {
             $component.css("font-family", "Consolas, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace");
         }
 
-		if (propertyType.mandatory) {
+		if (propertyType && propertyType.mandatory) {
 			$component.attr('required', '');
 		}
 

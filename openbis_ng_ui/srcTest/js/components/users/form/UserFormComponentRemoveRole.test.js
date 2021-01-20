@@ -54,7 +54,7 @@ async function testRemoveRole() {
             inheritedFrom: testSpacePowerUserGroup.getCode(),
             level: testSpacePowerUserGroupAssignment.getRoleLevel(),
             space: testSpacePowerUserGroupAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserGroupAssignment.getRole()
           },
           selected: false
@@ -64,7 +64,7 @@ async function testRemoveRole() {
             inheritedFrom: null,
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: false
@@ -109,7 +109,7 @@ async function testRemoveRole() {
             inheritedFrom: testSpacePowerUserGroup.getCode(),
             level: testSpacePowerUserGroupAssignment.getRoleLevel(),
             space: testSpacePowerUserGroupAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserGroupAssignment.getRole()
           },
           selected: false
@@ -144,7 +144,7 @@ async function testRemoveRole() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

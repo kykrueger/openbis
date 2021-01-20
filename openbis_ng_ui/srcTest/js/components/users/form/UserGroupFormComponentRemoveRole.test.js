@@ -37,8 +37,8 @@ async function testRemoveRole() {
         {
           values: {
             level: instanceObserverAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverAssignment.getRole()
           },
           selected: false
@@ -47,7 +47,7 @@ async function testRemoveRole() {
           values: {
             level: testSpacePowerUserAssignment.getRoleLevel(),
             space: testSpacePowerUserAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserAssignment.getRole()
           },
           selected: false
@@ -72,7 +72,7 @@ async function testRemoveRole() {
           values: {
             level: testSpacePowerUserAssignment.getRoleLevel(),
             space: testSpacePowerUserAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserAssignment.getRole()
           },
           selected: false
@@ -97,7 +97,7 @@ async function testRemoveRole() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

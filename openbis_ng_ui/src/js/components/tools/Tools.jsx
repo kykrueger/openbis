@@ -9,6 +9,7 @@ import ToolBrowser from '@src/js/components/tools/browser/ToolBrowser.jsx'
 import ToolSearch from '@src/js/components/tools/search/ToolSearch.jsx'
 import PluginForm from '@src/js/components/tools/form/plugin/PluginForm.jsx'
 import QueryForm from '@src/js/components/tools/form/query/QueryForm.jsx'
+import messages from '@src/js/common/messages.js'
 
 const styles = () => ({
   container: {
@@ -50,25 +51,46 @@ class Tools extends React.Component {
     ) {
       return <QueryForm object={object} />
     } else if (object.type === objectType.SEARCH) {
-      return <ToolSearch objectId={object.id} />
+      return <ToolSearch searchText={object.id} />
+    } else if (object.type === objectType.OVERVIEW) {
+      return <ToolSearch objectType={object.id} />
     }
   }
 
   renderTab(tab) {
-    const { object } = tab
+    const { object, changed } = tab
 
-    const prefixes = {
-      [objectType.DYNAMIC_PROPERTY_PLUGIN]: 'Dynamic Property Plugin: ',
-      [objectType.NEW_DYNAMIC_PROPERTY_PLUGIN]: 'New Dynamic Property Plugin ',
-      [objectType.ENTITY_VALIDATION_PLUGIN]: 'Entity Validation Plugin: ',
-      [objectType.NEW_ENTITY_VALIDATION_PLUGIN]:
-        'New Entity Validation Plugin ',
-      [objectType.QUERY]: 'Query: ',
-      [objectType.NEW_QUERY]: 'New Query ',
-      [objectType.SEARCH]: 'Search: '
+    let label = null
+
+    if (object.type === objectType.OVERVIEW) {
+      const labels = {
+        [objectType.DYNAMIC_PROPERTY_PLUGIN]: messages.get(
+          messages.DYNAMIC_PROPERTY_PLUGINS
+        ),
+        [objectType.ENTITY_VALIDATION_PLUGIN]: messages.get(
+          messages.ENTITY_VALIDATION_PLUGINS
+        ),
+        [objectType.QUERY]: messages.get(messages.QUERIES)
+      }
+      label = labels[object.id]
+    } else {
+      const prefixes = {
+        [objectType.NEW_DYNAMIC_PROPERTY_PLUGIN]:
+          messages.get(messages.NEW_DYNAMIC_PROPERTY_PLUGIN) + ' ',
+        [objectType.NEW_ENTITY_VALIDATION_PLUGIN]:
+          messages.get(messages.NEW_ENTITY_VALIDATION_PLUGIN) + ' ',
+        [objectType.NEW_QUERY]: messages.get(messages.NEW_QUERY) + ' ',
+        [objectType.DYNAMIC_PROPERTY_PLUGIN]:
+          messages.get(messages.DYNAMIC_PROPERTY_PLUGIN) + ': ',
+        [objectType.ENTITY_VALIDATION_PLUGIN]:
+          messages.get(messages.ENTITY_VALIDATION_PLUGIN) + ': ',
+        [objectType.QUERY]: messages.get(messages.QUERY) + ': ',
+        [objectType.SEARCH]: messages.get(messages.SEARCH) + ': '
+      }
+      label = prefixes[object.type] + object.id
     }
 
-    return <ContentTab prefix={prefixes[object.type]} tab={tab} />
+    return <ContentTab label={label} changed={changed} />
   }
 }
 

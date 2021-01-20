@@ -50,6 +50,8 @@ const CLASS_FULL_NAMES = [
   'as/dto/operation/SynchronousOperationExecutionOptions',
   'as/dto/person/create/CreatePersonsOperation',
   'as/dto/person/create/PersonCreation',
+  'as/dto/person/delete/PersonDeletionOptions',
+  'as/dto/person/delete/DeletePersonsOperation',
   'as/dto/person/fetchoptions/PersonFetchOptions',
   'as/dto/person/id/PersonPermId',
   'as/dto/person/search/PersonSearchCriteria',

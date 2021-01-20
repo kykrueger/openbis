@@ -83,7 +83,7 @@ export default class GridController {
       matches: (row, filter) => {
         function defaultMatches(value, filter) {
           if (filter) {
-            return value
+            return value !== null && value !== undefined
               ? String(value)
                   .trim()
                   .toUpperCase()

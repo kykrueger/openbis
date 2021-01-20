@@ -220,7 +220,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 						if(data.error) {
 							Util.showStacktraceAsError(data.error.message);
 						} else if(data.result) {
-							Util.showSuccess(data.result, function() {
+							Util.showSuccess(data.result.replace("sample", ELNDictionary.sample), function() {
 								Util.unblockUI();
 								mainController.changeView('showSamplesPage', experimentIdentifier);
 							});
@@ -270,7 +270,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 				if(data.error) {
 					Util.showStacktraceAsError(data.error.message);
 				} else if(data.result) {
-					Util.showSuccess(data.result, function() {
+					Util.showSuccess(data.result.replace("sample", ELNDictionary.sample), function() {
 						Util.unblockUI();
 						mainController.changeView('showSamplesPage', experimentIdentifier);
 					});

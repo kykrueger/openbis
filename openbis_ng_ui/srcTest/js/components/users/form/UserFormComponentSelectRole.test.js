@@ -49,7 +49,7 @@ async function testSelectRole() {
             inheritedFrom: null,
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: false
@@ -89,7 +89,7 @@ async function testSelectRole() {
             inheritedFrom: null,
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: true
@@ -140,7 +140,7 @@ async function testSelectRole() {
             inheritedFrom: null,
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: true
@@ -214,8 +214,8 @@ async function testSelectInstanceRole(inherited) {
               ? userAssignment.authorizationGroup.code
               : null,
             level: userAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: userAssignment.getRole()
           },
           selected: true
@@ -283,7 +283,7 @@ async function testSelectSpaceRole(inherited) {
               : null,
             level: userAssignment.getRoleLevel(),
             space: userAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: userAssignment.getRole()
           },
           selected: true

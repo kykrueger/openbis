@@ -4,6 +4,7 @@ import autoBind from 'auto-bind'
 import { withStyles } from '@material-ui/core/styles'
 import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import openbis from '@src/js/services/openbis.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
@@ -39,14 +40,18 @@ class EntityAutocompleterField extends React.PureComponent {
         if (results.options.length > 0) {
           if (results.totalCount > results.options.length) {
             options.push({
-              label: `Showing only the first ${LOADED_OPTIONS_COUNT} results (${results.totalCount} found)`
+              label: messages.get(
+                messages.ONLY_FIRST_RESULTS_SHOWN,
+                LOADED_OPTIONS_COUNT,
+                results.totalCount
+              )
             })
           }
           results.options.forEach(option => options.push(option))
         } else {
           options = [
             {
-              label: 'No entities found'
+              label: messages.get(messages.NO_RESULTS_FOUND)
             }
           ]
         }
@@ -306,7 +311,7 @@ class EntityAutocompleterField extends React.PureComponent {
       }
 
       if (owner) {
-        owner = ' [owner: ' + owner + ']'
+        owner = ' [' + messages.get(messages.OWNER) + ': ' + owner + ']'
       } else {
         owner = ''
       }

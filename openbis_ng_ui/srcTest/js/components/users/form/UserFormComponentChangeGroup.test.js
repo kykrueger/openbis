@@ -59,8 +59,8 @@ async function testChangeGroup() {
           values: {
             inheritedFrom: instanceObserverGroup.getCode(),
             level: instanceObserverGroupAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverGroupAssignment.getRole()
           },
           selected: false
@@ -105,7 +105,7 @@ async function testChangeGroup() {
             inheritedFrom: testSpacePowerUserGroup.getCode(),
             level: testSpacePowerUserGroupAssignment.getRoleLevel(),
             space: testSpacePowerUserGroupAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserGroupAssignment.getRole()
           },
           selected: false

@@ -4,6 +4,7 @@ import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
 import objectOperation from '@src/js/common/consts/objectOperation.js'
 import BrowserController from '@src/js/components/common/browser/BrowserController.js'
+import messages from '@src/js/common/messages.js'
 
 export default class ToolBrowserController extends BrowserController {
   doGetPage() {
@@ -73,21 +74,33 @@ export default class ToolBrowserController extends BrowserController {
       let nodes = [
         {
           id: 'dynamicPropertyPlugins',
-          text: 'Dynamic Property Plugins',
+          text: messages.get(messages.DYNAMIC_PROPERTY_PLUGINS),
+          object: {
+            type: objectType.OVERVIEW,
+            id: objectType.DYNAMIC_PROPERTY_PLUGIN
+          },
           children: dynamicPropertyPluginNodes,
           childrenType: objectType.NEW_DYNAMIC_PROPERTY_PLUGIN,
           canAdd: true
         },
         {
           id: 'entityValidationPlugins',
-          text: 'Entity Validation Plugins',
+          text: messages.get(messages.ENTITY_VALIDATION_PLUGINS),
+          object: {
+            type: objectType.OVERVIEW,
+            id: objectType.ENTITY_VALIDATION_PLUGIN
+          },
           children: entityValidationPluginNodes,
           childrenType: objectType.NEW_ENTITY_VALIDATION_PLUGIN,
           canAdd: true
         },
         {
           id: 'queries',
-          text: 'Queries',
+          text: messages.get(messages.QUERIES),
+          object: {
+            type: objectType.OVERVIEW,
+            id: objectType.QUERY
+          },
           children: queryNodes,
           childrenType: objectType.NEW_QUERY,
           canAdd: true

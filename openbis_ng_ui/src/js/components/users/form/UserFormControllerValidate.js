@@ -1,6 +1,7 @@
 import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
 import RoleControllerValidate from '@src/js/components/users/form/common/RoleControllerValidate.js'
 import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 
 export default class UserFormControllerValidate extends PageControllerValidate {
   validate(validator) {
@@ -48,14 +49,14 @@ export default class UserFormControllerValidate extends PageControllerValidate {
   }
 
   _validateUser(validator, user) {
-    validator.validateNotEmpty(user, 'userId', 'User Id')
-    validator.validateUserCode(user, 'userId', 'User Id')
+    validator.validateNotEmpty(user, 'userId', messages.get(messages.USER_ID))
+    validator.validateUserCode(user, 'userId', messages.get(messages.USER_ID))
     return validator.withErrors(user)
   }
 
   _validateGroups(validator, groups) {
     groups.forEach(group => {
-      validator.validateNotEmpty(group, 'code', 'Code')
+      validator.validateNotEmpty(group, 'code', messages.get(messages.CODE))
     })
     return validator.withErrors(groups)
   }

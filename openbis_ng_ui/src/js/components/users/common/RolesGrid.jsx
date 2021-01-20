@@ -3,23 +3,19 @@ import React from 'react'
 import autoBind from 'auto-bind'
 import { withStyles } from '@material-ui/core/styles'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
-import LinkToObject from '@src/js/components/common/form/LinkToObject.jsx'
+import UserGroupLink from '@src/js/components/common/link/UserGroupLink.jsx'
 import openbis from '@src/js/services/openbis.js'
-import pages from '@src/js/common/consts/pages.js'
-import objectTypes from '@src/js/common/consts/objectType.js'
 import ids from '@src/js/common/consts/ids.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   inherited: {
     color: theme.palette.hint.main
-  },
-  implicit: {
-    fontStyle: 'italic'
   }
 })
 
-const ALL_VALUE = '(all)'
+const ALL_VALUE = '(' + messages.get(messages.ALL) + ')'
 
 class RolesGrid extends React.PureComponent {
   constructor(props) {
@@ -56,7 +52,7 @@ class RolesGrid extends React.PureComponent {
       <Grid
         id={id}
         controllerRef={controllerRef}
-        header='Roles'
+        header={messages.get(messages.ROLES)}
         columns={columns}
         rows={rows}
         selectedRowId={selectedRowId}
@@ -71,7 +67,7 @@ class RolesGrid extends React.PureComponent {
     return [
       {
         name: 'inheritedFrom',
-        label: 'Inherited From',
+        label: messages.get(messages.INHERITED_FROM),
         sort: id === ids.USER_ROLES_GRID_ID ? 'asc' : null,
         getValue: this.getInheritedFromValue,
         renderValue: this.renderInheritedFromValue,
@@ -87,7 +83,7 @@ class RolesGrid extends React.PureComponent {
       },
       {
         name: 'level',
-        label: 'Level',
+        label: messages.get(messages.LEVEL),
         sort: id === ids.USER_GROUP_ROLES_GRID_ID ? 'asc' : null,
         getValue: this.getLevelValue,
         renderValue: this.renderLevelValue,
@@ -102,7 +98,7 @@ class RolesGrid extends React.PureComponent {
       },
       {
         name: 'space',
-        label: 'Space',
+        label: messages.get(messages.SPACE),
         getValue: this.getSpaceValue,
         renderValue: this.renderSpaceValue,
         compareValue: params => {
@@ -116,7 +112,7 @@ class RolesGrid extends React.PureComponent {
       },
       {
         name: 'project',
-        label: 'Project',
+        label: messages.get(messages.PROJECT),
         getValue: this.getProjectValue,
         renderValue: this.renderProjectValue,
         compareValue: params => {
@@ -130,7 +126,7 @@ class RolesGrid extends React.PureComponent {
       },
       {
         name: 'role',
-        label: 'Role',
+        label: messages.get(messages.ROLE),
         getValue: this.getRoleValue,
         renderValue: this.renderRoleValue,
         compareValue: params => {
@@ -175,25 +171,8 @@ class RolesGrid extends React.PureComponent {
     return row.role.value
   }
 
-  renderInheritedFromValue({ value, row }) {
-    if (value) {
-      return this.renderDefault({
-        value: (
-          <LinkToObject
-            page={pages.USERS}
-            object={{
-              type: objectTypes.USER_GROUP,
-              id: row.inheritedFrom.value
-            }}
-          >
-            {row.inheritedFrom.value}
-          </LinkToObject>
-        ),
-        row
-      })
-    } else {
-      return null
-    }
+  renderInheritedFromValue({ value }) {
+    return <UserGroupLink groupCode={value} />
   }
 
   renderLevelValue({ value, row }) {
@@ -201,27 +180,11 @@ class RolesGrid extends React.PureComponent {
   }
 
   renderSpaceValue({ value, row }) {
-    if (!row.space.value && value) {
-      return (
-        <div className={this.props.classes.implicit}>
-          {this.renderDefault({ value, row })}
-        </div>
-      )
-    } else {
-      return this.renderDefault({ value, row })
-    }
+    return this.renderDefault({ value, row })
   }
 
   renderProjectValue({ value, row }) {
-    if (!row.project.value && value) {
-      return (
-        <div className={this.props.classes.implicit}>
-          {this.renderDefault({ value, row })}
-        </div>
-      )
-    } else {
-      return this.renderDefault({ value, row })
-    }
+    return this.renderDefault({ value, row })
   }
 
   renderRoleValue({ value, row }) {
