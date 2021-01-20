@@ -3,6 +3,7 @@ import React from 'react'
 import autoBind from 'auto-bind'
 import { withStyles } from '@material-ui/core/styles'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
+import UserLink from '@src/js/components/common/link/UserLink.jsx'
 import UserGroupLink from '@src/js/components/common/link/UserGroupLink.jsx'
 import openbis from '@src/js/services/openbis.js'
 import ids from '@src/js/common/consts/ids.js'
@@ -34,12 +35,16 @@ class RolesGrid extends React.PureComponent {
       controllerRef
     } = this.props
 
-    let columnNames
+    let columnNames = ['level', 'space', 'project', 'role']
 
-    if (id === ids.USER_ROLES_GRID_ID) {
-      columnNames = ['inheritedFrom', 'level', 'space', 'project', 'role']
-    } else if (id === ids.USER_GROUP_ROLES_GRID_ID) {
-      columnNames = ['level', 'space', 'project', 'role']
+    if (id === ids.ROLES_OF_USER_GRID_ID) {
+      columnNames = ['inheritedFrom', ...columnNames]
+    } else if (id === ids.ROLES_OF_USERS_GRID_ID) {
+      columnNames = ['user', 'inheritedFrom', ...columnNames]
+    } else if (id === ids.ROLES_OF_GROUP_GRID_ID) {
+      columnNames = [...columnNames]
+    } else if (id === ids.ROLES_OF_GROUPS_GRID_ID) {
+      columnNames = ['group', ...columnNames]
     } else {
       throw 'Unsupported id: ' + id
     }
@@ -52,7 +57,7 @@ class RolesGrid extends React.PureComponent {
       <Grid
         id={id}
         controllerRef={controllerRef}
-        header={messages.get(messages.ROLES)}
+        header={this.getHeader()}
         columns={columns}
         rows={rows}
         selectedRowId={selectedRowId}
@@ -61,14 +66,63 @@ class RolesGrid extends React.PureComponent {
     )
   }
 
+  getHeader() {
+    const { id } = this.props
+
+    let message = null
+    if (id === ids.ROLES_OF_USER_GRID_ID || id === ids.ROLES_OF_GROUP_GRID_ID) {
+      message = messages.ROLES
+    } else if (id === ids.ROLES_OF_USERS_GRID_ID) {
+      message = messages.ROLES_OF_USERS
+    } else if (id === ids.ROLES_OF_GROUPS_GRID_ID) {
+      message = messages.ROLES_OF_GROUPS
+    }
+
+    return messages.get(message)
+  }
+
   getColumns() {
     const { id } = this.props
 
     return [
       {
+        name: 'user',
+        label: messages.get(messages.USER),
+        sort: id === ids.ROLES_OF_USERS_GRID_ID ? 'asc' : null,
+        getValue: this.getUserValue,
+        renderValue: this.renderUserValue,
+        compareValue: params => {
+          return (
+            100000 * this.compareUserValue(params) +
+            10000 * this.compareInheritedFromValue(params) +
+            1000 * this.compareLevelValue(params) +
+            100 * this.compareSpaceValue(params) +
+            10 * this.compareProjectValue(params) +
+            this.compareRoleValue(params)
+          )
+        }
+      },
+      {
+        name: 'group',
+        label: messages.get(messages.GROUP),
+        sort: id === ids.ROLES_OF_GROUPS_GRID_ID ? 'asc' : null,
+        getValue: this.getGroupValue,
+        renderValue: this.renderGroupValue,
+        compareValue: params => {
+          return (
+            100000 * this.compareGroupValue(params) +
+            10000 * this.compareInheritedFromValue(params) +
+            1000 * this.compareLevelValue(params) +
+            100 * this.compareSpaceValue(params) +
+            10 * this.compareProjectValue(params) +
+            this.compareRoleValue(params)
+          )
+        }
+      },
+      {
         name: 'inheritedFrom',
         label: messages.get(messages.INHERITED_FROM),
-        sort: id === ids.USER_ROLES_GRID_ID ? 'asc' : null,
+        sort: id === ids.ROLES_OF_USER_GRID_ID ? 'asc' : null,
         getValue: this.getInheritedFromValue,
         renderValue: this.renderInheritedFromValue,
         compareValue: params => {
@@ -84,12 +138,13 @@ class RolesGrid extends React.PureComponent {
       {
         name: 'level',
         label: messages.get(messages.LEVEL),
-        sort: id === ids.USER_GROUP_ROLES_GRID_ID ? 'asc' : null,
+        sort: id === ids.ROLES_OF_GROUP_GRID_ID ? 'asc' : null,
         getValue: this.getLevelValue,
         renderValue: this.renderLevelValue,
         compareValue: params => {
           return (
-            1000 * this.compareLevelValue(params) +
+            10000 * this.compareLevelValue(params) +
+            1000 * this.compareInheritedFromValue(params) +
             100 * this.compareSpaceValue(params) +
             10 * this.compareProjectValue(params) +
             this.compareRoleValue(params)
@@ -103,8 +158,9 @@ class RolesGrid extends React.PureComponent {
         renderValue: this.renderSpaceValue,
         compareValue: params => {
           return (
-            1000 * this.compareSpaceValue(params) +
-            100 * this.compareLevelValue(params) +
+            10000 * this.compareSpaceValue(params) +
+            1000 * this.compareLevelValue(params) +
+            100 * this.compareInheritedFromValue(params) +
             10 * this.compareProjectValue(params) +
             this.compareRoleValue(params)
           )
@@ -117,8 +173,9 @@ class RolesGrid extends React.PureComponent {
         renderValue: this.renderProjectValue,
         compareValue: params => {
           return (
-            1000 * this.compareProjectValue(params) +
-            100 * this.compareLevelValue(params) +
+            10000 * this.compareProjectValue(params) +
+            1000 * this.compareLevelValue(params) +
+            100 * this.compareInheritedFromValue(params) +
             10 * this.compareSpaceValue(params) +
             this.compareRoleValue(params)
           )
@@ -131,8 +188,9 @@ class RolesGrid extends React.PureComponent {
         renderValue: this.renderRoleValue,
         compareValue: params => {
           return (
-            1000 * this.compareRoleValue(params) +
-            100 * this.compareLevelValue(params) +
+            10000 * this.compareRoleValue(params) +
+            1000 * this.compareLevelValue(params) +
+            100 * this.compareInheritedFromValue(params) +
             10 * this.compareSpaceValue(params) +
             this.compareProjectValue(params)
           )
@@ -141,34 +199,50 @@ class RolesGrid extends React.PureComponent {
     ]
   }
 
+  getUserValue({ row }) {
+    return _.get(row, 'user.value')
+  }
+
+  getGroupValue({ row }) {
+    return _.get(row, 'group.value')
+  }
+
   getInheritedFromValue({ row }) {
-    return row.inheritedFrom.value
+    return _.get(row, 'inheritedFrom.value')
   }
 
   getLevelValue({ row }) {
-    return row.level.value
+    return _.get(row, 'level.value')
   }
 
   getSpaceValue({ row }) {
-    if (row.level.value === openbis.RoleLevel.INSTANCE) {
+    if (this.getLevelValue({ row }) === openbis.RoleLevel.INSTANCE) {
       return ALL_VALUE
     } else {
-      return row.space.value
+      return _.get(row, 'space.value')
     }
   }
 
   getProjectValue({ row }) {
-    if (row.level.value === openbis.RoleLevel.INSTANCE) {
+    if (this.getLevelValue({ row }) === openbis.RoleLevel.INSTANCE) {
       return ALL_VALUE
-    } else if (row.level.value === openbis.RoleLevel.SPACE) {
-      return row.space.value ? ALL_VALUE : null
+    } else if (this.getLevelValue({ row }) === openbis.RoleLevel.SPACE) {
+      return this.getSpaceValue({ row }) ? ALL_VALUE : null
     } else {
-      return row.project.value
+      return _.get(row, 'project.value')
     }
   }
 
   getRoleValue({ row }) {
-    return row.role.value
+    return _.get(row, 'role.value')
+  }
+
+  renderUserValue({ value }) {
+    return <UserLink userId={value} />
+  }
+
+  renderGroupValue({ value }) {
+    return <UserGroupLink groupCode={value} />
   }
 
   renderInheritedFromValue({ value }) {
@@ -194,11 +268,23 @@ class RolesGrid extends React.PureComponent {
   renderDefault({ value, row }) {
     const { classes } = this.props
 
-    if (row.inheritedFrom && row.inheritedFrom.value) {
+    if (this.getInheritedFromValue({ row })) {
       return <div className={classes.inherited}>{value}</div>
     } else {
       return value
     }
+  }
+
+  compareUserValue({ row1, row2, defaultCompare }) {
+    const user1 = this.getUserValue({ row: row1 })
+    const user2 = this.getUserValue({ row: row2 })
+    return defaultCompare(user1, user2)
+  }
+
+  compareGroupValue({ row1, row2, defaultCompare }) {
+    const group1 = this.getGroupValue({ row: row1 })
+    const group2 = this.getGroupValue({ row: row2 })
+    return defaultCompare(group1, group2)
   }
 
   compareInheritedFromValue({ row1, row2, defaultCompare }) {

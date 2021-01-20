@@ -25,7 +25,7 @@ export default class UserSearchWrapper extends BaseWrapper {
   getUserGroups() {
     return new GridWrapper(
       this.findComponent(Grid).filter({
-        id: ids.USER_GROUPS_GRID_ID
+        id: ids.GROUPS_GRID_ID
       })
     )
   }

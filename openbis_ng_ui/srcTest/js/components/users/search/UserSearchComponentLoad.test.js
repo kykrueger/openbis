@@ -133,6 +133,7 @@ async function testLoadWithObjectType(resultsFound) {
   openbis.mockSearchPersons(
     resultsFound ? [testUser, testUser2, anotherUser] : []
   )
+  openbis.mockSearchGroups([])
 
   const form = await common.mount({
     objectType: objectTypes.USER

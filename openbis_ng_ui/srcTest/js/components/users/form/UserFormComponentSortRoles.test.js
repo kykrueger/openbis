@@ -167,12 +167,12 @@ async function testSortRoles() {
         }
       ],
       rows: [
-        instanceAdminAssignmentRow,
         instanceObserverGroupRow,
-        mySpaceAdminAssignmentRow,
+        instanceAdminAssignmentRow,
         testSpacePowerUserGroupRow,
-        myProjectAdminAssignmentRow,
-        testProjectAdminGroupRow
+        mySpaceAdminAssignmentRow,
+        testProjectAdminGroupRow,
+        myProjectAdminAssignmentRow
       ]
     }
   })
@@ -205,8 +205,8 @@ async function testSortRoles() {
         }
       ],
       rows: [
-        instanceAdminAssignmentRow,
         instanceObserverGroupRow,
+        instanceAdminAssignmentRow,
         mySpaceAdminAssignmentRow,
         myProjectAdminAssignmentRow,
         testSpacePowerUserGroupRow,
@@ -243,10 +243,10 @@ async function testSortRoles() {
         }
       ],
       rows: [
-        instanceAdminAssignmentRow,
         instanceObserverGroupRow,
-        mySpaceAdminAssignmentRow,
+        instanceAdminAssignmentRow,
         testSpacePowerUserGroupRow,
+        mySpaceAdminAssignmentRow,
         myProjectAdminAssignmentRow,
         testProjectAdminGroupRow
       ]
@@ -283,8 +283,8 @@ async function testSortRoles() {
       rows: [
         instanceAdminAssignmentRow,
         mySpaceAdminAssignmentRow,
-        myProjectAdminAssignmentRow,
         testProjectAdminGroupRow,
+        myProjectAdminAssignmentRow,
         testSpacePowerUserGroupRow,
         instanceObserverGroupRow
       ]

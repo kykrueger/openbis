@@ -4,6 +4,7 @@ import React from 'react'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
 import UsersGrid from '@src/js/components/users/common/UsersGrid.jsx'
 import UserGroupsGrid from '@src/js/components/users/common/UserGroupsGrid.jsx'
+import RolesGrid from '@src/js/components/users/common/RolesGrid.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import ids from '@src/js/common/consts/ids.js'
@@ -14,6 +15,9 @@ import openbis from '@src/js/services/openbis.js'
 import util from '@src/js/common/util.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
+
+const USER_FILTERED_FIELDS = ['userId', 'firstName', 'lastName']
+const USER_GROUP_FILTERED_FIELDS = ['code', 'description']
 
 class UserSearch extends React.Component {
   constructor(props) {
@@ -32,7 +36,12 @@ class UserSearch extends React.Component {
 
   async load() {
     try {
-      await Promise.all([this.loadUsers(), this.loadUserGroups()])
+      await Promise.all([
+        this.loadUsers(),
+        this.loadUsersRoles(),
+        this.loadUserGroups(),
+        this.loadUserGroupsRoles()
+      ])
       this.setState(() => ({
         loaded: true
       }))
@@ -55,13 +64,9 @@ class UserSearch extends React.Component {
     )
 
     const users = util
-      .filter(result.objects, this.props.searchText, [
-        'userId',
-        'firstName',
-        'lastName'
-      ])
+      .filter(result.objects, this.props.searchText, USER_FILTERED_FIELDS)
       .map(object => ({
-        id: _.get(object, 'userId'),
+        id: _.uniqueId('user-'),
         userId: FormUtil.createField({ value: _.get(object, 'userId') }),
         firstName: FormUtil.createField({ value: _.get(object, 'firstName') }),
         lastName: FormUtil.createField({ value: _.get(object, 'lastName') }),
@@ -72,6 +77,113 @@ class UserSearch extends React.Component {
 
     this.setState({
       users
+    })
+  }
+
+  async loadUsersRoles() {
+    if (!this.shouldLoad(objectTypes.USER)) {
+      return
+    }
+
+    const userFo = new openbis.PersonFetchOptions()
+    userFo.withRoleAssignments().withSpace()
+    userFo.withRoleAssignments().withProject().withSpace()
+
+    const groupFo = new openbis.AuthorizationGroupFetchOptions()
+    groupFo.withUsers()
+    groupFo.withRoleAssignments().withSpace()
+    groupFo.withRoleAssignments().withProject().withSpace()
+
+    const [userResult, groupResult] = await Promise.all([
+      openbis.searchPersons(new openbis.PersonSearchCriteria(), userFo),
+      openbis.searchAuthorizationGroups(
+        new openbis.AuthorizationGroupSearchCriteria(),
+        groupFo
+      )
+    ])
+
+    const usersRoles = []
+
+    util
+      .filter(userResult.objects, this.props.searchText, USER_FILTERED_FIELDS)
+      .forEach(user => {
+        const userAssignments = user.roleAssignments || []
+
+        userAssignments.forEach(userAssignment => {
+          const level = _.get(userAssignment, 'roleLevel', null)
+
+          let space = null
+          let project = null
+
+          if (level === openbis.RoleLevel.SPACE) {
+            space = _.get(userAssignment, 'space.code')
+          } else if (level === openbis.RoleLevel.PROJECT) {
+            space = _.get(userAssignment, 'project.space.code')
+            project = _.get(userAssignment, 'project.code')
+          }
+
+          usersRoles.push({
+            id: _.uniqueId('user-role-'),
+            user: FormUtil.createField({
+              value: _.get(user, 'userId', null)
+            }),
+            inheritedFrom: FormUtil.createField({
+              value: null
+            }),
+            level: FormUtil.createField({ value: level }),
+            space: FormUtil.createField({ value: space }),
+            project: FormUtil.createField({ value: project }),
+            role: FormUtil.createField({
+              value: _.get(userAssignment, 'role', null)
+            })
+          })
+        })
+      })
+
+    groupResult.objects.forEach(group => {
+      const groupUsers = util.filter(
+        group.users || [],
+        this.props.searchText,
+        USER_FILTERED_FIELDS
+      )
+
+      const groupAssignments = group.roleAssignments || []
+
+      groupUsers.forEach(groupUser => {
+        groupAssignments.forEach(groupAssignment => {
+          const level = _.get(groupAssignment, 'roleLevel', null)
+
+          let space = null
+          let project = null
+
+          if (level === openbis.RoleLevel.SPACE) {
+            space = _.get(groupAssignment, 'space.code')
+          } else if (level === openbis.RoleLevel.PROJECT) {
+            space = _.get(groupAssignment, 'project.space.code')
+            project = _.get(groupAssignment, 'project.code')
+          }
+
+          usersRoles.push({
+            id: _.uniqueId('user-role-'),
+            user: FormUtil.createField({
+              value: _.get(groupUser, 'userId', null)
+            }),
+            inheritedFrom: FormUtil.createField({
+              value: _.get(group, 'code')
+            }),
+            level: FormUtil.createField({ value: level }),
+            space: FormUtil.createField({ value: space }),
+            project: FormUtil.createField({ value: project }),
+            role: FormUtil.createField({
+              value: _.get(groupAssignment, 'role', null)
+            })
+          })
+        })
+      })
+    })
+
+    this.setState({
+      usersRoles
     })
   }
 
@@ -86,9 +198,9 @@ class UserSearch extends React.Component {
     )
 
     const userGroups = util
-      .filter(result.objects, this.props.searchText, ['code', 'description'])
+      .filter(result.objects, this.props.searchText, USER_GROUP_FILTERED_FIELDS)
       .map(object => ({
-        id: _.get(object, 'code'),
+        id: _.uniqueId('group-'),
         code: FormUtil.createField({ value: _.get(object, 'code') }),
         description: FormUtil.createField({
           value: _.get(object, 'description')
@@ -97,6 +209,62 @@ class UserSearch extends React.Component {
 
     this.setState({
       userGroups
+    })
+  }
+
+  async loadUserGroupsRoles() {
+    if (!this.shouldLoad(objectTypes.USER_GROUP)) {
+      return
+    }
+
+    const fo = new openbis.AuthorizationGroupFetchOptions()
+    fo.withRoleAssignments().withSpace()
+    fo.withRoleAssignments().withProject().withSpace()
+
+    const result = await openbis.searchAuthorizationGroups(
+      new openbis.AuthorizationGroupSearchCriteria(),
+      fo
+    )
+
+    const userGroups = util.filter(
+      result.objects,
+      this.props.searchText,
+      USER_GROUP_FILTERED_FIELDS
+    )
+
+    const userGroupsRoles = []
+    userGroups.forEach(userGroup => {
+      const roleAssignments = userGroup.roleAssignments || []
+      roleAssignments.forEach(roleAssignment => {
+        const level = _.get(roleAssignment, 'roleLevel', null)
+
+        let space = null
+        let project = null
+
+        if (level === openbis.RoleLevel.SPACE) {
+          space = _.get(roleAssignment, 'space.code')
+        } else if (level === openbis.RoleLevel.PROJECT) {
+          space = _.get(roleAssignment, 'project.space.code')
+          project = _.get(roleAssignment, 'project.code')
+        }
+
+        userGroupsRoles.push({
+          id: _.uniqueId('group-role-'),
+          group: FormUtil.createField({
+            value: _.get(userGroup, 'code', null)
+          }),
+          level: FormUtil.createField({ value: level }),
+          space: FormUtil.createField({ value: space }),
+          project: FormUtil.createField({ value: project }),
+          role: FormUtil.createField({
+            value: _.get(roleAssignment, 'role', null)
+          })
+        })
+      })
+    })
+
+    this.setState({
+      userGroupsRoles
     })
   }
 
@@ -139,16 +307,29 @@ class UserSearch extends React.Component {
       <GridContainer onClick={this.handleClickContainer}>
         {this.renderNoResultsFoundMessage()}
         {this.renderUsers()}
+        {this.renderUsersRoles()}
         {this.renderUserGroups()}
+        {this.renderUserGroupsRoles()}
       </GridContainer>
     )
   }
 
   renderNoResultsFoundMessage() {
     const { objectType } = this.props
-    const { users = [], userGroups = [] } = this.state
+    const {
+      users = [],
+      usersRoles = [],
+      userGroups = [],
+      userGroupsRoles = []
+    } = this.state
 
-    if (!objectType && users.length === 0 && userGroups.length === 0) {
+    if (
+      !objectType &&
+      users.length === 0 &&
+      usersRoles.length === 0 &&
+      userGroups.length === 0 &&
+      userGroupsRoles.length === 0
+    ) {
       return (
         <Message type='info'>{messages.get(messages.NO_RESULTS_FOUND)}</Message>
       )
@@ -172,16 +353,52 @@ class UserSearch extends React.Component {
     }
   }
 
+  renderUsersRoles() {
+    if (this.shouldRender(objectTypes.USER, this.state.usersRoles)) {
+      return (
+        <RolesGrid
+          id={ids.ROLES_OF_USERS_GRID_ID}
+          rows={this.state.usersRoles}
+          onSelectedRowChange={this.handleSelectedRowChange(
+            objectTypes.USER + '-role'
+          )}
+          selectedRowId={this.getSelectedRowId(objectTypes.USER + '-role')}
+        />
+      )
+    } else {
+      return null
+    }
+  }
+
   renderUserGroups() {
     if (this.shouldRender(objectTypes.USER_GROUP, this.state.userGroups)) {
       return (
         <UserGroupsGrid
-          id={ids.USER_GROUPS_GRID_ID}
+          id={ids.GROUPS_GRID_ID}
           rows={this.state.userGroups}
           onSelectedRowChange={this.handleSelectedRowChange(
             objectTypes.USER_GROUP
           )}
           selectedRowId={this.getSelectedRowId(objectTypes.USER_GROUP)}
+        />
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderUserGroupsRoles() {
+    if (this.shouldRender(objectTypes.USER_GROUP, this.state.userGroupsRoles)) {
+      return (
+        <RolesGrid
+          id={ids.ROLES_OF_GROUPS_GRID_ID}
+          rows={this.state.userGroupsRoles}
+          onSelectedRowChange={this.handleSelectedRowChange(
+            objectTypes.USER_GROUP + '-role'
+          )}
+          selectedRowId={this.getSelectedRowId(
+            objectTypes.USER_GROUP + '-role'
+          )}
         />
       )
     } else {
