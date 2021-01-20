@@ -2,6 +2,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 repositories {
+    mavenCentral()
     ivy {
         ivyPattern "http://svnsis.ethz.ch/repos/cisd/ivy-repository/trunk/[organisation]/[module]/[revision]/ivy.xml"
         artifactPattern "http://svnsis.ethz.ch/repos/cisd/ivy-repository/trunk/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
@@ -11,6 +12,7 @@ repositories {
 dependencies {
     compile project(':microservice_server_template')
     compile 'openbis:openbis-v3-api-batteries-included:20.10.0'
+    compile 'com.maxmind.geoip2:geoip2:2.15.0'
 }
 
 mainClassName = "ch.ethz.sis.microservices.download.server.startup.Main"

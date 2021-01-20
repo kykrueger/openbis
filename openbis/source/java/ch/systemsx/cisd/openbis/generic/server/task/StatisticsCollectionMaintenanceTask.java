@@ -90,7 +90,6 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
             final Map<StatisticsKeys, String> statisticsMap = new HashMap<>(5);
             statisticsMap.put(StatisticsKeys.SERVER_ID, getThisServerId());
             statisticsMap.put(StatisticsKeys.USERS_COUNT, String.valueOf(personsCount));
-            statisticsMap.put(StatisticsKeys.COUNTRY_CODE, "CH");
             statisticsMap.put(StatisticsKeys.OPENBIS_VERSION, BuildAndEnvironmentInfo.INSTANCE.getVersion());
             statisticsMap.put(StatisticsKeys.SUBMISSION_TIMESTAMP, Instant.now().toString());
 
@@ -288,8 +287,6 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
         SUBMISSION_TIMESTAMP,
 
         USERS_COUNT,
-
-        COUNTRY_CODE,
 
         OPENBIS_VERSION
 

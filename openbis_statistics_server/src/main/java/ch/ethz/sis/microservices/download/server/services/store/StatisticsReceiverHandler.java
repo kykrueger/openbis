@@ -21,11 +21,17 @@ import ch.ethz.sis.microservices.download.server.logging.LogManager;
 import ch.ethz.sis.microservices.download.server.logging.Logger;
 import ch.ethz.sis.microservices.download.server.services.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.maxmind.geoip2.DatabaseReader;
+import com.maxmind.geoip2.exception.GeoIp2Exception;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.InetAddress;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
@@ -61,11 +67,28 @@ public class StatisticsReceiverHandler extends Service
     /** Allowed time difference (in seconds) for repeated requests. */
     private static final long ALLOWED_REPETITION_TIME_DIFFERENCE = 300;
 
+    private static final String UNKNOWN_COUNTRY_CODE = "?";
+
     static
     {
         final long cleanupPeriod = ALLOWED_REPETITION_TIME_DIFFERENCE / 2;
         new Timer(HistoryMapsCleaner.class.getSimpleName(), true).scheduleAtFixedRate(new HistoryMapsCleaner(),
                 cleanupPeriod, cleanupPeriod);
+    }
+
+    private final DatabaseReader reader;
+
+    public StatisticsReceiverHandler() throws URISyntaxException, IOException
+    {
+        final String dbPath = "/GeoLite2-Country.mmdb";
+        final URL ipDbResource = StatisticsReceiverHandler.class.getResource(dbPath);
+
+        if (ipDbResource == null)
+        {
+            throw new IOException(String.format("Resource '%s' not found.", dbPath));
+        }
+
+        reader = new DatabaseReader.Builder(new File(ipDbResource.toURI())).build();
     }
 
     protected void doAction(final HttpServletRequest request, final HttpServletResponse response)
@@ -87,7 +110,6 @@ public class StatisticsReceiverHandler extends Service
             final String submissionTimestampString = statisticsMap.get(StatisticsKeys.SUBMISSION_TIMESTAMP);
             final Instant submissionInstant = Instant.parse(submissionTimestampString);
             final Integer usersCount = Integer.valueOf(statisticsMap.get(StatisticsKeys.USERS_COUNT));
-            final String countryCode = statisticsMap.get(StatisticsKeys.COUNTRY_CODE);
             final String openbisVersion = statisticsMap.get(StatisticsKeys.OPENBIS_VERSION);
 
             // TODO: do we need only NAT IP address or actual LAN address of the client?
@@ -102,12 +124,13 @@ public class StatisticsReceiverHandler extends Service
 //            }
 
             final String serverIp = request.getRemoteAddr();
+            final String serverCountryCode = findCountryCodeByIp(serverIp);
 
             LOGGER.traceAccess(String.format("Request headers: %s", getHeadersFromRequest(request)));
             LOGGER.traceAccess(String.format("Request data: %s", statisticsMap.toString()));
 
             final String csvLine = convertToCSV(serverId, receivedInstant.toString(),
-                    String.valueOf(usersCount), countryCode, openbisVersion);
+                    String.valueOf(usersCount), serverCountryCode, openbisVersion);
 
             LOGGER.traceAccess(String.format("Writing to CSV: '%s'", csvLine));
 
@@ -127,6 +150,21 @@ public class StatisticsReceiverHandler extends Service
         {
             LOGGER.catching(ex);
             failure(response);
+        }
+    }
+
+    private String findCountryCodeByIp(final String ip) throws IOException
+    {
+        try
+        {
+            return reader.country(InetAddress.getByName(ip)).getCountry().getIsoCode();
+        } catch (final GeoIp2Exception e)
+        {
+            return UNKNOWN_COUNTRY_CODE;
+        } catch (final UnknownHostException e)
+        {
+            LOGGER.catching(e);
+            return UNKNOWN_COUNTRY_CODE;
         }
     }
 

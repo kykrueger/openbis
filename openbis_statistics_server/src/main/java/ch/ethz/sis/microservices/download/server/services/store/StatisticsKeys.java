@@ -25,8 +25,6 @@ public enum StatisticsKeys
 
     USERS_COUNT,
 
-    COUNTRY_CODE,
-
     OPENBIS_VERSION
 
 }
