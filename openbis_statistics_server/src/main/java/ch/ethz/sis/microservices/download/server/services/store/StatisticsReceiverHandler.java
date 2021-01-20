@@ -21,6 +21,7 @@ import ch.ethz.sis.microservices.download.server.logging.LogManager;
 import ch.ethz.sis.microservices.download.server.logging.Logger;
 import ch.ethz.sis.microservices.download.server.services.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.maxmind.db.CHMCache;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 
@@ -29,8 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.InetAddress;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -78,17 +77,17 @@ public class StatisticsReceiverHandler extends Service
 
     private final DatabaseReader reader;
 
-    public StatisticsReceiverHandler() throws URISyntaxException, IOException
+    public StatisticsReceiverHandler() throws IOException
     {
         final String dbPath = "/GeoLite2-Country.mmdb";
-        final URL ipDbResource = StatisticsReceiverHandler.class.getResource(dbPath);
+        final InputStream ipDbInputStream = StatisticsReceiverHandler.class.getResourceAsStream(dbPath);
 
-        if (ipDbResource == null)
+        if (ipDbInputStream == null)
         {
             throw new IOException(String.format("Resource '%s' not found.", dbPath));
         }
 
-        reader = new DatabaseReader.Builder(new File(ipDbResource.toURI())).build();
+        reader = new DatabaseReader.Builder(ipDbInputStream).withCache(new CHMCache()).build();
     }
 
     protected void doAction(final HttpServletRequest request, final HttpServletResponse response)
