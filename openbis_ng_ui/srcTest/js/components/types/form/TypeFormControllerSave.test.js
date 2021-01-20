@@ -237,11 +237,7 @@ async function doTestDeleteProperty(type, propertyType) {
   await common.controller.handleSave()
 
   expectExecuteOperations([
-    deletePropertyAssignmentOperation(
-      type.getCode(),
-      propertyType.getCode(),
-      false
-    ),
+    deletePropertyAssignmentOperation(type.getCode(), propertyType.getCode()),
     setPropertyAssignmentOperation(type.getCode())
   ])
 }
@@ -267,11 +263,7 @@ async function doTestDeletePropertyLastAssignment(type, propertyType) {
   await common.controller.handleSave()
 
   expectExecuteOperations([
-    deletePropertyAssignmentOperation(
-      type.getCode(),
-      propertyType.getCode(),
-      false
-    ),
+    deletePropertyAssignmentOperation(type.getCode(), propertyType.getCode()),
     deletePropertyTypeOperation(propertyType.getCode()),
     setPropertyAssignmentOperation(type.getCode())
   ])
@@ -331,7 +323,7 @@ function setPropertyAssignmentOperation(
   return new openbis.UpdateSampleTypesOperation([update])
 }
 
-function deletePropertyAssignmentOperation(typeCode, propertyCode, force) {
+function deletePropertyAssignmentOperation(typeCode, propertyCode) {
   const assignmentId = new openbis.PropertyAssignmentPermId(
     new openbis.EntityTypePermId(typeCode, openbis.EntityKind.SAMPLE),
     new openbis.PropertyTypePermId(propertyCode)
@@ -342,7 +334,7 @@ function deletePropertyAssignmentOperation(typeCode, propertyCode, force) {
     new openbis.EntityTypePermId(typeCode, openbis.EntityKind.SAMPLE)
   )
   update.getPropertyAssignments().remove([assignmentId])
-  update.getPropertyAssignments().setForceRemovingAssignments(force)
+  update.getPropertyAssignments().setForceRemovingAssignments(true)
 
   return new openbis.UpdateSampleTypesOperation([update])
 }
