@@ -1,8 +1,6 @@
 package ch.ethz.sis.microservices.download.server.startup;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -11,7 +9,19 @@ import java.util.Map;
 
 public class HttpClient
 {
-    public static byte[] doGet(String urlAsString, Map<String, String> parameters) throws Exception
+    public static byte[] doGet(final String urlAsString, final Map<String, String> parameters) throws Exception
+    {
+        return doAction(urlAsString, parameters, "GET", null);
+    }
+
+    public static byte[] doPost(final String urlAsString, final Map<String, String> parameters, final byte[] body)
+            throws Exception
+    {
+        return doAction(urlAsString, parameters, "POST", body);
+    }
+
+    public static byte[] doAction(final String urlAsString, final Map<String, String> parameters, final String method,
+            final byte[] body) throws Exception
     {
         StringBuilder parametersAsString = new StringBuilder();
         boolean first = true;
@@ -35,20 +45,22 @@ public class HttpClient
         con.setUseCaches(false);
 
         HttpURLConnection http = (HttpURLConnection) con;
-        http.setRequestMethod("GET");
+        http.setRequestMethod(method);
         http.setDoOutput(true);
 
-        // OutputStream os = con.getOutputStream();
-        // BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-        // writer.write(parametersAsString.toString());
-        // writer.flush();
-        // writer.close();
+        if (body != null)
+        {
+            try (final BufferedOutputStream bos = new BufferedOutputStream(con.getOutputStream()))
+            {
+                bos.write(body);
+            }
+        }
 
         http.connect();
 
         int responseCode = http.getResponseCode();
 
-        byte[] response = null;
+        byte[] response;
         if (responseCode == HttpURLConnection.HTTP_OK)
         {
             response = getBytesFromInputStream(http.getInputStream());

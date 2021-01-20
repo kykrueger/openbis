@@ -1,11 +1,11 @@
 package ch.ethz.sis.microservices.download.server.json.jackson;
 
-import java.io.FileInputStream;
-
+import ch.ethz.sis.microservices.download.server.json.JSONObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import ch.ethz.sis.microservices.download.server.json.JSONObjectMapper;
+import java.io.InputStream;
 
 public class JacksonObjectMapper implements JSONObjectMapper
 {
@@ -39,13 +39,19 @@ public class JacksonObjectMapper implements JSONObjectMapper
     }
 
     @Override
-    public <T> T readValue(FileInputStream src, Class<T> valueType) throws Exception
+    public <T> T readValue(final InputStream src, final Class<T> valueType) throws Exception
     {
         return objectMapper.readValue(src, valueType);
     }
 
     @Override
-    public byte[] writeValue(Object value) throws Exception
+    public <T> T readValue(final InputStream src, final TypeReference<T> typeRef) throws Exception
+    {
+        return objectMapper.readValue(src, typeRef);
+    }
+
+    @Override
+    public byte[] writeValue(final Object value) throws Exception
     {
         return objectMapper.writeValueAsBytes(value);
     }
