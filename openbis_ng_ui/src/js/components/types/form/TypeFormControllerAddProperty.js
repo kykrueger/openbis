@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
@@ -10,7 +9,12 @@ export default class TypeFormControllerAddProperty {
   }
 
   execute() {
-    let { sections, properties, selection } = this.context.getState()
+    let {
+      sections,
+      properties,
+      propertiesCounter,
+      selection
+    } = this.context.getState()
 
     let sectionIndex = null
     let sectionPropertyIndex = null
@@ -37,7 +41,7 @@ export default class TypeFormControllerAddProperty {
 
     let newProperties = Array.from(properties)
     let newProperty = {
-      id: _.uniqueId('property-'),
+      id: 'property-' + propertiesCounter++,
       scope: FormUtil.createField({
         value: TypeFormPropertyScope.LOCAL
       }),
@@ -102,6 +106,7 @@ export default class TypeFormControllerAddProperty {
       ...state,
       sections: newSections,
       properties: newProperties,
+      propertiesCounter,
       selection: newSelection
     }))
 

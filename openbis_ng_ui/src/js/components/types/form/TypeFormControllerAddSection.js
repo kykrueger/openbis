@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
@@ -9,11 +8,11 @@ export default class TypeFormControllerAddSection {
   }
 
   execute() {
-    let { sections, selection } = this.context.getState()
+    let { sections, sectionsCounter, selection } = this.context.getState()
 
     let newSections = Array.from(sections)
     let newSection = {
-      id: _.uniqueId('section-'),
+      id: 'section-' + sectionsCounter++,
       name: FormUtil.createField(),
       properties: []
     }
@@ -45,6 +44,7 @@ export default class TypeFormControllerAddSection {
     this.context.setState(state => ({
       ...state,
       sections: newSections,
+      sectionsCounter,
       selection: newSelection
     }))
 
