@@ -65,7 +65,8 @@ public final class DatabaseCreationUtil
      * Creates all files in <code>sourceTest/sql/postgresql</code> necessary to set up a database of the current version by dumping a database
      * migrated from the specified version.
      */
-    private final static void createFilesFromADumpOfAMigratedDatabase(final String databaseVersion)
+    private static void createFilesFromADumpOfAMigratedDatabase(final String databaseVersion,
+            final String fullTextSearchDocumentVersion)
             throws Exception
     {
         final String databaseKind = "migration_dump";
@@ -74,11 +75,11 @@ public final class DatabaseCreationUtil
         context.setCreateFromScratch(true);
         final ISqlScriptProvider scriptProvider =
                 DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(context,
-                        databaseVersion, null);
+                        databaseVersion, fullTextSearchDocumentVersion);
         context.setCreateFromScratch(false);
         context.setScriptFolder("source/sql");
         DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(context,
-                DatabaseVersionHolder.getDatabaseVersion(), null);
+                DatabaseVersionHolder.getDatabaseVersion(), fullTextSearchDocumentVersion);
         createDumpForJava(databaseKind,
                 scriptProvider.getDumpFolder(DatabaseVersionHolder.getDatabaseVersion()));
         scriptProvider.markAsDumpRestorable(DatabaseVersionHolder.getDatabaseVersion());
@@ -122,7 +123,7 @@ public final class DatabaseCreationUtil
         String sourceDbVersion;
         if (args.length == 0)
         {
-            sourceDbVersion = getPreviousDatabaseVersion();
+            sourceDbVersion = getPreviousVersion(DatabaseVersionHolder.getDatabaseVersion());
             System.out.println("Migrating from the previous database version " + sourceDbVersion);
         } else if (args.length == 1)
         {
@@ -134,13 +135,13 @@ public final class DatabaseCreationUtil
             System.exit(1);
             return; // never executed
         }
-        createFilesFromADumpOfAMigratedDatabase(sourceDbVersion);
+        createFilesFromADumpOfAMigratedDatabase(sourceDbVersion,
+                getPreviousVersion(DatabaseVersionHolder.getDatabaseFullTextSearchDocumentVersion()));
     }
 
-    private static String getPreviousDatabaseVersion()
+    private static String getPreviousVersion(final String currentVersion)
     {
-        String curDbVer = DatabaseVersionHolder.getDatabaseVersion();
-        Integer ver = new Integer(curDbVer);
+        Integer ver = new Integer(currentVersion);
         String prevVer = "" + (ver - 1);
         while (prevVer.length() != 3)
         {
