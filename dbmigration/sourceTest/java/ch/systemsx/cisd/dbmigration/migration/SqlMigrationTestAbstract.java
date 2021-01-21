@@ -92,18 +92,18 @@ public abstract class SqlMigrationTestAbstract
             // create first version of the migration database
             migrationContext = createMigrationDatabaseContext(true);
             DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(migrationContext,
-                    firstVersion.getVersionString(), null);
+                    firstVersion.getVersionString(), "000");
 
             // migrate the migration database to the newest version
             migrationContext.setCreateFromScratch(false);
             DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(migrationContext,
-                    newestVersion.getVersionString(), null);
+                    newestVersion.getVersionString(), "000");
             dumpDatabaseSchema(migrationContext, getMigratedDatabaseSchemaFile());
 
             // create the scratch database with the newest version
             scratchContext = createScratchDatabaseContext();
             DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(scratchContext,
-                    newestVersion.getVersionString(), null);
+                    newestVersion.getVersionString(), "000");
             dumpDatabaseSchema(scratchContext, getScratchDatabaseSchemaFile());
 
             // check migration and scratch databases are equal

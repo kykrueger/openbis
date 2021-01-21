@@ -88,12 +88,12 @@ public final class SqlDataMigrationTest
                     configurationContext.initDataSourceFactory(new SqlMigrationDataSourceFactory());
                     configurationContext.setScriptFolder(getTestDataFolder(configurationContext));
                     DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(
-                            configurationContext, databaseVersion, null);
+                            configurationContext, databaseVersion, "000");
                     configurationContext.closeConnections();
                     configurationContext.setCreateFromScratch(false);
                     configurationContext.setScriptFolder(ORIGINAL_SQL_SOURCE);
                     DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(
-                            configurationContext, DatabaseVersionHolder.getDatabaseVersion(), null);
+                            configurationContext, DatabaseVersionHolder.getDatabaseVersion(), "000");
                     final ISqlScriptExecutor executor =
                             createDAOFactory(configurationContext).getSqlScriptExecutor();
                     new SqlUnitTestRunner(executor, new PrintWriter(System.out, true)).run(folder);
