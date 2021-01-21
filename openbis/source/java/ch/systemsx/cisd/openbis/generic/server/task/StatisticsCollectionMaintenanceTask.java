@@ -36,6 +36,7 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -205,7 +206,7 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
         try
         {
             return new String(Files.readAllBytes(file.toPath()));
-        } catch (final FileNotFoundException e)
+        } catch (final NoSuchFileException e)
         {
             operationLog.debug(String.format("File '%s' not found", file.getAbsolutePath()));
             return null;
