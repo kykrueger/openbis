@@ -115,12 +115,12 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
                 final int statusCode = contentResponse.getStatus();
                 if (statusCode >= 400)
                 {
-                    notificationLog.error(String.format("Error sending statistics collection request. " +
+                    notificationLog.warn(String.format("Error sending statistics collection request. " +
                                     "Error code received: %d (%s)", statusCode, contentResponse.getReason()));
                 }
             } catch (final InterruptedException | TimeoutException | ExecutionException e)
             {
-                notificationLog.error("Error sending statistics collection request.", e);
+                notificationLog.warn("Error sending statistics collection request.", e);
             }
 
             notificationLog.info("Statistics collection execution finished.");
