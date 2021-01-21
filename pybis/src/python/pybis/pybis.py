@@ -662,20 +662,18 @@ class Openbis:
             allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks (bool): False
         """
 
+        self.as_v3 = '/openbis/openbis/rmi-application-server-v3.json'
+        self.as_v1 = '/openbis/openbis/rmi-general-information-v1.json'
+        self.reg_v1 = '/openbis/openbis/rmi-query-v1.json'
+        self.verify_certificates = verify_certificates
+
         if url is None:
-            try:
-                url = os.environ["OPENBIS_URL"]
-                token = os.environ["OPENBIS_TOKEN"] if "OPENBIS_TOKEN" in os.environ else None
-            except KeyError:
+            url = os.environ.get("OPENBIS_URL") or os.environ.get('OPENBIS_HOST')
+            if url is None:
                 raise ValueError("please provide a URL you want to connect to.")
 
-        else:
-            # url has been provided. If the environment variable OPENBIS_URL points to the same URL,
-            # use the OPENBIS_TOKEN as well.
-            if 'OPENBIS_URL' in os.environ:
-                if url == os.environ["OPENBIS_URL"]:
-                    token = os.environ["OPENBIS_TOKEN"] if "OPENBIS_TOKEN" in os.environ else None
-
+        if not url.startswith('http'):
+            url = 'https://'+url
 
         url_obj = urlparse(url)
         if url_obj.netloc is None or url_obj.netloc == '':
@@ -683,33 +681,25 @@ class Openbis:
         if url_obj.hostname is None:
             raise ValueError("hostname is missing")
         if url_obj.scheme == 'http' and not allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks:
-
             raise ValueError("always use https!")
             
-        
         self.url = url_obj.geturl()
         self.port = url_obj.port
         self.hostname = url_obj.hostname
+        self.token = token or os.environ.get("OPENBIS_TOKEN") or self._get_cached_token()
+
         self.download_prefix = os.path.join('data', self.hostname)
-        self.as_v3 = '/openbis/openbis/rmi-application-server-v3.json'
-        self.as_v1 = '/openbis/openbis/rmi-general-information-v1.json'
-        self.reg_v1 = '/openbis/openbis/rmi-query-v1.json'
-        self.verify_certificates = verify_certificates
+
         self.use_cache = use_cache
         self.cache = {}
-        self.token = token
 
         self.server_information = None
         self.token_path = None
 
-        # use an existing token, if available
-        if self.token is None:
-            self.token = self._get_cached_token()
-        elif self.is_token_valid(token):
+        if self.is_token_valid(self.token):
             pass
         else:
             print("Session is no longer valid. Please log in again.")
-
 
     def _get_username(self):
         if self.token:
@@ -840,7 +830,7 @@ class Openbis:
         return self.get_projects()
 
     def _get_cached_token(self):
-        """Read the token from the cache, and set the token ivar to it, if there, otherwise None.
+        """Read the token from the .pybis 
         If the token is not valid anymore, delete it. 
         """
         token_path = self.gen_token_path()
