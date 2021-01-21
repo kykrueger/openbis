@@ -27,7 +27,10 @@ async function testLoadWithSearchText(resultsFound) {
     testUser2,
     anotherUser,
     testUserGroup,
-    anotherUserGroup
+    anotherUserGroup,
+    instanceAdminRoleAssignment,
+    instanceObserverRoleAssignment,
+    testSpaceAdminRoleAssignment
   } = UserSearchTestData
 
   openbis.mockSearchPersons(
@@ -92,6 +95,86 @@ async function testLoadWithSearchText(resultsFound) {
           }
         ]
       },
+      usersRoles: {
+        columns: [
+          {
+            label: 'User',
+            name: 'user'
+          },
+          {
+            label: 'Inherited From',
+            name: 'inheritedFrom'
+          },
+          {
+            label: 'Level',
+            name: 'level'
+          },
+          {
+            label: 'Space',
+            name: 'space'
+          },
+          {
+            label: 'Project',
+            name: 'project'
+          },
+          {
+            label: 'Role',
+            name: 'role'
+          }
+        ],
+        rows: [
+          {
+            values: {
+              inheritedFrom: testUserGroup.code,
+              level: instanceObserverRoleAssignment.roleLevel,
+              project: '(All)',
+              role: instanceObserverRoleAssignment.role,
+              space: '(All)',
+              user: testUser.userId
+            }
+          },
+          {
+            values: {
+              inheritedFrom: null,
+              level: instanceAdminRoleAssignment.roleLevel,
+              project: '(All)',
+              role: instanceAdminRoleAssignment.role,
+              space: '(All)',
+              user: testUser.userId
+            }
+          },
+          {
+            values: {
+              inheritedFrom: testUserGroup.code,
+              level: instanceObserverRoleAssignment.roleLevel,
+              project: '(All)',
+              role: instanceObserverRoleAssignment.role,
+              space: '(All)',
+              user: testUser2.userId
+            }
+          },
+          {
+            values: {
+              inheritedFrom: null,
+              level: instanceObserverRoleAssignment.roleLevel,
+              project: '(All)',
+              role: instanceObserverRoleAssignment.role,
+              space: '(All)',
+              user: testUser2.userId
+            }
+          },
+          {
+            values: {
+              inheritedFrom: null,
+              level: testSpaceAdminRoleAssignment.roleLevel,
+              project: '(All)',
+              role: testSpaceAdminRoleAssignment.role,
+              space: testSpaceAdminRoleAssignment.space.code,
+              user: testUser2.userId
+            }
+          }
+        ]
+      },
       userGroups: {
         columns: [
           {
@@ -111,6 +194,41 @@ async function testLoadWithSearchText(resultsFound) {
             }
           }
         ]
+      },
+      userGroupsRoles: {
+        columns: [
+          {
+            label: 'Group',
+            name: 'group'
+          },
+          {
+            label: 'Level',
+            name: 'level'
+          },
+          {
+            label: 'Space',
+            name: 'space'
+          },
+          {
+            label: 'Project',
+            name: 'project'
+          },
+          {
+            label: 'Role',
+            name: 'role'
+          }
+        ],
+        rows: [
+          {
+            values: {
+              group: testUserGroup.code,
+              level: instanceObserverRoleAssignment.roleLevel,
+              project: '(All)',
+              role: instanceObserverRoleAssignment.role,
+              space: '(All)'
+            }
+          }
+        ]
       }
     })
   } else {
@@ -122,18 +240,32 @@ async function testLoadWithSearchText(resultsFound) {
         }
       ],
       users: null,
-      userGroups: null
+      usersRoles: null,
+      userGroups: null,
+      userGroupsRoles: null
     })
   }
 }
 
 async function testLoadWithObjectType(resultsFound) {
-  const { testUser, testUser2, anotherUser } = UserSearchTestData
+  const {
+    testUser,
+    testUser2,
+    anotherUser,
+    testUserGroup,
+    anotherUserGroup,
+    instanceAdminRoleAssignment,
+    instanceObserverRoleAssignment,
+    testSpaceAdminRoleAssignment,
+    testProjectObserverRoleAssignment
+  } = UserSearchTestData
 
   openbis.mockSearchPersons(
     resultsFound ? [testUser, testUser2, anotherUser] : []
   )
-  openbis.mockSearchGroups([])
+  openbis.mockSearchGroups(
+    resultsFound ? [testUserGroup, anotherUserGroup] : []
+  )
 
   const form = await common.mount({
     objectType: objectTypes.USER
@@ -203,6 +335,99 @@ async function testLoadWithObjectType(resultsFound) {
           ]
         : []
     },
-    userGroups: null
+    usersRoles: {
+      columns: [
+        {
+          label: 'User',
+          name: 'user'
+        },
+        {
+          label: 'Inherited From',
+          name: 'inheritedFrom'
+        },
+        {
+          label: 'Level',
+          name: 'level'
+        },
+        {
+          label: 'Space',
+          name: 'space'
+        },
+        {
+          label: 'Project',
+          name: 'project'
+        },
+        {
+          label: 'Role',
+          name: 'role'
+        }
+      ],
+      rows: resultsFound
+        ? [
+            {
+              values: {
+                inheritedFrom: null,
+                level: testProjectObserverRoleAssignment.roleLevel,
+                project: testProjectObserverRoleAssignment.project.code,
+                role: testProjectObserverRoleAssignment.role,
+                space: testProjectObserverRoleAssignment.project.space.code,
+                user: anotherUser.userId
+              }
+            },
+            {
+              values: {
+                inheritedFrom: testUserGroup.code,
+                level: instanceObserverRoleAssignment.roleLevel,
+                project: '(All)',
+                role: instanceObserverRoleAssignment.role,
+                space: '(All)',
+                user: testUser.userId
+              }
+            },
+            {
+              values: {
+                inheritedFrom: null,
+                level: instanceAdminRoleAssignment.roleLevel,
+                project: '(All)',
+                role: instanceAdminRoleAssignment.role,
+                space: '(All)',
+                user: testUser.userId
+              }
+            },
+            {
+              values: {
+                inheritedFrom: testUserGroup.code,
+                level: instanceObserverRoleAssignment.roleLevel,
+                project: '(All)',
+                role: instanceObserverRoleAssignment.role,
+                space: '(All)',
+                user: testUser2.userId
+              }
+            },
+            {
+              values: {
+                inheritedFrom: null,
+                level: instanceObserverRoleAssignment.roleLevel,
+                project: '(All)',
+                role: instanceObserverRoleAssignment.role,
+                space: '(All)',
+                user: testUser2.userId
+              }
+            },
+            {
+              values: {
+                inheritedFrom: null,
+                level: testSpaceAdminRoleAssignment.roleLevel,
+                project: '(All)',
+                role: testSpaceAdminRoleAssignment.role,
+                space: testSpaceAdminRoleAssignment.space.code,
+                user: testUser2.userId
+              }
+            }
+          ]
+        : []
+    },
+    userGroups: null,
+    userGroupsRoles: null
   })
 }
