@@ -409,4 +409,10 @@ public final class DBMigrationEngine
         return result;
     }
 
+    public static void deleteFullTextSearchDocumentVersionFile()
+    {
+        final File file = new File(FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH);
+        file.delete();
+    }
+
 }
