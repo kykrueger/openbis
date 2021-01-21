@@ -73,10 +73,6 @@ sourceSets {
 	}
 }
 
-task cleanEtcSuite() {
-	delete('etc/full-text-search-document-version')
-}
-
 task cleanDbSuite(type: Test) {
 	useTestNG()
 	systemProperty "ant.project.name", project.name
@@ -144,6 +140,5 @@ cleanDbSuiteProjectSamplesEnabled.dependsOn(testProjectSamplesEnabled)
 test.dependsOn(copyTestData)
 test.dependsOn(cleanDbSuite)
 //test.dependsOn(testProjectSamplesEnabled)
-test.dependsOn(cleanEtcSuite)
 
 apply from: 'gwtdev.gradle'
