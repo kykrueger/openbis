@@ -1137,8 +1137,7 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
-    public void testComplexScoreSortingForAll()
-    {
+    public void testComplexScoreSortingForAll() {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         /* Setup */
