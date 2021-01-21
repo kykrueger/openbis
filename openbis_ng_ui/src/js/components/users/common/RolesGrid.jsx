@@ -94,11 +94,12 @@ class RolesGrid extends React.PureComponent {
         compareValue: params => {
           return (
             100000 * this.compareUserValue(params) +
-            10000 * this.compareInheritedFromValue(params) +
-            1000 * this.compareLevelValue(params) +
-            100 * this.compareSpaceValue(params) +
-            10 * this.compareProjectValue(params) +
-            this.compareRoleValue(params)
+            this.ignoreSortDirectionFactor(params) *
+              (10000 * this.compareInheritedFromValue(params) +
+                1000 * this.compareLevelValue(params) +
+                100 * this.compareSpaceValue(params) +
+                10 * this.compareProjectValue(params) +
+                this.compareRoleValue(params))
           )
         }
       },
@@ -111,11 +112,12 @@ class RolesGrid extends React.PureComponent {
         compareValue: params => {
           return (
             100000 * this.compareGroupValue(params) +
-            10000 * this.compareInheritedFromValue(params) +
-            1000 * this.compareLevelValue(params) +
-            100 * this.compareSpaceValue(params) +
-            10 * this.compareProjectValue(params) +
-            this.compareRoleValue(params)
+            this.ignoreSortDirectionFactor(params) *
+              (10000 * this.compareInheritedFromValue(params) +
+                1000 * this.compareLevelValue(params) +
+                100 * this.compareSpaceValue(params) +
+                10 * this.compareProjectValue(params) +
+                this.compareRoleValue(params))
           )
         }
       },
@@ -128,10 +130,11 @@ class RolesGrid extends React.PureComponent {
         compareValue: params => {
           return (
             10000 * this.compareInheritedFromValue(params) +
-            1000 * this.compareLevelValue(params) +
-            100 * this.compareSpaceValue(params) +
-            10 * this.compareProjectValue(params) +
-            this.compareRoleValue(params)
+            this.ignoreSortDirectionFactor(params) *
+              (1000 * this.compareLevelValue(params) +
+                100 * this.compareSpaceValue(params) +
+                10 * this.compareProjectValue(params) +
+                this.compareRoleValue(params))
           )
         }
       },
@@ -144,10 +147,11 @@ class RolesGrid extends React.PureComponent {
         compareValue: params => {
           return (
             10000 * this.compareLevelValue(params) +
-            1000 * this.compareInheritedFromValue(params) +
-            100 * this.compareSpaceValue(params) +
-            10 * this.compareProjectValue(params) +
-            this.compareRoleValue(params)
+            this.ignoreSortDirectionFactor(params) *
+              (1000 * this.compareInheritedFromValue(params) +
+                100 * this.compareSpaceValue(params) +
+                10 * this.compareProjectValue(params) +
+                this.compareRoleValue(params))
           )
         }
       },
@@ -159,10 +163,11 @@ class RolesGrid extends React.PureComponent {
         compareValue: params => {
           return (
             10000 * this.compareSpaceValue(params) +
-            1000 * this.compareLevelValue(params) +
-            100 * this.compareInheritedFromValue(params) +
-            10 * this.compareProjectValue(params) +
-            this.compareRoleValue(params)
+            this.ignoreSortDirectionFactor(params) *
+              (1000 * this.compareLevelValue(params) +
+                100 * this.compareInheritedFromValue(params) +
+                10 * this.compareProjectValue(params) +
+                this.compareRoleValue(params))
           )
         }
       },
@@ -174,10 +179,11 @@ class RolesGrid extends React.PureComponent {
         compareValue: params => {
           return (
             10000 * this.compareProjectValue(params) +
-            1000 * this.compareLevelValue(params) +
-            100 * this.compareInheritedFromValue(params) +
-            10 * this.compareSpaceValue(params) +
-            this.compareRoleValue(params)
+            this.ignoreSortDirectionFactor(params) *
+              (1000 * this.compareLevelValue(params) +
+                100 * this.compareInheritedFromValue(params) +
+                10 * this.compareSpaceValue(params) +
+                this.compareRoleValue(params))
           )
         }
       },
@@ -189,10 +195,11 @@ class RolesGrid extends React.PureComponent {
         compareValue: params => {
           return (
             10000 * this.compareRoleValue(params) +
-            1000 * this.compareLevelValue(params) +
-            100 * this.compareInheritedFromValue(params) +
-            10 * this.compareSpaceValue(params) +
-            this.compareProjectValue(params)
+            this.ignoreSortDirectionFactor(params) *
+              (1000 * this.compareLevelValue(params) +
+                100 * this.compareInheritedFromValue(params) +
+                10 * this.compareSpaceValue(params) +
+                this.compareProjectValue(params))
           )
         }
       }
@@ -337,6 +344,10 @@ class RolesGrid extends React.PureComponent {
     const role1 = this.getRoleValue({ row: row1 })
     const role2 = this.getRoleValue({ row: row2 })
     return defaultCompare(ROLE_SORTING[role1], ROLE_SORTING[role2])
+  }
+
+  ignoreSortDirectionFactor(params) {
+    return params.sortDirection === 'asc' ? 1 : -1
   }
 }
 

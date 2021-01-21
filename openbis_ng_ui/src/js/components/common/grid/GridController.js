@@ -112,6 +112,7 @@ export default class GridController {
         const defaultCompare = compare
         const value1 = config.getValue({ row: row1, column })
         const value2 = config.getValue({ row: row2, column })
+        const { sortDirection } = this.context.getState()
 
         if (config.compareValue) {
           return config.compareValue({
@@ -120,6 +121,7 @@ export default class GridController {
             row1,
             row2,
             column,
+            sortDirection,
             defaultCompare
           })
         } else {
