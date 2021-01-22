@@ -75,29 +75,6 @@ def isValidStoragePositionToInsertUpdate(context, parameters):
     storageBoxSize = sampleProperties.get("$STORAGE_POSITION.STORAGE_BOX_SIZE");
     storageBoxPosition = sampleProperties.get("$STORAGE_POSITION.STORAGE_BOX_POSITION");
 
-    # 0. Storage position format validation (typical mistakes to check before doing any validation requiring database queries)
-    if "," in storageBoxPosition:
-        raise UserFailureException("Box positions are not separated by ',' but just a white space.");
-
-    if "-" in storageBoxPosition:
-        raise UserFailureException("Box positions can't contain ranges '-' .");
-
-    storageBoxPositionRowsAndCols = storageBoxSize.split("X");
-    storageBoxPositionNumRows = int(storageBoxPositionRowsAndCols[0]);
-    storageBoxPositionNumCols = int(storageBoxPositionRowsAndCols[1]);
-    for storageBoxSubPosition in storageBoxPosition.split(" "):
-        storageBoxPositionRowNumber = getNumberFromLetter(storageBoxSubPosition[0]);
-        if storageBoxPositionRowNumber is None:
-            raise UserFailureException("Incorrect format for box position found ''" + storageBoxSubPosition + "'. The first character should be a letter.");
-        if storageBoxPositionRowNumber > storageBoxPositionNumRows:
-            raise UserFailureException("Row don't fit on the box for position: " + storageBoxSubPosition);
-        if not storageBoxSubPosition[1:].isdigit():
-            raise UserFailureException("Incorrect format for box position found ''" + storageBoxSubPosition + "'. After the first character only digits are allowed.");
-        storageBoxPositionColNumber = int(storageBoxSubPosition[1:]);
-        if storageBoxPositionColNumber > storageBoxPositionNumCols:
-            raise UserFailureException("Column don't fit on the box for position: " + storageBoxSubPosition);
-    #
-
     storageUser = sampleProperties.get("$STORAGE_POSITION.STORAGE_USER");
 
     # 1. Obtain Storage to retrieve Storage Validation Level
@@ -163,6 +140,29 @@ def isValidStoragePositionToInsertUpdate(context, parameters):
 
     # 5. IF $STORAGE.STORAGE_VALIDATION_LEVEL >= BOX_POSITION
     if storageValidationLevel == "BOX_POSITION":
+        # Storage position format validation (typical mistakes to check before doing any validation requiring database queries)
+        if "," in storageBoxPosition:
+            raise UserFailureException("Box positions are not separated by ',' but just a white space.");
+
+        if "-" in storageBoxPosition:
+            raise UserFailureException("Box positions can't contain ranges '-' .");
+
+        storageBoxPositionRowsAndCols = storageBoxSize.split("X");
+        storageBoxPositionNumRows = int(storageBoxPositionRowsAndCols[0]);
+        storageBoxPositionNumCols = int(storageBoxPositionRowsAndCols[1]);
+        for storageBoxSubPosition in storageBoxPosition.split(" "):
+            storageBoxPositionRowNumber = getNumberFromLetter(storageBoxSubPosition[0]);
+            if storageBoxPositionRowNumber is None:
+                raise UserFailureException("Incorrect format for box position found ''" + storageBoxSubPosition + "'. The first character should be a letter.");
+            if storageBoxPositionRowNumber > storageBoxPositionNumRows:
+                raise UserFailureException("Row don't fit on the box for position: " + storageBoxSubPosition);
+            if not storageBoxSubPosition[1:].isdigit():
+                raise UserFailureException("Incorrect format for box position found ''" + storageBoxSubPosition + "'. After the first character only digits are allowed.");
+            storageBoxPositionColNumber = int(storageBoxSubPosition[1:]);
+            if storageBoxPositionColNumber > storageBoxPositionNumCols:
+                raise UserFailureException("Column don't fit on the box for position: " + storageBoxSubPosition);
+        #
+
         for storageBoxSubPosition in storageBoxPosition.split(" "):
             searchCriteriaStorageBoxPosition = SampleSearchCriteria();
             searchCriteriaStorageBoxPosition.withType().withCode().thatEquals("STORAGE_POSITION");
