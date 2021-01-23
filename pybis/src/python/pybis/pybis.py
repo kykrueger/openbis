@@ -4202,12 +4202,15 @@ class Openbis:
             validationPlugin=validationPlugin,
         )
 
-    def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, props=None, folder=None, **kwargs):
+    def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, file=None, props=None, folder=None, **kwargs):
         """ Creates a new dataset of a given type.
         """
 
         if type is None:
             raise ValueError("Please provide a dataSet type")
+
+        if file:
+            files = [file]
 
         if isinstance(type, str):
             type_obj = self.get_dataset_type(type.upper())
