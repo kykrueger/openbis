@@ -59,7 +59,7 @@ class AttrHolder():
                 self.__dict__['_' + attr] = data.get(attr, None)
                 # remove the @id attribute
                 if isinstance(self.__dict__['_' + attr], dict):
-                    self.__dict__['_' + attr].pop('@id')
+                    self.__dict__['_' + attr].pop('@id', None)
 
             elif attr in ['vocabularyCode']:
                 self.__dict__['_'+attr] = data.get('permId', {}).get(attr, None)
@@ -457,7 +457,7 @@ class AttrHolder():
                     return
                     
                 # remove any existing @id keys to prevent jackson parser errors
-                if '@id' in id: id.pop('@id')
+                id.pop('@id', None)
                     
                 permids.append(id)
 
@@ -596,7 +596,7 @@ class AttrHolder():
         elif getattr(obj, '_permId'):
             ident = obj._permId
 
-        if '@id' in ident: ident.pop('@id')
+        ident.pop('@id', None)
         return ident
 
     def get_container(self, **kwargs):
@@ -633,9 +633,9 @@ class AttrHolder():
             ident = self._ident_for_whatever(component)
             for i, item in enumerate(self.__dict__['_containers']):
                 if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
-                    self.__dict__['_containers'].pop(i)
+                    self.__dict__['_containers'].pop(i, None)
                 elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
-                    self.__dict__['_containers'].pop(i)
+                    self.__dict__['_containers'].pop(i, None)
 
     def get_components(self, **kwargs):
         '''Samples and DataSets may contain other DataSets and Samples. This function returns the
@@ -677,9 +677,9 @@ class AttrHolder():
             ident = self._ident_for_whatever(component)
             for i, item in enumerate(self.__dict__['_components']):
                 if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
-                    self.__dict__['_components'].pop(i)
+                    self.__dict__['_components'].pop(i, None)
                 elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
-                    self.__dict__['_components'].pop(i)
+                    self.__dict__['_components'].pop(i, None)
 
     del_contained = del_components  # Alias
 
@@ -714,9 +714,9 @@ class AttrHolder():
             ident = self._ident_for_whatever(parent)
             for i, item in enumerate(self.__dict__['_parents']):
                 if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
-                    self.__dict__['_parents'].pop(i)
+                    self.__dict__['_parents'].pop(i, None)
                 elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
-                    self.__dict__['_parents'].pop(i)
+                    self.__dict__['_parents'].pop(i, None)
 
 
     def get_children(self, **kwargs):
@@ -752,9 +752,9 @@ class AttrHolder():
             ident = self._ident_for_whatever(child)
             for i, item in enumerate(self.__dict__['_children']):
                 if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
-                    self.__dict__['_children'].pop(i)
+                    self.__dict__['_children'].pop(i, None)
                 elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
-                    self.__dict__['_children'].pop(i)
+                    self.__dict__['_children'].pop(i, None)
 
     @property
     def tags(self):
@@ -805,7 +805,7 @@ class AttrHolder():
             for i, tag_dict in enumerate(self.__dict__['_tags']):
                 if tag in self.__dict__['_tags'][i]['code'] or \
                    tag in self.__dict__['_tags'][i]['permId']:
-                    self.__dict__['_tags'].pop(i)
+                    self.__dict__['_tags'].pop(i, None)
 
     def set_users(self, userIds):
         if userIds is None:
