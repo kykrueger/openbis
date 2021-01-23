@@ -66,7 +66,6 @@ class Sample(
 
     def __dir__(self):
         return [
-            'p', 'props', 
             'type',
             'get_parents()', 'get_children()', 'get_components()',
             'add_parents()', 'add_children()', 'add_components()', 
@@ -76,7 +75,9 @@ class Sample(
             'space', 'project', 'experiment', 'container', 'tags',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
-            'save()', 'delete()'
+            'save()', 'delete()',
+            'attrs',
+            'props',
         ] + super().__dir__()
 
 
@@ -133,8 +134,15 @@ class Sample(
         if name in ['container']:
             return getattr(self, "_"+name)(value)
 
-        # must be an attribute in the AttributeHolder class
-        setattr(self.__dict__['a'], name, value)
+        if name in ['p', 'props']:
+            if isinstance(value, dict):
+                for p in value:
+                    setattr(self.__dict__['p'], p, value[p])
+            else:
+                raise ValueError("please provide a dictionary for setting properties")
+        else:
+            # must be an attribute in the AttributeHolder class
+            setattr(self.__dict__['a'], name, value)
 
     def _repr_html_(self):
         return self.a._repr_html_()
