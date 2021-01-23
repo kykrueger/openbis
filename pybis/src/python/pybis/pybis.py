@@ -1769,12 +1769,12 @@ class Openbis:
         """Returns a DataFrame of all samples for a given space/project/experiment (or any combination)
         Filters:
         --------
-        space        -- a space code or a space object
-        project      -- a project code or a project object
-        experiment   -- an experiment code or an experiment object
-        collection   -- same as experiment
+        type         -- sampleType code or object
+        space        -- space code or object
+        project      -- project code or object
+        experiment   -- experiment code or object
+        collection   -- same as above
         tags         -- only return samples with the specified tags
-        type         -- a sampleType code
 
         Paging:
         -------
@@ -4110,6 +4110,13 @@ class Openbis:
 
     def new_sample(self, type, project=None, props=None, **kwargs):
         """ Creates a new sample of a given sample type.
+        type         -- sampleType code or object: mandatory
+        code         -- name/code for the sample, if not generated automatically
+        space        -- space code or object
+        project      -- project code or object
+        experiment   -- experiment code or object
+        collection   -- same as above
+        props        -- a dictionary containing the properties
         """
         if 'collection' in kwargs:
             kwargs['experiment'] = kwargs['collection']
