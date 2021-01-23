@@ -4211,6 +4211,19 @@ class Openbis:
 
     def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, file=None, props=None, folder=None, **kwargs):
         """ Creates a new dataset of a given type.
+
+        type         -- sampleType code or object: mandatory
+        sample       -- sample code or object
+        experiment   -- experiment code or object
+        collection   -- same as above
+        file         -- path to a single file or a directory
+        files        -- list of paths to files. Instead of a file, a directory (or many directories)
+                        can be provided, the structure is kept intact in openBIS
+        zipfile      -- path to a zipfile, which is unzipped in openBIS
+        kind         -- if set to CONTAINER, no files should be provided.
+                        Instead, the dataset acts as a container for other datasets.
+
+        props        -- a dictionary containing the properties
         """
 
         if type is None:
