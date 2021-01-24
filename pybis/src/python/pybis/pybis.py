@@ -2080,11 +2080,14 @@ class Openbis:
         self, code=None, type=None, withParents=None, withChildren=None,
         start_with=None, count=None, kind=None,
         status=None, sample=None, experiment=None, collection=None, project=None,
-        tags=None, attrs=None, props=None, **properties
+        tags=None, attrs=None, props=None, 
+        as_objects=False,
+        **properties
     ):
         """Returns a DataFrame of all dataSets for a given project/experiment/sample (or any combination)
-        Filters:
-        --------
+
+        Filters
+        -------
         project      -- a project code or a project object
         experiment   -- an experiment code or an experiment object
         sample       -- a sample code/permId or a sample/object
@@ -2092,13 +2095,17 @@ class Openbis:
         tags         -- only return dataSets with the specified tags
         type         -- a dataSetType code
 
-        Paging:
-        -------
+        Paging
+        ------
         start_with   -- default=None
         count        -- number of dataSets that should be fetched. default=None.
 
-        Include:
-        --------
+        Objects
+        -------
+        as_objects   -- set this to True to receive an array of dataSet objects
+
+        Include in result list
+        ----------------------
         withParents  -- the list of parent's permIds in a column 'parents'
         withChildren -- the list of children's permIds in a column 'children'
         attrs        -- list of all desired attributes. Examples:
@@ -2132,6 +2139,7 @@ class Openbis:
             sub_criteria.append(_subcriteria_for(sample, 'sample'))
         if experiment:
             sub_criteria.append(_subcriteria_for(experiment, 'experiment'))
+        if attrs is None: attrs = []
 
         if project:
             exp_crit = _subcriteria_for(experiment, 'experiment')
@@ -2154,25 +2162,29 @@ class Openbis:
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
+        if as_objects:
+            for option in ['tags', 'properties', 'dataStore', 'physicalData', 'linkedData',
+                        'experiment', 'sample', 'registrator', 'modifier']:
+                fetchopts[option] = fetch_option[option]
+
+        else:
+            # get fetch options for projects and spaces
+            # via experiment, if requested
+            for attr in attrs:
+                if any([entity in attr for entity in ['space','project']]):
+                    fetchopts['experiment'] = fetch_option['experiment']
+                    fetchopts['experiment']['project'] = fetch_option['project']
+
+            options = self._get_fetchopts_for_attrs(attrs)
+            for option in ['tags', 'properties', 'physicalData']+options:
+                fetchopts[option] = fetch_option[option]
+
         if kind:
             kind = kind.upper()
             if kind not in ['PHYSICAL_DATA', 'CONTAINER', 'LINK']:
                 raise ValueError("unknown dataSet kind: {}. It should be one of the following: PHYSICAL_DATA, CONTAINER or LINK".format(kind))
             fetchopts['kind'] = kind
             raise NotImplementedError('you cannot search for dataSet kinds yet')
-
-        if attrs is None: attrs = []
-        options = self._get_fetchopts_for_attrs(attrs)
-        for option in ['tags', 'properties', 'physicalData']+options:
-            fetchopts[option] = fetch_option[option]
-
-        # get fetch options for projects and spaces
-        # via experiment, if requested
-        for attr in attrs:
-            if any([entity in attr for entity in ['space','project']]):
-                fetchopts['experiment'] = fetch_option['experiment']
-                fetchopts['experiment']['project'] = fetch_option['project']
-
         
         request = {
             "method": "searchDataSets",
@@ -2183,14 +2195,26 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        return self._dataset_list_for_response(
-            response=resp['objects'],
-            attrs=attrs,
-            props=props,
-            start_with=start_with,
-            count=count,
-            totalCount=resp['totalCount'],
-        )
+        if as_objects:
+            parse_jackson(resp)
+            datasets = []
+            for obj in resp['objects']:
+                dataset = DataSet(
+                    openbis_obj = self,
+                    type = self.get_dataset_type(obj['type']['code']),
+                    data = obj
+                )
+                datasets.append(dataset)
+            return datasets
+        else:
+            return self._dataset_list_for_response(
+                response=resp['objects'],
+                attrs=attrs,
+                props=props,
+                start_with=start_with,
+                count=count,
+                totalCount=resp['totalCount'],
+            )
 
 
     def get_experiment(self, code, withAttachments=False, only_data=False):
