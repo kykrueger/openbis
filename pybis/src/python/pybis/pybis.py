@@ -1764,11 +1764,14 @@ class Openbis:
         self, identifier=None, code=None, permId=None,
         space=None, project=None, experiment=None, collection=None, type=None,
         start_with=None, count=None,
-        withParents=None, withChildren=None, tags=None, attrs=None, props=None, **properties
+        withParents=None, withChildren=None, tags=None, attrs=None, props=None,
+        as_objects=False,
+        **properties
     ):
         """Returns a DataFrame of all samples for a given space/project/experiment (or any combination)
-        Filters:
-        --------
+
+        Filters
+        -------
         type         -- sampleType code or object
         space        -- space code or object
         project      -- project code or object
@@ -1776,13 +1779,17 @@ class Openbis:
         collection   -- same as above
         tags         -- only return samples with the specified tags
 
-        Paging:
-        -------
+        Paging
+        ------
         start_with   -- default=None
         count        -- number of samples that should be fetched. default=None.
 
-        Include:
-        --------
+        Objects
+        -------
+        as_objects   -- set this to True to receive an array of sample objects
+
+        Include in result list
+        ----------------------
         withParents  -- the list of parent's permIds in a column 'parents'
         withChildren -- the list of children's permIds in a column 'children'
         attrs        -- list of all desired attributes. Examples:
@@ -1843,9 +1850,21 @@ class Openbis:
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
-        default_fetchopts = ['tags', 'registrator', 'modifier']
-        for option in default_fetchopts+attrs_fetchoptions:
-            fetchopts[option] = fetch_option[option]
+        if as_objects:
+            options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'modifier', 'dataSets']
+            if self.get_server_information().project_samples_enabled:
+                options.append('project')
+            for option in options:
+                fetchopts[option] = fetch_option[option]
+
+            for key in ['parents','children','container','components']:
+                fetchopts[key] = {"@type": "as.dto.sample.fetchoptions.SampleFetchOptions"}
+
+        else:
+            default_fetchopts = ['tags', 'registrator', 'modifier']
+            for option in default_fetchopts+attrs_fetchoptions:
+                fetchopts[option] = fetch_option[option]
+
         if props is not None:
             fetchopts['properties'] = fetch_option['properties']
 
@@ -1859,14 +1878,26 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        return self._sample_list_for_response(
-            response=resp['objects'],
-            attrs=attrs,
-            props=props,
-            start_with=start_with,
-            count=count,
-            totalCount=resp['totalCount'],
-        )
+        if as_objects:
+            parse_jackson(resp)
+            samples = []
+            for obj in resp['objects']:
+                sample = Sample(
+                    openbis_obj = self,
+                    type = self.get_sample_type(obj['type']['code']),
+                    data = obj
+                )
+                samples.append(sample)
+            return samples
+        else:
+            return self._sample_list_for_response(
+                response=resp['objects'],
+                attrs=attrs,
+                props=props,
+                start_with=start_with,
+                count=count,
+                totalCount=resp['totalCount'],
+            )
 
     get_objects = get_samples # Alias
 
@@ -3723,8 +3754,7 @@ class Openbis:
                 _type_for_id(sample_ident, 'sample')
             )
 
-        fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
-
+        fetchopts = fetch_option['sample']
         options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'modifier', 'dataSets']
         if self.get_server_information().project_samples_enabled:
             options.append('project')
