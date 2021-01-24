@@ -3,6 +3,7 @@ import PageMode from '@src/js/components/common/page/PageMode.js'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 class UserGroupFormButtons extends React.PureComponent {
@@ -35,19 +36,19 @@ class UserGroupFormButtons extends React.PureComponent {
         <React.Fragment>
           <Button
             name='addUser'
-            label='Add User'
+            label={messages.get(messages.ADD_USER)}
             styles={{ root: classes.button }}
             onClick={onAddUser}
           />
           <Button
             name='addRole'
-            label='Add Role'
+            label={messages.get(messages.ADD_ROLE)}
             styles={{ root: classes.button }}
             onClick={onAddRole}
           />
           <Button
             name='remove'
-            label='Remove'
+            label={messages.get(messages.REMOVE)}
             styles={{ root: classes.button }}
             disabled={!this.isUserOrRoleSelected()}
             onClick={onRemove}

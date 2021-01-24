@@ -29,7 +29,7 @@ async function testValidate() {
       }
     },
     parameters: {
-      title: 'Query',
+      title: 'New Query',
       name: {
         label: 'Name',
         value: null,

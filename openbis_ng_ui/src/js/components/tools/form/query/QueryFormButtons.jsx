@@ -1,6 +1,7 @@
 import React from 'react'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 class QueryFormButtons extends React.PureComponent {
@@ -27,7 +28,7 @@ class QueryFormButtons extends React.PureComponent {
     return (
       <Button
         name='execute'
-        label='Execute'
+        label={messages.get(messages.EXECUTE)}
         styles={{ root: classes.button }}
         onClick={onExecute}
       />

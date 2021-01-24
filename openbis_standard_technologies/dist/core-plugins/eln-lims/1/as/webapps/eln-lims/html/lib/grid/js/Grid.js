@@ -759,15 +759,16 @@ $.extend(Grid.prototype, {
 			setTimeout(function() {
 				thisGrid.result = result;
 				callback(result);
-				
-				 //HACK: Fixes extra headers added on this fuelux 3.1.0 when rendering again
-				var tableHeads = $(thisGrid.panel).find('thead');
-				if(tableHeads.length > 1) {
-					for(var hIdx = 0; hIdx < tableHeads.length -1; hIdx++) {
-						var bugHeader = $(tableHeads[hIdx]);
-						bugHeader.remove();
-					}
-				}
+
+// TODO Remove, doesn't seem necessary anymore, probably because now tables have their own scroll and fix height, is also not compatible with CKEditor5 Tables.
+//				 HACK: Fixes extra headers added on this fuelux 3.1.0 when rendering again
+//				var tableHeads = $(thisGrid.panel).find('thead');
+//				if(tableHeads.length > 1) {
+//					for(var hIdx = 0; hIdx < tableHeads.length -1; hIdx++) {
+//						var bugHeader = $(tableHeads[hIdx]);
+//						bugHeader.remove();
+//					}
+//				}
 				
 				LayoutManager.isLoadingView = true; // Disable views reload by resize events
 				$(window).trigger('resize'); // HACK: Fixes table rendering issues when refreshing the grid on fuelux 3.1.0 for all browsers

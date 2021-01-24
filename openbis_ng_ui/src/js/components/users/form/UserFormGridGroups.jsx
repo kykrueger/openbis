@@ -7,6 +7,6 @@ export default class UserFormGridGroups extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'UserFormGridGroups.render')
 
-    return <UserGroupsGrid {...this.props} id={ids.USER_USER_GROUPS_GRID_ID} />
+    return <UserGroupsGrid {...this.props} id={ids.GROUPS_OF_USER_GRID_ID} />
   }
 }

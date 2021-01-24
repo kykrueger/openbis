@@ -16,7 +16,7 @@ async function testRemoveProperty() {
   common.facade.loadValidationPlugins.mockReturnValue(
     Promise.resolve([fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin])
   )
-  common.facade.loadUsages.mockReturnValue(Promise.resolve({}))
+  common.facade.loadPropertyUsages.mockReturnValue(Promise.resolve({}))
 
   const form = await common.mountExisting(fixture.TEST_SAMPLE_TYPE_DTO)
 
@@ -71,7 +71,7 @@ async function testRemoveProperty() {
       message: null
     },
     removePropertyDialog: {
-      title: `Do you want to remove "${fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()}" property?`,
+      title: `Are you sure you want to remove "${fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()}"?`,
       content: `This property assignment is not yet used by any entities of "${fixture.TEST_SAMPLE_TYPE_DTO.getCode()}" type.`,
       type: 'info'
     }
@@ -95,7 +95,7 @@ async function testRemoveProperty() {
     },
     buttons: {
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     },

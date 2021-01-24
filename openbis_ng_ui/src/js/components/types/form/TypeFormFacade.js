@@ -49,7 +49,30 @@ export default class TypeFormFacade {
     })
   }
 
-  async loadUsages(object, propertyTypeCodes) {
+  async loadTypeUsages(object) {
+    const strategy = this._getStrategy(object.type)
+
+    if (object.type === strategy.getNewObjectType()) {
+      return Promise.resolve(0)
+    }
+
+    const criteria = strategy.createEntitySearchCriteria()
+    criteria.withType().withCode().thatEquals(object.id)
+
+    const fo = strategy.createEntityFetchOptions()
+    fo.from(0)
+    fo.count(0)
+
+    const operation = strategy.createEntitySearchOperation(criteria, fo)
+    const options = new openbis.SynchronousOperationExecutionOptions()
+
+    return openbis.executeOperations([operation], options).then(result => {
+      const operationResult = result.getResults()[0]
+      return operationResult.getSearchResult().getTotalCount()
+    })
+  }
+
+  async loadPropertyUsages(object, propertyTypeCodes) {
     const strategy = this._getStrategy(object.type)
 
     if (object.type === strategy.getNewObjectType()) {

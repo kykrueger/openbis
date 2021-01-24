@@ -23,7 +23,7 @@ async function testValidateGroup() {
   form.expectJSON({
     parameters: {
       group: {
-        title: 'Group',
+        title: 'New Group',
         code: {
           label: 'Code',
           value: null,

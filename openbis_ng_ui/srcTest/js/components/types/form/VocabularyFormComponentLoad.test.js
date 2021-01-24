@@ -22,7 +22,7 @@ async function testLoadNew() {
     },
     parameters: {
       vocabulary: {
-        title: 'Vocabulary',
+        title: 'New Vocabulary Type',
         code: {
           label: 'Code',
           value: null,
@@ -113,7 +113,7 @@ async function testLoadExisting() {
     grid: gridJSON,
     parameters: {
       vocabulary: {
-        title: 'Vocabulary',
+        title: 'Vocabulary Type',
         code: {
           label: 'Code',
           value: fixture.TEST_VOCABULARY_DTO.getCode(),
@@ -150,7 +150,7 @@ async function testLoadExisting() {
     grid: gridJSON,
     parameters: {
       vocabulary: {
-        title: 'Vocabulary',
+        title: 'Vocabulary Type',
         code: {
           label: 'Code',
           value: fixture.TEST_VOCABULARY_DTO.getCode(),

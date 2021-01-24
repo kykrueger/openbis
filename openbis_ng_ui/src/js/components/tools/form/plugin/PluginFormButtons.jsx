@@ -2,6 +2,7 @@ import React from 'react'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import openbis from '@src/js/services/openbis.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 class PluginFormButtons extends React.PureComponent {
@@ -28,7 +29,7 @@ class PluginFormButtons extends React.PureComponent {
     return (
       <Button
         name='evaluate'
-        label='Evaluate'
+        label={messages.get(messages.EVALUATE)}
         styles={{ root: classes.button }}
         onClick={onEvaluate}
       />

@@ -13,6 +13,7 @@ import VocabularyFormFacade from '@src/js/components/types/form/VocabularyFormFa
 import VocabularyFormParameters from '@src/js/components/types/form/VocabularyFormParameters.jsx'
 import VocabularyFormButtons from '@src/js/components/types/form/VocabularyFormButtons.jsx'
 import ids from '@src/js/common/consts/ids.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
@@ -20,23 +21,23 @@ const styles = () => ({})
 const columns = [
   {
     name: 'code',
-    label: 'Code',
+    label: messages.get(messages.CODE),
     sort: 'asc',
     getValue: ({ row }) => row.code.value
   },
   {
     name: 'label',
-    label: 'Label',
+    label: messages.get(messages.LABEL),
     getValue: ({ row }) => row.label.value
   },
   {
     name: 'description',
-    label: 'Description',
+    label: messages.get(messages.DESCRIPTION),
     getValue: ({ row }) => row.description.value
   },
   {
     name: 'official',
-    label: 'Official',
+    label: messages.get(messages.OFFICIAL),
     getValue: ({ row }) => row.official.value
   }
 ]
@@ -105,7 +106,7 @@ class VocabularyForm extends React.PureComponent {
         <Grid
           id={ids.VOCABULARY_TERMS_GRID_ID}
           controllerRef={this.handleGridControllerRef}
-          header='Terms'
+          header={messages.get(messages.TERMS)}
           columns={columns}
           rows={terms}
           selectedRowId={

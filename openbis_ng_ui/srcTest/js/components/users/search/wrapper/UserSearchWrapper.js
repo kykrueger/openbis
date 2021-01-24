@@ -22,10 +22,26 @@ export default class UserSearchWrapper extends BaseWrapper {
     )
   }
 
+  getUsersRoles() {
+    return new GridWrapper(
+      this.findComponent(Grid).filter({
+        id: ids.ROLES_OF_USERS_GRID_ID
+      })
+    )
+  }
+
   getUserGroups() {
     return new GridWrapper(
       this.findComponent(Grid).filter({
-        id: ids.USER_GROUPS_GRID_ID
+        id: ids.GROUPS_GRID_ID
+      })
+    )
+  }
+
+  getUserGroupsRoles() {
+    return new GridWrapper(
+      this.findComponent(Grid).filter({
+        id: ids.ROLES_OF_GROUPS_GRID_ID
       })
     )
   }
@@ -34,7 +50,9 @@ export default class UserSearchWrapper extends BaseWrapper {
     return {
       messages: this.getMessages().map(message => message.toJSON()),
       users: this.getUsers().toJSON(),
-      userGroups: this.getUserGroups().toJSON()
+      usersRoles: this.getUsersRoles().toJSON(),
+      userGroups: this.getUserGroups().toJSON(),
+      userGroupsRoles: this.getUserGroupsRoles().toJSON()
     }
   }
 }

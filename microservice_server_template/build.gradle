@@ -19,3 +19,5 @@ dependencies {
 
     annotationProcessor 'lombok:lombok:1.18.12'
 }
+
+mainClassName = "ch.ethz.sis.microservices.download.server.startup.Main"

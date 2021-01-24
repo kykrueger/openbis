@@ -4,6 +4,7 @@ import autoBind from 'auto-bind'
 import { withStyles } from '@material-ui/core/styles'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import UserLink from '@src/js/components/common/link/UserLink.jsx'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
@@ -29,11 +30,11 @@ class UsersGrid extends React.PureComponent {
       <Grid
         id={id}
         controllerRef={controllerRef}
-        header='Users'
+        header={messages.get(messages.USERS)}
         columns={[
           {
             name: 'userId',
-            label: 'User Id',
+            label: messages.get(messages.USER_ID),
             sort: 'asc',
             getValue: ({ row }) => row.userId.value,
             renderValue: ({ value }) => {
@@ -42,27 +43,27 @@ class UsersGrid extends React.PureComponent {
           },
           {
             name: 'firstName',
-            label: 'First Name',
+            label: messages.get(messages.FIRST_NAME),
             getValue: ({ row }) => row.firstName.value
           },
           {
             name: 'lastName',
-            label: 'Last Name',
+            label: messages.get(messages.LAST_NAME),
             getValue: ({ row }) => row.lastName.value
           },
           {
             name: 'email',
-            label: 'Email',
+            label: messages.get(messages.EMAIL),
             getValue: ({ row }) => row.email.value
           },
           {
             name: 'space',
-            label: 'Home Space',
+            label: messages.get(messages.HOME_SPACE),
             getValue: ({ row }) => row.space.value
           },
           {
             name: 'active',
-            label: 'Active',
+            label: messages.get(messages.ACTIVE),
             getValue: ({ row }) => row.active.value
           }
         ]}

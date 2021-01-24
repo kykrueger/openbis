@@ -7,6 +7,7 @@ import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
 import openbis from '@src/js/services/openbis.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -33,7 +34,7 @@ class PluginFormEvaluateParameters extends React.PureComponent {
 
     return (
       <Container>
-        <Header>Tester</Header>
+        <Header>{messages.get(messages.TESTER)}</Header>
         {this.renderEntityKind()}
         {this.renderEntity()}
         {this.renderEntityIsNew()}
@@ -54,7 +55,7 @@ class PluginFormEvaluateParameters extends React.PureComponent {
     return (
       <div className={classes.parameter}>
         <SelectField
-          label='Entity Kind'
+          label={messages.get(messages.ENTITY_KIND)}
           name='entityKind'
           value={parameters.entityKind.value}
           disabled={!parameters.entityKind.enabled}
@@ -72,7 +73,7 @@ class PluginFormEvaluateParameters extends React.PureComponent {
       <div className={classes.parameter}>
         <EntityAutocompleterField
           key={parameters.entityKind.value}
-          label='Entity'
+          label={messages.get(messages.ENTITY)}
           name='entity'
           entityKind={parameters.entityKind.value}
           value={parameters.entity.value}
@@ -90,7 +91,7 @@ class PluginFormEvaluateParameters extends React.PureComponent {
       return (
         <div className={classes.parameter}>
           <CheckboxField
-            label='Is New Entity'
+            label={messages.get(messages.IS_NEW_ENTITY)}
             name='entityIsNew'
             value={parameters.entityIsNew.value}
             disabled={!parameters.entityIsNew.enabled}

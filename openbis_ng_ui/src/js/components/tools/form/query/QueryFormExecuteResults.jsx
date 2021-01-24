@@ -5,6 +5,7 @@ import Loading from '@src/js/components/common/loading/Loading.jsx'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
 import QueryFormExecuteResultsGrid from '@src/js/components/tools/form/query/QueryFormExecuteResultsGrid.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
@@ -25,7 +26,7 @@ class QueryFormExecuteResults extends React.PureComponent {
         <Loading loading={loading}>
           {loaded && (
             <GridContainer>
-              <Header>Results</Header>
+              <Header>{messages.get(messages.RESULTS)}</Header>
               {this.renderMessageAuthorizationColumns()}
               {this.renderGrid()}
             </GridContainer>
@@ -62,8 +63,10 @@ class QueryFormExecuteResults extends React.PureComponent {
       if (foundColumns.length > 0) {
         return (
           <Message type='info'>
-            Detected authorization column(s) that will be used for automatic
-            results filtering: {foundColumns.join(', ')}.
+            {messages.get(
+              messages.QUERY_AUTHORIZATION_COLUMNS_DETECTED,
+              foundColumns.join(', ')
+            )}
           </Message>
         )
       }

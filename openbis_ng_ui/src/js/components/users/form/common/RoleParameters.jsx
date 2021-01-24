@@ -6,6 +6,7 @@ import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import RoleSelectionType from '@src/js/components/users/form/common/RoleSelectionType.js'
 import openbis from '@src/js/services/openbis.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -88,7 +89,7 @@ class RoleParameters extends React.PureComponent {
 
     return (
       <Container>
-        <Header>Role</Header>
+        <Header>{messages.get(messages.ROLE)}</Header>
         {this.renderMessageVisible()}
         {this.renderMessageInstanceAdmin(role)}
         {this.renderMessageInherited(role)}
@@ -107,8 +108,9 @@ class RoleParameters extends React.PureComponent {
       return (
         <div className={classes.field}>
           <Message type='warning'>
-            The selected role is currently not visible in the role list due to
-            the chosen filtering and paging.
+            {messages.get(
+              messages.OBJECT_NOT_VISIBLE_DUE_TO_FILTERING_AND_PAGING
+            )}
           </Message>
         </div>
       )
@@ -127,8 +129,7 @@ class RoleParameters extends React.PureComponent {
       return (
         <div className={classes.field}>
           <Message type='warning'>
-            This is an instance admin role. It gives an access to the user and
-            master data management functionality.
+            {messages.get(messages.ROLE_IS_INSTANCE_ADMIN)}
           </Message>
         </div>
       )
@@ -144,7 +145,7 @@ class RoleParameters extends React.PureComponent {
       return (
         <div className={classes.field}>
           <Message type='info'>
-            This role is inherited from {role.inheritedFrom.value} group.
+            {messages.get(messages.ROLE_IS_INHERITED, role.inheritedFrom.value)}
           </Message>
         </div>
       )
@@ -172,7 +173,7 @@ class RoleParameters extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.level}
-          label='Level'
+          label={messages.get(messages.LEVEL)}
           name='level'
           error={error}
           disabled={!enabled}
@@ -214,7 +215,7 @@ class RoleParameters extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.space}
-          label='Space'
+          label={messages.get(messages.SPACE)}
           name='space'
           error={error}
           disabled={!enabled}
@@ -257,7 +258,7 @@ class RoleParameters extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.project}
-          label='Project'
+          label={messages.get(messages.PROJECT)}
           name='project'
           error={error}
           disabled={!enabled}
@@ -301,7 +302,7 @@ class RoleParameters extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.role}
-          label='Role'
+          label={messages.get(messages.ROLE)}
           name='role'
           error={error}
           disabled={!enabled}

@@ -83,7 +83,7 @@ async function testRemoveUser() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

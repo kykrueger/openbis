@@ -23,7 +23,7 @@ async function testValidateUser() {
   form.expectJSON({
     parameters: {
       user: {
-        title: 'User',
+        title: 'New User',
         userId: {
           label: 'User Id',
           value: null,
