@@ -1765,7 +1765,6 @@ class Openbis:
         space=None, project=None, experiment=None, collection=None, type=None,
         start_with=None, count=None,
         withParents=None, withChildren=None, tags=None, attrs=None, props=None,
-        as_objects=False,
         **properties
     ):
         """Returns a DataFrame of all samples for a given space/project/experiment (or any combination)
@@ -1850,20 +1849,15 @@ class Openbis:
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
-        if as_objects:
-            options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'modifier', 'dataSets']
-            if self.get_server_information().project_samples_enabled:
-                options.append('project')
-            for option in options:
-                fetchopts[option] = fetch_option[option]
+        options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'modifier', 'dataSets']
+        if self.get_server_information().project_samples_enabled:
+            options.append('project')
+        for option in options:
+            fetchopts[option] = fetch_option[option]
 
-            for key in ['parents','children','container','components']:
-                fetchopts[key] = {"@type": "as.dto.sample.fetchoptions.SampleFetchOptions"}
+        for key in ['parents','children','container','components']:
+            fetchopts[key] = {"@type": "as.dto.sample.fetchoptions.SampleFetchOptions"}
 
-        else:
-            default_fetchopts = ['tags', 'registrator', 'modifier']
-            for option in default_fetchopts+attrs_fetchoptions:
-                fetchopts[option] = fetch_option[option]
 
         if props is not None:
             fetchopts['properties'] = fetch_option['properties']
@@ -1878,26 +1872,25 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        if as_objects:
-            parse_jackson(resp)
-            samples = []
-            for obj in resp['objects']:
-                sample = Sample(
-                    openbis_obj = self,
-                    type = self.get_sample_type(obj['type']['code']),
-                    data = obj
-                )
-                samples.append(sample)
-            return samples
-        else:
-            return self._sample_list_for_response(
-                response=resp['objects'],
-                attrs=attrs,
-                props=props,
-                start_with=start_with,
-                count=count,
-                totalCount=resp['totalCount'],
+        samples = []
+        parse_jackson(resp)
+        for obj in resp['objects']:
+            sample = Sample(
+                openbis_obj = self,
+                type = self.get_sample_type(obj['type']['code']),
+                data = obj
             )
+            samples.append(sample)
+
+        return self._sample_list_for_response(
+            response=resp['objects'],
+            attrs=attrs,
+            props=props,
+            start_with=start_with,
+            count=count,
+            totalCount=resp['totalCount'],
+            objects=samples
+        )
 
     get_objects = get_samples # Alias
 
@@ -3889,7 +3882,8 @@ class Openbis:
 
     def _sample_list_for_response(
         self, response, attrs=None, props=None,
-        start_with=None, count=None, totalCount=0
+        start_with=None, count=None, totalCount=0,
+        objects=None
     ):
         """returns a Things object, containing a DataFrame plus additional information
         """
@@ -3978,6 +3972,7 @@ class Openbis:
             start_with=start_with,
             count=count,
             totalCount=totalCount,
+            objects=objects,
         )
 
     get_object = get_sample # Alias
