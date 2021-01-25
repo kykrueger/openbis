@@ -1578,7 +1578,8 @@ public class SearchExperimentTest extends AbstractExperimentTest
         criteria.withTextAttribute().thatMatchesText("exp-test-1 exp-test-2 experiment-to-delete");
         criteria.withPermId().thatContains("8-");
 
-        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-2", "/TEST-SPACE/NOE/EXP-TEST-2");
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-2", "/TEST-SPACE/NOE/EXP-TEST-2",
+                "/TEST-SPACE/NOE/EXPERIMENT-TO-DELETE");
     }
 
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
