@@ -662,20 +662,18 @@ class Openbis:
             allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks (bool): False
         """
 
+        self.as_v3 = '/openbis/openbis/rmi-application-server-v3.json'
+        self.as_v1 = '/openbis/openbis/rmi-general-information-v1.json'
+        self.reg_v1 = '/openbis/openbis/rmi-query-v1.json'
+        self.verify_certificates = verify_certificates
+
         if url is None:
-            try:
-                url = os.environ["OPENBIS_URL"]
-                token = os.environ["OPENBIS_TOKEN"] if "OPENBIS_TOKEN" in os.environ else None
-            except KeyError:
+            url = os.environ.get("OPENBIS_URL") or os.environ.get('OPENBIS_HOST')
+            if url is None:
                 raise ValueError("please provide a URL you want to connect to.")
 
-        else:
-            # url has been provided. If the environment variable OPENBIS_URL points to the same URL,
-            # use the OPENBIS_TOKEN as well.
-            if 'OPENBIS_URL' in os.environ:
-                if url == os.environ["OPENBIS_URL"]:
-                    token = os.environ["OPENBIS_TOKEN"] if "OPENBIS_TOKEN" in os.environ else None
-
+        if not url.startswith('http'):
+            url = 'https://'+url
 
         url_obj = urlparse(url)
         if url_obj.netloc is None or url_obj.netloc == '':
@@ -683,33 +681,25 @@ class Openbis:
         if url_obj.hostname is None:
             raise ValueError("hostname is missing")
         if url_obj.scheme == 'http' and not allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks:
-
             raise ValueError("always use https!")
             
-        
         self.url = url_obj.geturl()
         self.port = url_obj.port
         self.hostname = url_obj.hostname
+        self.token = token or os.environ.get("OPENBIS_TOKEN") or self._get_cached_token()
+
         self.download_prefix = os.path.join('data', self.hostname)
-        self.as_v3 = '/openbis/openbis/rmi-application-server-v3.json'
-        self.as_v1 = '/openbis/openbis/rmi-general-information-v1.json'
-        self.reg_v1 = '/openbis/openbis/rmi-query-v1.json'
-        self.verify_certificates = verify_certificates
+
         self.use_cache = use_cache
         self.cache = {}
-        self.token = token
 
         self.server_information = None
         self.token_path = None
 
-        # use an existing token, if available
-        if self.token is None:
-            self.token = self._get_cached_token()
-        elif self.is_token_valid(token):
+        if self.is_token_valid(self.token):
             pass
         else:
             print("Session is no longer valid. Please log in again.")
-
 
     def _get_username(self):
         if self.token:
@@ -840,7 +830,7 @@ class Openbis:
         return self.get_projects()
 
     def _get_cached_token(self):
-        """Read the token from the cache, and set the token ivar to it, if there, otherwise None.
+        """Read the token from the .pybis 
         If the token is not valid anymore, delete it. 
         """
         token_path = self.gen_token_path()
@@ -1774,25 +1764,32 @@ class Openbis:
         self, identifier=None, code=None, permId=None,
         space=None, project=None, experiment=None, collection=None, type=None,
         start_with=None, count=None,
-        withParents=None, withChildren=None, tags=None, attrs=None, props=None, **properties
+        withParents=None, withChildren=None, tags=None, attrs=None, props=None,
+        as_objects=False,
+        **properties
     ):
         """Returns a DataFrame of all samples for a given space/project/experiment (or any combination)
-        Filters:
-        --------
-        space        -- a space code or a space object
-        project      -- a project code or a project object
-        experiment   -- an experiment code or an experiment object
-        collection   -- same as experiment
-        tags         -- only return samples with the specified tags
-        type         -- a sampleType code
 
-        Paging:
+        Filters
         -------
+        type         -- sampleType code or object
+        space        -- space code or object
+        project      -- project code or object
+        experiment   -- experiment code or object
+        collection   -- same as above
+        tags         -- only return samples with the specified tags
+
+        Paging
+        ------
         start_with   -- default=None
         count        -- number of samples that should be fetched. default=None.
 
-        Include:
-        --------
+        Objects
+        -------
+        as_objects   -- set this to True to receive an array of sample objects
+
+        Include in result list
+        ----------------------
         withParents  -- the list of parent's permIds in a column 'parents'
         withChildren -- the list of children's permIds in a column 'children'
         attrs        -- list of all desired attributes. Examples:
@@ -1853,9 +1850,21 @@ class Openbis:
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
-        default_fetchopts = ['tags', 'registrator', 'modifier']
-        for option in default_fetchopts+attrs_fetchoptions:
-            fetchopts[option] = fetch_option[option]
+        if as_objects:
+            options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'modifier', 'dataSets']
+            if self.get_server_information().project_samples_enabled:
+                options.append('project')
+            for option in options:
+                fetchopts[option] = fetch_option[option]
+
+            for key in ['parents','children','container','components']:
+                fetchopts[key] = {"@type": "as.dto.sample.fetchoptions.SampleFetchOptions"}
+
+        else:
+            default_fetchopts = ['tags', 'registrator', 'modifier']
+            for option in default_fetchopts+attrs_fetchoptions:
+                fetchopts[option] = fetch_option[option]
+
         if props is not None:
             fetchopts['properties'] = fetch_option['properties']
 
@@ -1869,14 +1878,26 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        return self._sample_list_for_response(
-            response=resp['objects'],
-            attrs=attrs,
-            props=props,
-            start_with=start_with,
-            count=count,
-            totalCount=resp['totalCount'],
-        )
+        if as_objects:
+            parse_jackson(resp)
+            samples = []
+            for obj in resp['objects']:
+                sample = Sample(
+                    openbis_obj = self,
+                    type = self.get_sample_type(obj['type']['code']),
+                    data = obj
+                )
+                samples.append(sample)
+            return samples
+        else:
+            return self._sample_list_for_response(
+                response=resp['objects'],
+                attrs=attrs,
+                props=props,
+                start_with=start_with,
+                count=count,
+                totalCount=resp['totalCount'],
+            )
 
     get_objects = get_samples # Alias
 
@@ -2059,11 +2080,14 @@ class Openbis:
         self, code=None, type=None, withParents=None, withChildren=None,
         start_with=None, count=None, kind=None,
         status=None, sample=None, experiment=None, collection=None, project=None,
-        tags=None, attrs=None, props=None, **properties
+        tags=None, attrs=None, props=None, 
+        as_objects=False,
+        **properties
     ):
         """Returns a DataFrame of all dataSets for a given project/experiment/sample (or any combination)
-        Filters:
-        --------
+
+        Filters
+        -------
         project      -- a project code or a project object
         experiment   -- an experiment code or an experiment object
         sample       -- a sample code/permId or a sample/object
@@ -2071,13 +2095,17 @@ class Openbis:
         tags         -- only return dataSets with the specified tags
         type         -- a dataSetType code
 
-        Paging:
-        -------
+        Paging
+        ------
         start_with   -- default=None
         count        -- number of dataSets that should be fetched. default=None.
 
-        Include:
-        --------
+        Objects
+        -------
+        as_objects   -- set this to True to receive an array of dataSet objects
+
+        Include in result list
+        ----------------------
         withParents  -- the list of parent's permIds in a column 'parents'
         withChildren -- the list of children's permIds in a column 'children'
         attrs        -- list of all desired attributes. Examples:
@@ -2111,6 +2139,7 @@ class Openbis:
             sub_criteria.append(_subcriteria_for(sample, 'sample'))
         if experiment:
             sub_criteria.append(_subcriteria_for(experiment, 'experiment'))
+        if attrs is None: attrs = []
 
         if project:
             exp_crit = _subcriteria_for(experiment, 'experiment')
@@ -2133,25 +2162,29 @@ class Openbis:
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
+        if as_objects:
+            for option in ['tags', 'properties', 'dataStore', 'physicalData', 'linkedData',
+                        'experiment', 'sample', 'registrator', 'modifier']:
+                fetchopts[option] = fetch_option[option]
+
+        else:
+            # get fetch options for projects and spaces
+            # via experiment, if requested
+            for attr in attrs:
+                if any([entity in attr for entity in ['space','project']]):
+                    fetchopts['experiment'] = fetch_option['experiment']
+                    fetchopts['experiment']['project'] = fetch_option['project']
+
+            options = self._get_fetchopts_for_attrs(attrs)
+            for option in ['tags', 'properties', 'physicalData']+options:
+                fetchopts[option] = fetch_option[option]
+
         if kind:
             kind = kind.upper()
             if kind not in ['PHYSICAL_DATA', 'CONTAINER', 'LINK']:
                 raise ValueError("unknown dataSet kind: {}. It should be one of the following: PHYSICAL_DATA, CONTAINER or LINK".format(kind))
             fetchopts['kind'] = kind
             raise NotImplementedError('you cannot search for dataSet kinds yet')
-
-        if attrs is None: attrs = []
-        options = self._get_fetchopts_for_attrs(attrs)
-        for option in ['tags', 'properties', 'physicalData']+options:
-            fetchopts[option] = fetch_option[option]
-
-        # get fetch options for projects and spaces
-        # via experiment, if requested
-        for attr in attrs:
-            if any([entity in attr for entity in ['space','project']]):
-                fetchopts['experiment'] = fetch_option['experiment']
-                fetchopts['experiment']['project'] = fetch_option['project']
-
         
         request = {
             "method": "searchDataSets",
@@ -2162,14 +2195,26 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        return self._dataset_list_for_response(
-            response=resp['objects'],
-            attrs=attrs,
-            props=props,
-            start_with=start_with,
-            count=count,
-            totalCount=resp['totalCount'],
-        )
+        if as_objects:
+            parse_jackson(resp)
+            datasets = []
+            for obj in resp['objects']:
+                dataset = DataSet(
+                    openbis_obj = self,
+                    type = self.get_dataset_type(obj['type']['code']),
+                    data = obj
+                )
+                datasets.append(dataset)
+            return datasets
+        else:
+            return self._dataset_list_for_response(
+                response=resp['objects'],
+                attrs=attrs,
+                props=props,
+                start_with=start_with,
+                count=count,
+                totalCount=resp['totalCount'],
+            )
 
 
     def get_experiment(self, code, withAttachments=False, only_data=False):
@@ -3733,8 +3778,7 @@ class Openbis:
                 _type_for_id(sample_ident, 'sample')
             )
 
-        fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
-
+        fetchopts = fetch_option['sample']
         options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'modifier', 'dataSets']
         if self.get_server_information().project_samples_enabled:
             options.append('project')
@@ -4120,6 +4164,13 @@ class Openbis:
 
     def new_sample(self, type, project=None, props=None, **kwargs):
         """ Creates a new sample of a given sample type.
+        type         -- sampleType code or object: mandatory
+        code         -- name/code for the sample, if not generated automatically
+        space        -- space code or object
+        project      -- project code or object
+        experiment   -- experiment code or object
+        collection   -- same as above
+        props        -- a dictionary containing the properties
         """
         if 'collection' in kwargs:
             kwargs['experiment'] = kwargs['collection']
@@ -4212,12 +4263,28 @@ class Openbis:
             validationPlugin=validationPlugin,
         )
 
-    def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, props=None, folder=None, **kwargs):
+    def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, file=None, props=None, folder=None, **kwargs):
         """ Creates a new dataset of a given type.
+
+        type         -- sampleType code or object: mandatory
+        sample       -- sample code or object
+        experiment   -- experiment code or object
+        collection   -- same as above
+        file         -- path to a single file or a directory
+        files        -- list of paths to files. Instead of a file, a directory (or many directories)
+                        can be provided, the structure is kept intact in openBIS
+        zipfile      -- path to a zipfile, which is unzipped in openBIS
+        kind         -- if set to CONTAINER, no files should be provided.
+                        Instead, the dataset acts as a container for other datasets.
+
+        props        -- a dictionary containing the properties
         """
 
         if type is None:
             raise ValueError("Please provide a dataSet type")
+
+        if file:
+            files = [file]
 
         if isinstance(type, str):
             type_obj = self.get_dataset_type(type.upper())

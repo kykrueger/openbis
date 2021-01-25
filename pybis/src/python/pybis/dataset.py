@@ -124,12 +124,19 @@ class DataSet(
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             "get_files()", 'file_list',
             'download()','is_physical()', 'symlink()', 'is_symlink()',
-            'archive()', 'unarchive()'
+            'archive()', 'unarchive()',
+            'attrs','props',
         ] + super().__dir__()
 
     def __setattr__(self, name, value):
         if name in ['folder']:
             self.__dict__[name] = value
+        elif name in ['p', 'props']:
+            if isinstance(value, dict):
+                for p in value:
+                    setattr(self.__dict__['p'], p, value[p])
+            else:
+                raise ValueError("please provide a dictionary for setting properties")
         else:
             super(DataSet, self).__setattr__(name, value)
 

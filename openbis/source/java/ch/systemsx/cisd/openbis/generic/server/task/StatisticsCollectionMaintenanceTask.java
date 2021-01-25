@@ -21,6 +21,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.openbis.BuildAndEnvironmentInfo;
@@ -35,6 +36,7 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -53,7 +55,7 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
     /** ID of this openBIS server. */
     private static final String SERVER_ID_DOCUMENT_VERSION_FILE_PATH = "etc/instance-id";
 
-    private final IApplicationServerApi applicationServerApi;
+    private final IApplicationServerInternalApi applicationServerApi;
 
     /** Whether this task has been called for the first time. */
     private boolean firstCall = true;
@@ -63,7 +65,7 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
         this(CommonServiceProvider.getApplicationServerApi());
     }
 
-    StatisticsCollectionMaintenanceTask(final IApplicationServerApi applicationServerApi)
+    StatisticsCollectionMaintenanceTask(final IApplicationServerInternalApi applicationServerApi)
     {
         super(false);
         this.applicationServerApi = applicationServerApi;
@@ -82,11 +84,10 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
             notificationLog.info("Statistics collection execution started.");
 
             // Obtain session token from openBIS
-            final String sessionToken = applicationServerApi.login("admin", "admin");
+            final String sessionToken = applicationServerApi.loginAsSystem();
 
             final long personsCount = getPersonsCount(sessionToken);
 
-            // TODO: Use real data.
             final Map<StatisticsKeys, String> statisticsMap = new HashMap<>(5);
             statisticsMap.put(StatisticsKeys.SERVER_ID, getThisServerId());
             statisticsMap.put(StatisticsKeys.USERS_COUNT, String.valueOf(personsCount));
@@ -102,8 +103,6 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
                 throw new RuntimeException("Error mapping JSON object.", e);
             }
 
-//        final long start = System.currentTimeMillis();
-
             final Request request = JettyHttpClientFactory.getHttpClient()
                     // TODO: change it to the address of the real server.
                     .POST("http://localhost:8080/statistics")
@@ -116,18 +115,13 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
                 final int statusCode = contentResponse.getStatus();
                 if (statusCode >= 400)
                 {
-                    notificationLog.error(String.format("Error sending statistics collection request. " +
+                    notificationLog.warn(String.format("Error sending statistics collection request. " +
                                     "Error code received: %d (%s)", statusCode, contentResponse.getReason()));
                 }
             } catch (final InterruptedException | TimeoutException | ExecutionException e)
             {
-                notificationLog.error("Error sending statistics collection request.", e);
+                notificationLog.warn("Error sending statistics collection request.", e);
             }
-
-//        final long end = System.currentTimeMillis();
-//        System.out.println("Response Size: " + response.length);
-//        System.out.println("Time: " + (end - start) + " ms");
-//        System.out.println("Response: " + new String(response));
 
             notificationLog.info("Statistics collection execution finished.");
         }
@@ -212,7 +206,7 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
         try
         {
             return new String(Files.readAllBytes(file.toPath()));
-        } catch (final FileNotFoundException e)
+        } catch (final NoSuchFileException e)
         {
             operationLog.debug(String.format("File '%s' not found", file.getAbsolutePath()));
             return null;
