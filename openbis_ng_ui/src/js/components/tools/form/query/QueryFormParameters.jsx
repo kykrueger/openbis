@@ -9,8 +9,10 @@ import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import QueryFormSelectionType from '@src/js/components/tools/form/query/QueryFormSelectionType.js'
+import QueryType from '@src/js/components/common/dto/QueryType.js'
 import openbis from '@src/js/services/openbis.js'
 import messages from '@src/js/common/messages.js'
+import compare from '@src/js/common/compare.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -233,12 +235,21 @@ class QueryFormParameters extends React.PureComponent {
     const { mode, classes } = this.props
 
     const options = [
-      { value: openbis.QueryType.GENERIC },
-      { value: openbis.QueryType.EXPERIMENT },
-      { value: openbis.QueryType.SAMPLE },
-      { value: openbis.QueryType.DATA_SET },
-      { value: openbis.QueryType.MATERIAL }
+      openbis.QueryType.EXPERIMENT,
+      openbis.QueryType.SAMPLE,
+      openbis.QueryType.DATA_SET,
+      openbis.QueryType.MATERIAL
     ]
+      .map(value => ({
+        value,
+        label: new QueryType(value).getLabel()
+      }))
+      .sort((o1, o2) => compare(o1.label, o2.label))
+
+    options.unshift({
+      value: openbis.QueryType.GENERIC,
+      label: new QueryType(openbis.QueryType.GENERIC).getLabel()
+    })
 
     return (
       <div className={classes.field}>

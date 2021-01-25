@@ -2,6 +2,7 @@ import React from 'react'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import PluginLink from '@src/js/components/common/link/PluginLink.jsx'
 import UserLink from '@src/js/components/common/link/UserLink.jsx'
+import EntityKind from '@src/js/components/common/dto/EntityKind.js'
 import openbis from '@src/js/services/openbis.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
@@ -54,7 +55,7 @@ class PluginsGrid extends React.PureComponent {
             label: messages.get(messages.ENTITY_KIND),
             getValue: ({ row }) => {
               return row.entityKind.value
-                ? row.entityKind.value
+                ? new EntityKind(row.entityKind.value).getLabel()
                 : '(' + messages.get(messages.ALL) + ')'
             }
           },
