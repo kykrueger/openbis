@@ -57,7 +57,7 @@ export default class TypeFormControllerRemove {
             loading: true
           })
 
-          const usagesMap = await this.facade.loadUsages(
+          const usagesMap = await this.facade.loadPropertyUsages(
             this.object,
             existingProperties
           )
@@ -129,7 +129,7 @@ export default class TypeFormControllerRemove {
           loading: true
         })
 
-        const usagesMap = await this.facade.loadUsages(this.object, [
+        const usagesMap = await this.facade.loadPropertyUsages(this.object, [
           property.code.value
         ])
 

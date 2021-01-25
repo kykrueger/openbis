@@ -24,7 +24,6 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.QueryDatabase;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryDatabaseFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QueryDatabaseSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleLevel;
@@ -32,7 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleLevel;
 /**
  * @author pkupczyk
  */
-public class SearchQueryDatabaseTest extends AbstractTest
+public class SearchQueryDatabaseTest extends AbstractQueryTest
 {
 
     @Test
@@ -49,14 +48,14 @@ public class SearchQueryDatabaseTest extends AbstractTest
         assertEquals(databases.size(), 2);
 
         QueryDatabase database1 = databases.get(0);
-        assertEquals(database1.getName(), "1");
+        assertEquals(database1.getName(), DB_OPENBIS_METADATA);
         assertEquals(database1.getLabel(), "openBIS meta data");
         assertEquals(database1.getCreatorMinimalRole(), Role.OBSERVER);
         assertEquals(database1.getCreatorMinimalRoleLevel(), RoleLevel.INSTANCE);
         assertEquals(database1.getSpace(), null);
 
         QueryDatabase database2 = databases.get(1);
-        assertEquals(database2.getName(), "test-database");
+        assertEquals(database2.getName(), DB_TEST_CISD);
         assertEquals(database2.getLabel(), "Test Database");
         assertEquals(database2.getCreatorMinimalRole(), Role.POWER_USER);
         assertEquals(database2.getCreatorMinimalRoleLevel(), RoleLevel.SPACE);
@@ -71,7 +70,7 @@ public class SearchQueryDatabaseTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         QueryDatabaseSearchCriteria criteria = new QueryDatabaseSearchCriteria();
-        criteria.withId().thatEquals(new QueryDatabaseName("1"));
+        criteria.withId().thatEquals(DB_OPENBIS_METADATA_ID);
 
         QueryDatabaseFetchOptions fo = new QueryDatabaseFetchOptions();
         fo.withSpace();
@@ -82,7 +81,7 @@ public class SearchQueryDatabaseTest extends AbstractTest
         assertEquals(databases.size(), 1);
 
         QueryDatabase database1 = databases.get(0);
-        assertEquals(database1.getName(), "1");
+        assertEquals(database1.getName(), DB_OPENBIS_METADATA);
         assertEquals(database1.getLabel(), "openBIS meta data");
         assertEquals(database1.getCreatorMinimalRole(), Role.OBSERVER);
         assertEquals(database1.getCreatorMinimalRoleLevel(), RoleLevel.INSTANCE);
@@ -98,8 +97,8 @@ public class SearchQueryDatabaseTest extends AbstractTest
 
         QueryDatabaseSearchCriteria criteria = new QueryDatabaseSearchCriteria();
         criteria.withOrOperator();
-        criteria.withId().thatEquals(new QueryDatabaseName("test-database"));
-        criteria.withId().thatEquals(new QueryDatabaseName("1"));
+        criteria.withId().thatEquals(DB_TEST_CISD_ID);
+        criteria.withId().thatEquals(DB_OPENBIS_METADATA_ID);
 
         QueryDatabaseFetchOptions fo = new QueryDatabaseFetchOptions();
         fo.withSpace();
@@ -110,14 +109,14 @@ public class SearchQueryDatabaseTest extends AbstractTest
         assertEquals(databases.size(), 2);
 
         QueryDatabase database1 = databases.get(0);
-        assertEquals(database1.getName(), "1");
+        assertEquals(database1.getName(), DB_OPENBIS_METADATA);
         assertEquals(database1.getLabel(), "openBIS meta data");
         assertEquals(database1.getCreatorMinimalRole(), Role.OBSERVER);
         assertEquals(database1.getCreatorMinimalRoleLevel(), RoleLevel.INSTANCE);
         assertEquals(database1.getSpace(), null);
 
         QueryDatabase database2 = databases.get(1);
-        assertEquals(database2.getName(), "test-database");
+        assertEquals(database2.getName(), DB_TEST_CISD);
         assertEquals(database2.getLabel(), "Test Database");
         assertEquals(database2.getCreatorMinimalRole(), Role.POWER_USER);
         assertEquals(database2.getCreatorMinimalRoleLevel(), RoleLevel.SPACE);
@@ -132,7 +131,7 @@ public class SearchQueryDatabaseTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         QueryDatabaseSearchCriteria criteria = new QueryDatabaseSearchCriteria();
-        criteria.withId().thatEquals(new QueryDatabaseName("1"));
+        criteria.withId().thatEquals(DB_OPENBIS_METADATA_ID);
 
         QueryDatabaseFetchOptions fo = new QueryDatabaseFetchOptions();
         fo.withSpace();

@@ -5,6 +5,7 @@ import Header from '@src/js/components/common/form/Header.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -82,7 +83,7 @@ class UserGroupFormParametersUser extends React.PureComponent {
 
     return (
       <Container>
-        <Header>User</Header>
+        <Header>{messages.get(messages.USER)}</Header>
         {this.renderMessageVisible()}
         {this.renderUserId(user)}
       </Container>
@@ -96,8 +97,9 @@ class UserGroupFormParametersUser extends React.PureComponent {
       return (
         <div className={classes.field}>
           <Message type='warning'>
-            The selected user is currently not visible in the user list due to
-            the chosen filtering and paging.
+            {messages.get(
+              messages.OBJECT_NOT_VISIBLE_DUE_TO_FILTERING_AND_PAGING
+            )}
           </Message>
         </div>
       )
@@ -131,7 +133,7 @@ class UserGroupFormParametersUser extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.userId}
-          label='User Id'
+          label={messages.get(messages.USER_ID)}
           name='userId'
           error={error}
           disabled={!enabled}

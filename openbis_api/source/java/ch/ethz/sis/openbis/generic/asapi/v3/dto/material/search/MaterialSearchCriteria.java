@@ -56,6 +56,11 @@ public class MaterialSearchCriteria extends AbstractEntitySearchCriteria<IMateri
         return with(new TextAttributeSearchCriteria());
     }
 
+    public MaterialSearchCriteria withSubcriteria()
+    {
+        return with(new MaterialSearchCriteria());
+    }
+
     @Override
     protected SearchCriteriaToStringBuilder createBuilder()
     {

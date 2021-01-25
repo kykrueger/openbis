@@ -39,8 +39,8 @@ async function testChangeRole() {
           values: {
             inheritedFrom: null,
             level: instanceAdminAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceAdminAssignment.getRole()
           },
           selected: true
@@ -118,7 +118,7 @@ async function testChangeRole() {
             inheritedFrom: null,
             level: openbis.RoleLevel.SPACE,
             space: mySpace.getCode(),
-            project: '(all)',
+            project: '(All)',
             role: null
           },
           selected: true
@@ -159,7 +159,7 @@ async function testChangeRole() {
             inheritedFrom: null,
             level: openbis.RoleLevel.SPACE,
             space: mySpace.getCode(),
-            project: '(all)',
+            project: '(All)',
             role: openbis.Role.ADMIN
           },
           selected: true

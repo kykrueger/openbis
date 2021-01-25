@@ -248,7 +248,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 
                     if(profile.isPropertyPressent(sampleType, "$BARCODE")) {
                         dropdownOptionsModel.push({
-                            label : "Barcode Update",
+                            label : "Custom Barcode Update",
                             action : function() {
                                 BarcodeUtil.readBarcode([_this._sampleFormModel.sample]);
                             }
@@ -910,12 +910,16 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		
 		$fieldset.append($codeField);
 
-		if(this._sampleFormModel.mode !== FormMode.CREATE && profile.mainMenu.showBarcodes) {
-		    var $barcodeProperty = this._sampleFormModel.sample.properties["$BARCODE"];
+        if(this._sampleFormModel.mode !== FormMode.CREATE && profile.mainMenu.showBarcodes) {
+		    var $defaultBarcodeField = FormUtil.getFieldForLabelWithText("Default Barcode", this._sampleFormModel.sample.permId);
+		    $fieldset.append($defaultBarcodeField);
 
-		    var $barcodeField = FormUtil.getFieldForLabelWithText("Barcodes", this._sampleFormModel.sample.permId + (($barcodeProperty)?", " + $barcodeProperty:""));
-		    $fieldset.append($barcodeField);
-		}
+		    var $customBarcodeProperty = this._sampleFormModel.sample.properties["$BARCODE"];
+		    if($customBarcodeProperty) {
+		        var $customBarcodePropertyField = FormUtil.getFieldForLabelWithText("Custom Barcode", $customBarcodeProperty);
+		        $fieldset.append($customBarcodePropertyField);
+		    }
+        }
 
 		//
 		// Identification Info - Registration and modification times

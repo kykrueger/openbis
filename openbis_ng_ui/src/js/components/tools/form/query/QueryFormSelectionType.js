@@ -1,5 +1,7 @@
 const QUERY = 'query'
+const EXECUTE_PARAMETER = 'executeParameter'
 
 export default {
-  QUERY
+  QUERY,
+  EXECUTE_PARAMETER
 }

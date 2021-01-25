@@ -2,6 +2,7 @@ import _ from 'lodash'
 import React from 'react'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 class TypeFormDialogRemoveSection extends React.Component {
@@ -30,17 +31,17 @@ class TypeFormDialogRemoveSection extends React.Component {
 
   getTitle(section) {
     if (section.name.value) {
-      return `Do you want to remove "${section.name.value}" section?`
+      return messages.get(messages.CONFIRMATION_REMOVE, section.name.value)
     } else {
-      return `Do you want to remove the section?`
+      return messages.get(messages.CONFIRMATION_REMOVE_IT)
     }
   }
 
   getContent(object, section) {
     if (section.usages > 0) {
-      return `This section contains property assignments which are already used by existing entities of "${object.id}" type. Removing it is also going to remove ${section.usages} existing property value(s) - data will be lost! Are you sure you want to proceed?`
+      return messages.get(messages.SECTION_IS_USED, object.id, section.usages)
     } else {
-      return `This section contains only property assignments which are not yet used by any entities of "${object.id}" type.`
+      return messages.get(messages.SECTION_IS_NOT_USED, object.id)
     }
   }
 

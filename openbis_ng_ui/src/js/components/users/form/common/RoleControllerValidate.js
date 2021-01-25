@@ -1,4 +1,5 @@
 import RoleSelectionType from '@src/js/components/users/form/common/RoleSelectionType.js'
+import messages from '@src/js/common/messages.js'
 
 export default class RoleControllerValidate {
   constructor(controller) {
@@ -8,15 +9,19 @@ export default class RoleControllerValidate {
 
   validate(validator, roles) {
     roles.forEach(role => {
-      validator.validateNotEmpty(role, 'level', 'Level')
+      validator.validateNotEmpty(role, 'level', messages.get(messages.LEVEL))
       if (role.space.visible) {
-        validator.validateNotEmpty(role, 'space', 'Space')
+        validator.validateNotEmpty(role, 'space', messages.get(messages.SPACE))
       }
       if (role.project.visible) {
-        validator.validateNotEmpty(role, 'project', 'Project')
+        validator.validateNotEmpty(
+          role,
+          'project',
+          messages.get(messages.PROJECT)
+        )
       }
       if (role.role.visible) {
-        validator.validateNotEmpty(role, 'role', 'Role')
+        validator.validateNotEmpty(role, 'role', messages.get(messages.ROLE))
       }
     })
     return validator.withErrors(roles)

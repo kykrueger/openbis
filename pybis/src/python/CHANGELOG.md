@@ -1,3 +1,24 @@
+## Changes with pybis-1.17.4
+
+- fixed another vocabularies update bug
+- extended tests
+- extended documentation
+
+## Changes with pybis-1.17.3
+
+- fixed vocabularies bug
+- fixed updating vocabularies
+
+## Changes with pybis-1.17.1
+
+- fixed datastore bug
+
+## Changes with pybis-1.17.0
+
+- added caching for often used but rarely updated openBIS objects.
+- if you need to create a lot of Samples, this will improve your speed a lot
+- by default, caching is enabled
+
 ## Changes with pybis-1.16.2
 
 - transaction.commit() now updates all added samples with their respective permIds
@@ -123,7 +144,7 @@
 ## Changes with pybis-1.10.1
 
 * fixed a nasty threading bug: open threads are now closed when downloading or uploading datasets
-* this bugfix avoids this RuntimeError: can't start new thread
+* this bugfix avoids this RuntimeError: cannot start new thread
 
 ## Changes with pybis-1.10.0
 

@@ -28,8 +28,8 @@ async function testSelectRole() {
         {
           values: {
             level: instanceObserverAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverAssignment.getRole()
           },
           selected: false
@@ -57,8 +57,8 @@ async function testSelectRole() {
         {
           values: {
             level: instanceObserverAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverAssignment.getRole()
           },
           selected: true
@@ -93,8 +93,8 @@ async function testSelectRole() {
         {
           values: {
             level: instanceObserverAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverAssignment.getRole()
           },
           selected: true

@@ -21,6 +21,7 @@ const ENTITY_VALIDATION_PLUGIN = 'entityValidationPlugin'
 const QUERY = 'query'
 
 const SEARCH = 'search'
+const OVERVIEW = 'overview'
 
 export default {
   NEW_OBJECT_TYPE,
@@ -43,5 +44,6 @@ export default {
   DYNAMIC_PROPERTY_PLUGIN,
   ENTITY_VALIDATION_PLUGIN,
   QUERY,
-  SEARCH
+  SEARCH,
+  OVERVIEW
 }

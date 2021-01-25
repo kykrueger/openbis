@@ -4,6 +4,7 @@ import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -78,11 +79,16 @@ class UserGroupFormParametersGroup extends React.PureComponent {
 
     return (
       <Container>
-        <Header>Group</Header>
+        {this.renderHeader(group)}
         {this.renderCode(group)}
         {this.renderDescription(group)}
       </Container>
     )
+  }
+
+  renderHeader(group) {
+    const message = group.original ? messages.GROUP : messages.NEW_GROUP
+    return <Header>{messages.get(message)}</Header>
   }
 
   renderCode(group) {
@@ -97,7 +103,7 @@ class UserGroupFormParametersGroup extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.code}
-          label='Code'
+          label={messages.get(messages.CODE)}
           name='code'
           mandatory={true}
           error={error}
@@ -124,7 +130,7 @@ class UserGroupFormParametersGroup extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.description}
-          label='Description'
+          label={messages.get(messages.DESCRIPTION)}
           name='description'
           error={error}
           disabled={!enabled}

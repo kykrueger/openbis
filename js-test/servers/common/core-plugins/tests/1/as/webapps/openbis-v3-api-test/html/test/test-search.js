@@ -829,13 +829,13 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			var fSearch = function(facade) {
 				var criteria = new c.SampleSearchCriteria();
-				criteria.withIdentifier().thatEquals("/PLATONIC/PLATE-1");
+				criteria.withIdentifier().thatEquals("/PLATONIC/SCREENING-EXAMPLES/PLATE-1");
 				return facade.searchSamples(criteria, c.createSampleFetchOptions());
 			}
 
 			var fCheck = function(facade, samples) {
 				c.assertEqual(samples.length, 1);
-				c.assertEqual(samples[0].getIdentifier(), "/PLATONIC/PLATE-1");
+				c.assertEqual(samples[0].getIdentifier(), "/PLATONIC/SCREENING-EXAMPLES/PLATE-1");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -863,14 +863,17 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			var fSearch = function(facade) {
 				var criteria = new c.SampleSearchCriteria();
-				criteria.withCode().thatIsLessThanOrEqualTo("A1");
+				criteria.withCode().thatIsLessThanOrEqualTo("PLATE-2:A1");
 				return facade.searchSamples(criteria, c.createSampleFetchOptions());
 			}
 
 			var fCheck = function(facade, samples) {
 				identifiers = c.extractIdentifiers(samples);
-				c.assertEqual(identifiers.length, 4);
-				c.assertEqual(identifiers.toString(), "/PLATONIC/PLATE-1:A1,/PLATONIC/PLATE-2:A1,/TEST/PLATE-1A:A1,/TEST/PLATE-2:A1");
+				var identifiersString = identifiers.toString();
+				c.assertTrue(identifiersString.indexOf("/PLATONIC/SCREENING-EXAMPLES/PLATE-1:A1") >= 0);
+				c.assertTrue(identifiersString.indexOf("/PLATONIC/SCREENING-EXAMPLES/PLATE-2:A1") >= 0);
+				c.assertTrue(identifiersString.indexOf("/TEST/TEST-PROJECT/PLATE-1A:A1") >= 0);
+				c.assertTrue(identifiersString.indexOf("/TEST/TEST-PROJECT/PLATE-2:A1") >= 0);
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -889,7 +892,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fCheck = function(facade, samples) {
 				identifiers = c.extractIdentifiers(samples);
 				c.assertEqual(identifiers.length, 1);
-				c.assertEqual(identifiers.toString(), "/TEST/TEST-SAMPLE-2-PARENT");
+				c.assertEqual(identifiers.toString(), "/TEST/TEST-PROJECT/TEST-SAMPLE-2-PARENT");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -908,7 +911,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fCheck = function(facade, samples) {
 				identifiers = c.extractIdentifiers(samples);
 				c.assertEqual(identifiers.length, 2);
-				c.assertEqual(identifiers.toString(), "/TEST/TEST-SAMPLE-2-CHILD-2,/TEST/TEST-SAMPLE-2-PARENT");
+				c.assertEqual(identifiers.toString(), "/TEST/TEST-PROJECT/TEST-SAMPLE-2-CHILD-2,/TEST/TEST-PROJECT/TEST-SAMPLE-2-PARENT");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -921,8 +924,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var criteria = new c.SampleSearchCriteria().withAndOperator();
 
 				var subCriteria1 = criteria.withSubcriteria().withOrOperator();
-				subCriteria1.withIdentifier().thatStartsWith("/PLATONIC/PLATE-1");
-				subCriteria1.withIdentifier().thatStartsWith("/TEST/PLATE-2");
+				subCriteria1.withIdentifier().thatStartsWith("/PLATONIC/SCREENING-EXAMPLES/PLATE-1");
+				subCriteria1.withIdentifier().thatStartsWith("/TEST/TEST-PROJECT/PLATE-2");
 
 				var subCriteria2 = criteria.withSubcriteria().withOrOperator();
 				subCriteria2.withIdentifier().thatEndsWith(":A1");
@@ -935,7 +938,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var identifiers = c.extractIdentifiers(samples);
 				c.assertEqual(identifiers.length, 4);
 				c.assertEqual(identifiers.toString(),
-					"/PLATONIC/PLATE-1:A1,/PLATONIC/PLATE-1:A2,/TEST/PLATE-2:A1,/TEST/PLATE-2:A2");
+					"/PLATONIC/SCREENING-EXAMPLES/PLATE-1:A1,/PLATONIC/SCREENING-EXAMPLES/PLATE-1:A2,/TEST/TEST-PROJECT/PLATE-2:A1,/TEST/TEST-PROJECT/PLATE-2:A2");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -1701,7 +1704,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 12);
+				objects = objects.filter(o => o.getObjectIdentifier().toString().search("V3") < 0);
+				c.assertEqual(objects.length, 4);
 				var prepopulatedExperimentsCount = 0;
 				var prepopulatedSamplesCount = 0;
                 for (var oIdx = 0; oIdx < objects.length; oIdx++) {
@@ -1748,8 +1752,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 							if (samplePermId === "20130412140147735-20") {
 								prepopulatedSamplesCount++;
 							}
-							c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/PLATE-1" ||
-								result.getObjectIdentifier().getIdentifier().startsWith("/TEST/V3_SAMPLE_"),
+							c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/SCREENING-EXAMPLES/PLATE-1" ||
+								result.getObjectIdentifier().getIdentifier().startsWith("/TEST/TEST-PROJECT/V3_SAMPLE_"),
 								"ObjectIdentifier");
 							c.assertTrue(match === "Perm ID: " + samplePermId ||
 								match === "Property 'Test Property Type': 20130412140147735-20",
@@ -1798,6 +1802,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
+				objects = objects.filter(o => o.getObjectIdentifier().toString().search("V3") < 0);
 				c.assertEqual(objects.length, 1);
 
 				var object0 = objects[0];
@@ -1828,7 +1833,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 3);
+				objects = objects.filter(o => o.getObjectIdentifier().toString().search("V3") < 0);
+				c.assertEqual(objects.length, 1);
 
 				var prepopulatedExperimentsCount = 0;
 				for (var i = 0; i < objects.length; i++) {
@@ -3353,7 +3359,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 		function createSample(c, facade, sampleTypeId, propertyType, value) {
 			var creation = new c.SampleCreation();
 			creation.setTypeId(sampleTypeId);
-			creation.setCode("TST-SAMPLE-" + Date.now());
+			creation.setCode("V3-TST-SAMPLE-" + Date.now());
 			creation.setSpaceId(new c.SpacePermId("TEST"));
 			creation.setProperty(propertyType, value);
 			return facade.createSamples([creation]);

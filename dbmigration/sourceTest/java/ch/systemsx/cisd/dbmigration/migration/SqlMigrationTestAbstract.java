@@ -39,7 +39,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 
 /**
  * Test cases for database migration.
- * 
+ *
  * @author Piotr Kupczyk
  */
 public abstract class SqlMigrationTestAbstract
@@ -92,18 +92,18 @@ public abstract class SqlMigrationTestAbstract
             // create first version of the migration database
             migrationContext = createMigrationDatabaseContext(true);
             DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(migrationContext,
-                    firstVersion.getVersionString());
+                    firstVersion.getVersionString(), "000");
 
             // migrate the migration database to the newest version
             migrationContext.setCreateFromScratch(false);
             DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(migrationContext,
-                    newestVersion.getVersionString());
+                    newestVersion.getVersionString(), "000");
             dumpDatabaseSchema(migrationContext, getMigratedDatabaseSchemaFile());
 
             // create the scratch database with the newest version
             scratchContext = createScratchDatabaseContext();
             DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(scratchContext,
-                    newestVersion.getVersionString());
+                    newestVersion.getVersionString(), "000");
             dumpDatabaseSchema(scratchContext, getScratchDatabaseSchemaFile());
 
             // check migration and scratch databases are equal

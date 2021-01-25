@@ -53,8 +53,8 @@ async function testRemoveGroup() {
           values: {
             inheritedFrom: instanceObserverGroup.getCode(),
             level: instanceObserverGroupAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverGroupAssignment.getRole()
           },
           selected: false
@@ -64,7 +64,7 @@ async function testRemoveGroup() {
             inheritedFrom: testSpacePowerUserGroup.getCode(),
             level: testSpacePowerUserGroupAssignment.getRoleLevel(),
             space: testSpacePowerUserGroupAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserGroupAssignment.getRole()
           },
           selected: false
@@ -74,7 +74,7 @@ async function testRemoveGroup() {
             inheritedFrom: null,
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: false
@@ -109,7 +109,7 @@ async function testRemoveGroup() {
             inheritedFrom: testSpacePowerUserGroup.getCode(),
             level: testSpacePowerUserGroupAssignment.getRoleLevel(),
             space: testSpacePowerUserGroupAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserGroupAssignment.getRole()
           },
           selected: false
@@ -119,7 +119,7 @@ async function testRemoveGroup() {
             inheritedFrom: null,
             level: mySpaceAdminAssignment.getRoleLevel(),
             space: mySpaceAdminAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: mySpaceAdminAssignment.getRole()
           },
           selected: false
@@ -144,7 +144,7 @@ async function testRemoveGroup() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

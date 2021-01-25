@@ -9,6 +9,8 @@ import QueryFormController from '@src/js/components/tools/form/query/QueryFormCo
 import QueryFormFacade from '@src/js/components/tools/form/query/QueryFormFacade.js'
 import QueryFormParameters from '@src/js/components/tools/form/query/QueryFormParameters.jsx'
 import QueryFormSql from '@src/js/components/tools/form/query/QueryFormSql.jsx'
+import QueryFormExecuteParameters from '@src/js/components/tools/form/query/QueryFormExecuteParameters.jsx'
+import QueryFormExecuteResults from '@src/js/components/tools/form/query/QueryFormExecuteResults.jsx'
 import QueryFormButtons from '@src/js/components/tools/form/query/QueryFormButtons.jsx'
 import logger from '@src/js/common/logger.js'
 
@@ -53,17 +55,35 @@ class QueryForm extends React.PureComponent {
 
   renderMainPanel() {
     const { controller } = this
-    const { query, selection, mode } = this.state
+    const {
+      query,
+      executeParameters,
+      executeResults,
+      selection,
+      dictionaries,
+      mode
+    } = this.state
 
     return (
-      <QueryFormSql
-        query={query}
-        selection={selection}
-        mode={mode}
-        onChange={controller.handleChange}
-        onSelectionChange={controller.handleSelectionChange}
-        onBlur={controller.handleBlur}
-      />
+      <React.Fragment>
+        <QueryFormSql
+          query={query}
+          selection={selection}
+          mode={mode}
+          onChange={controller.handleChange}
+          onSelectionChange={controller.handleSelectionChange}
+          onBlur={controller.handleBlur}
+        />
+        <QueryFormExecuteParameters
+          parameters={executeParameters}
+          onChange={controller.handleChange}
+        />
+        <QueryFormExecuteResults
+          query={query}
+          results={executeResults}
+          dictionaries={dictionaries}
+        />
+      </React.Fragment>
     )
   }
 
@@ -93,6 +113,7 @@ class QueryForm extends React.PureComponent {
         onEdit={controller.handleEdit}
         onSave={controller.handleSave}
         onCancel={controller.handleCancel}
+        onExecute={controller.handleExecute}
         query={query}
         changed={changed}
         mode={mode}

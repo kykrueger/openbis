@@ -9,6 +9,14 @@ export default class QueryFormFacade {
     })
   }
 
+  async loadQueryDatabases() {
+    const criteria = new openbis.QueryDatabaseSearchCriteria()
+    const fo = new openbis.QueryDatabaseFetchOptions()
+    fo.withSpace()
+    const result = await openbis.searchQueryDatabases(criteria, fo)
+    return result.getObjects()
+  }
+
   async loadExperimentTypes() {
     const result = await openbis.searchExperimentTypes(
       new openbis.ExperimentTypeSearchCriteria(),
@@ -39,6 +47,14 @@ export default class QueryFormFacade {
       new openbis.MaterialTypeFetchOptions()
     )
     return result.getObjects()
+  }
+
+  async executeQuery(id, options) {
+    return openbis.executeQuery(id, options)
+  }
+
+  async executeSql(sql, options) {
+    return openbis.executeSql(sql, options)
   }
 
   async executeOperations(operations, options) {

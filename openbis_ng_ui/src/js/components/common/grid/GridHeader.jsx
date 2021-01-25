@@ -13,7 +13,8 @@ const styles = theme => ({
       top: 0,
       zIndex: 10,
       fontWeight: 'bold',
-      backgroundColor: theme.palette.background.primary
+      backgroundColor: theme.palette.background.primary,
+      minWidth: '120px'
     }
   },
   cell: {

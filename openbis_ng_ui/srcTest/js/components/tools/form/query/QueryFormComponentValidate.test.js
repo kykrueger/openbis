@@ -29,7 +29,7 @@ async function testValidate() {
       }
     },
     parameters: {
-      title: 'Query',
+      title: 'New Query',
       name: {
         label: 'Name',
         value: null,
@@ -56,6 +56,14 @@ async function testValidate() {
         value: false,
         error: null
       }
+    },
+    executeParameters: {
+      title: null,
+      parameters: []
+    },
+    executeResults: {
+      title: null,
+      grid: null
     },
     buttons: {
       save: {

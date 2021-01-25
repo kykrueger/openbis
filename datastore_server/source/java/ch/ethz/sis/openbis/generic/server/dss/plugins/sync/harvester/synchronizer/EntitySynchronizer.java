@@ -1667,6 +1667,10 @@ public class EntitySynchronizer
         {
             NewSample incomingSmp = samplesToUpdate.get(sampleIdentifier);
             Sample sample = service.tryGetSampleByPermId(incomingSmp.getPermID());
+            if (sample == null)
+            {
+                sample = service.tryGetSampleWithExperiment(sampleIdentifier);
+            }
 
             TechId sampleId = TechId.create(sample);
             ExperimentIdentifier experimentIdentifier = getExperimentIdentifier(incomingSmp);
