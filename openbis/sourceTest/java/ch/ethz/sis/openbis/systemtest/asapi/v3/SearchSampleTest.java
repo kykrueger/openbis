@@ -2452,6 +2452,37 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchForSampleWithStringProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createAVarcharPropertyType(sessionToken, "SHORT_TEXT");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation1 = new SampleCreation();
+        sampleCreation1.setCode("TEXT_PROPERTY_TEST_1");
+        sampleCreation1.setTypeId(sampleType);
+        sampleCreation1.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation1.setProperty("SHORT_TEXT", "test");
+
+        final SampleCreation sampleCreation2 = new SampleCreation();
+        sampleCreation2.setCode("TEXT_PROPERTY_TEST_2");
+        sampleCreation2.setTypeId(sampleType);
+        sampleCreation2.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation2.setProperty("SHORT_TEXT", "te*t");
+
+        v3api.createSamples(sessionToken, Arrays.asList(sampleCreation1, sampleCreation2));
+
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withStringProperty("SHORT_TEXT").thatEquals("te*t");
+        testSearch(TEST_USER, criteria1, "/CISD/TEXT_PROPERTY_TEST_2");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withStringProperty("SHORT_TEXT").withWildcards().thatEquals("te*t");
+        testSearch(TEST_USER, criteria2, "/CISD/TEXT_PROPERTY_TEST_1", "/CISD/TEXT_PROPERTY_TEST_2");
+    }
+
+    @Test
     public void testSearchForSampleWithStringPropertyQueriedAsIntegerOrDate()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
