@@ -105,6 +105,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
             {
                 final String alias = SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
+                final boolean useWildcards = criterion.isUseWildcards();
                 final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim());
                 final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
                 final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
@@ -124,7 +125,8 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                     sqlBuilder.append(aliases.get(MODIFIER_JOIN_INFORMATION_KEY).getSubTableAlias()).append(PERIOD)
                             .append(USER_COLUMN).append(SP);
                     TranslatorUtils.appendStringComparatorOp(value.getClass(),
-                            TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder, args);
+                            TranslatorUtils.stripQuotationMarks(value.getValue()), useWildcards,
+                            sqlBuilder, args);
                     sqlBuilder.append(separator);
                 }
 
@@ -167,8 +169,8 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                             } else
                             {
                                 stringBuilder.append(separator);
-                                TranslatorUtils.translateStringComparison(alias, fieldName, value, VARCHAR,
-                                        stringBuilder, args);
+                                TranslatorUtils.translateStringComparison(alias, fieldName, value, useWildcards,
+                                        VARCHAR, stringBuilder, args);
                             }
                         },
                         StringBuilder::append);
