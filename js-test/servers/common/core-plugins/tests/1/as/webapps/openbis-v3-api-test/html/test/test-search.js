@@ -1227,6 +1227,37 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		// TODO: this test is failing.
+		QUnit.test("searchDataSets() withSampleWithWildcards", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fSearch1 = function(facade) {
+				var criteria = new c.DataSetSearchCriteria();
+				criteria.withCode().thatEquals("*-40?");
+				criteria.withSample();
+				return facade.searchDataSets(criteria, c.createDataSetFetchOptions());
+			}
+
+			var fCheck1 = function(facade, dataSets) {
+				c.assertObjectsWithValues(dataSets, "code", []);
+			}
+
+			testSearch(c, fSearch1, fCheck1);
+
+			var fSearch2 = function(facade) {
+				var criteria = new c.DataSetSearchCriteria();
+				criteria.withCode().withWildcards().thatEquals("*-40?");
+				criteria.withSample();
+				return facade.searchDataSets(criteria, c.createDataSetFetchOptions());
+			}
+
+			var fCheck2 = function(facade, dataSets) {
+				c.assertObjectsWithValues(dataSets, "code", [ "20130415093804724-403", "20130415100238098-408" ]);
+			}
+
+			testSearch(c, fSearch2, fCheck2);
+		});
+
 		QUnit.test("searchDataSets() withoutExperiment", function(assert) {
 			var c = new common(assert, openbis);
 
