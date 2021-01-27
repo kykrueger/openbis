@@ -60,7 +60,16 @@ public class TagSearchManager extends AbstractLocalSearchManager<TagSearchCriter
 
     private NameSearchCriteria convertToNameSearchCriterion(final AbstractFieldSearchCriteria<AbstractStringValue> criterion)
     {
-        return convertToOtherCriterion(criterion, NameSearchCriteria::new);
+        return convertToOtherCriterion(criterion, () ->
+        {
+            final NameSearchCriteria result = new NameSearchCriteria();
+            if (criterion instanceof StringFieldSearchCriteria &&
+                    ((StringFieldSearchCriteria) criterion).isUseWildcards())
+            {
+                result.withWildcards();
+            }
+            return result;
+        });
     }
 
     @Override
