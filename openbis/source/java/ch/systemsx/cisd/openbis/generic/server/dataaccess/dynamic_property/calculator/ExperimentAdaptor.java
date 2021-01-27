@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 
 /**
  * {@link IEntityAdaptor} implementation for {@link ExperimentPE}.
- * 
+ *
  * @author Piotr Buczek
  */
 public class ExperimentAdaptor extends AbstractEntityAdaptor implements IExperimentAdaptor,
@@ -93,7 +93,7 @@ public class ExperimentAdaptor extends AbstractEntityAdaptor implements IExperim
 
         final SampleFetchOptions fetchOptions = new SampleFetchOptions();
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
-        criteria.withType().withCode().thatEquals(typeRegexp);
+        criteria.withType().withCode().withWildcards().thatEquals(typeRegexp);
         criteria.withExperiment().withPermId().thatEquals(String.valueOf(experimentPE.getPermId()));
 
         final PersonPE systemUser = personDAO.tryFindPersonByUserId(PersonPE.SYSTEM_USER_ID);
@@ -123,7 +123,7 @@ public class ExperimentAdaptor extends AbstractEntityAdaptor implements IExperim
 
         final DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
-        criteria.withType().withCode().thatEquals(typeRegexp);
+        criteria.withType().withCode().withWildcards().thatEquals(typeRegexp);
         criteria.withExperiment().withPermId().thatEquals(experimentPE.getPermId());
 
         final PersonPE systemUser = personDAO.tryFindPersonByUserId(PersonPE.SYSTEM_USER_ID);
