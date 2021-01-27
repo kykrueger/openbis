@@ -707,7 +707,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         if (    comparisonOperator == null ||
                 comparisonOperator == CompareType.EQUALS) {
             if (v1Criteria.isUseWildcardSearchMode()) {
-                // TODO: V3 doesn't support with or without wildcards, instead if a * or ? is found, they are used as wildcards
+                stringFieldSearchCriteria.withWildcards();
             }
             // Old Lucene behaviour was always word match, real equals should be even more restrictive/correct
             if (value.startsWith("\"") && value.endsWith("\"")) {
