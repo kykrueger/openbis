@@ -30,7 +30,7 @@ from tabulate import tabulate
 
 from . import data_set as pbds
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
-from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid, extract_nested_permids, extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId, is_number
+from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid, extract_nested_permids, extract_identifiers,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId, is_number
 from .entity_type import EntityType, SampleType, DataSetType, MaterialType, ExperimentType
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject, Transaction
@@ -4034,8 +4034,7 @@ class Openbis:
         parse_jackson(response)
 
         if attrs is None: attrs = []
-        default_attrs = ['identifier', 'permId', 'type',
-                 'registrator', 'registrationDate', 'modifier', 'modificationDate']
+        default_attrs = ['identifier', 'permId', 'type', 'registrator', 'registrationDate', 'modifier', 'modificationDate']
         display_attrs = default_attrs + attrs
 
         if props is None:
@@ -4055,6 +4054,7 @@ class Openbis:
                 if '.' in attr:
                     entity, attribute_to_extract = attr.split('.')
                     samples[attr] = samples[entity].map(extract_attribute(attribute_to_extract))
+
             for attr in attrs:
                 # if no dot supplied, just display the code of the space, project or experiment
                 if attr in ['project', 'experiment']:
@@ -4067,6 +4067,10 @@ class Openbis:
             samples['registrator'] = samples['registrator'].map(extract_person)
             samples['modifier'] = samples['modifier'].map(extract_person)
             samples['identifier'] = samples['identifier'].map(extract_identifier)
+            samples['container'] = samples['container'].map(extract_nested_identifier)
+            for column in ['parents','children','components']:
+                if column in samples:
+                    samples[column] = samples[column].map(extract_identifiers)
             samples['permId'] = samples['permId'].map(extract_permid)
             samples['type'] = samples['type'].map(extract_nested_permid)
 
