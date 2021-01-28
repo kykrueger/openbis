@@ -138,8 +138,11 @@ class Things():
         if self.df is not None and len(self.df) > 0:
             row = None
             if isinstance(key, int):
-                # get thing by rowid
-                row = self.df.loc[[key]]
+                if self.objects:
+                    return self.objects[key]
+                else:
+                    # get thing by rowid
+                    row = self.df.loc[[key]]
             elif isinstance(key, list):
                 # treat it as a normal dataframe
                 return self.df[key]
