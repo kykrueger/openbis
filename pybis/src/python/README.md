@@ -67,6 +67,7 @@ In an **interactive session** e.g. inside a Jupyter notebook, you can use `getpa
 ```
 from pybis import Openbis
 o = Openbis('https://example.com')
+o = Openbis('example.com')          # https:// is assumed
 
 import getpass
 password = getpass.getpass()
@@ -718,6 +719,16 @@ samples = o.get_samples(
         'registrator.email',
         'type.generatedCodePrefix'
     ],
+    parent_property = 'value',        # search in a parent's property
+    child_property  = 'value',        # search in a child's property
+    component_property = 'value'      # search in a component's property
+    container_property = 'value'      # search in a container's property
+    parent = '/MY_SPACE/PARENT_SAMPLE', # sample has this as its parent
+    parent = '*',                     # sample has at least one parent
+    child  = '/MY_SPACE/CHILD_SAMPLE',
+    child  = '*',                     # sample has at least one child
+    component = 'MY_SPACE/CONTAINER_SAMPLE',
+    component = '*'                   # sample has at least one component
     props=['$NAME', 'MATING_TYPE']    # show these properties in the result
 )
 
@@ -851,6 +862,16 @@ datasets = o.get_datasets(
     count      = 10,                  # enable paging
     registrationDate = "2020-01-01",  # date format: YYYY-MM-DD
     modificationDate = "<2020-12-31", # use > or < to search for specified date and later / earlier
+    parent_property = 'value',        # search in a parent's property
+    child_property  = 'value',        # search in a child's property
+    component_property = 'value'      # search in a component's property
+    container_property = 'value'      # search in a container's property
+    parent = '/MY_SPACE/PARENT_DS',   # ds has this ds as its parent
+    parent = '*',                     # ds has at least one parent ds
+    child  = '/MY_SPACE/CHILD_DS',
+    child  = '*',                     # ds has at least one child ds
+    container = 'MY_SPACE/CONTAINER_DS',
+    container = '*',                  # ds belongs to at least one container ds
     attrs=[                           # show these attributes in the dataFrame
         'sample.code',
         'registrator.email',
