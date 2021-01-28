@@ -721,14 +721,13 @@ samples = o.get_samples(
     ],
     parent_property = 'value',        # search in a parent's property
     child_property  = 'value',        # search in a child's property
-    component_property = 'value'      # search in a component's property
     container_property = 'value'      # search in a container's property
     parent = '/MY_SPACE/PARENT_SAMPLE', # sample has this as its parent
     parent = '*',                     # sample has at least one parent
     child  = '/MY_SPACE/CHILD_SAMPLE',
     child  = '*',                     # sample has at least one child
-    component = 'MY_SPACE/CONTAINER_SAMPLE',
-    component = '*'                   # sample has at least one component
+    container = 'MY_SPACE/CONTAINER',
+    container = '*'                   # sample lives in a container
     props=['$NAME', 'MATING_TYPE']    # show these properties in the result
 )
 
@@ -864,14 +863,13 @@ datasets = o.get_datasets(
     modificationDate = "<2020-12-31", # use > or < to search for specified date and later / earlier
     parent_property = 'value',        # search in a parent's property
     child_property  = 'value',        # search in a child's property
-    component_property = 'value'      # search in a component's property
     container_property = 'value'      # search in a container's property
-    parent = '/MY_SPACE/PARENT_DS',   # ds has this ds as its parent
-    parent = '*',                     # ds has at least one parent ds
+    parent = '/MY_SPACE/PARENT_DS',   # has this dataset as its parent
+    parent = '*',                     # has at least one parent dataset
     child  = '/MY_SPACE/CHILD_DS',
-    child  = '*',                     # ds has at least one child ds
+    child  = '*',                     # has at least one child dataset
     container = 'MY_SPACE/CONTAINER_DS',
-    container = '*',                  # ds belongs to at least one container ds
+    container = '*',                  # belongs to a container dataset
     attrs=[                           # show these attributes in the dataFrame
         'sample.code',
         'registrator.email',
