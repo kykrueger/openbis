@@ -417,8 +417,22 @@ def _subcriteria_for_is_finished(is_finished):
 
 def _subcriteria_for_properties(prop, value, entity):
 
-    str_type=  "as.dto.common.search.StringPropertySearchCriteria"
-    eq_type = "as.dto.common.search.StringEqualToValue"
+    if isinstance(value, tuple):
+        str_type = "as.dto.common.search.NumberPropertySearchCriteria"
+        comparator, value = value
+        if comparator == '>':
+            eq_type = "as.dto.common.search.NumberGreaterThanValue"
+        elif comparator == '>=':
+            eq_type = "as.dto.common.search.NumberGreaterThanOrEqualToValue"
+        elif comparator == '<':
+            eq_type = "as.dto.common.search.NumberLessThanValue"
+        elif comparator == '<=':
+            eq_type = "as.dto.common.search.NumberLessThanOrEqualToValue"
+        else:
+            eq_type = "as.dto.common.search.NumberEqualToValue"
+    else:
+        eq_type = "as.dto.common.search.StringEqualToValue"
+        str_type=  "as.dto.common.search.StringPropertySearchCriteria"
     fieldType = "PROPERTY"
     search_types = {
         'sample': {
@@ -717,7 +731,8 @@ class Openbis:
 
     def __init__(self, url=None, verify_certificates=True, token=None,
         use_cache=True,
-        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=False
+        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=False,
+        token_path=None
     ):
         """Initialize a new connection to an openBIS server.
 
@@ -729,6 +744,7 @@ class Openbis:
             url (str): https://openbis.example.com
             verify_certificates (bool): set to False when you use self-signed certificates
             token (str): a valid openBIS token. If not set, pybis will try to read a valid token from ~/.pybis
+            token_path: a path to a file which contains an openBIS token
             use_cache: make openBIS to store spaces, projects, sample types, vocabulary terms and oder more-or-less static objects to optimise speed
             allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks (bool): False
         """
@@ -757,19 +773,17 @@ class Openbis:
         self.url = url_obj.geturl()
         self.port = url_obj.port
         self.hostname = url_obj.hostname
-        self.token = token or os.environ.get("OPENBIS_TOKEN") or self._get_cached_token()
-
         self.download_prefix = os.path.join('data', self.hostname)
-
         self.use_cache = use_cache
         self.cache = {}
-
         self.server_information = None
-        self.token_path = None
 
+        self.token_path = token_path or self.gen_token_path()
+        self.token = token or os.environ.get("OPENBIS_TOKEN") or self._get_saved_token()
         if self.is_token_valid(self.token):
             pass
         else:
+            self._delete_saved_token()
             print("Session is no longer valid. Please log in again.")
 
     def _get_username(self):
@@ -900,26 +914,6 @@ class Openbis:
     def projects(self):
         return self.get_projects()
 
-    def _get_cached_token(self):
-        """Read the token from the .pybis 
-        If the token is not valid anymore, delete it. 
-        """
-        token_path = self.gen_token_path()
-        if not os.path.exists(token_path):
-            return None
-        try:
-            with open(token_path) as f:
-                token = f.read()
-                if token == "":
-                    return None
-                if not self.is_token_valid(token):
-                    os.remove(token_path)
-                    return None
-                else:
-                    return token
-        except FileNotFoundError:
-            return None
-
     def gen_token_path(self, parent_folder=None):
         """generates a path to the token file.
         The token is usually saved in a file called
@@ -934,7 +928,7 @@ class Openbis:
         path = os.path.join(parent_folder, self.hostname + '.token')
         return path
 
-    def save_token(self, token=None, parent_folder=None):
+    def _save_token(self, token=None, parent_folder=None):
         """ saves the session token to the disk, usually here: ~/.pybis/hostname.token. When a new Openbis instance is created, it tries to read this saved token by default.
         """
         if token is None:
@@ -952,12 +946,29 @@ class Openbis:
             f.write(token)
             self.token_path = token_path
 
-    def delete_token(self, token_path=None):
-        """ deletes a stored session token.
+    def _get_saved_token(self):
+        """Read the token from the .pybis 
+        If the token is not valid anymore, delete it. 
         """
-        if token_path is None:
-            token_path = self.token_path
-        os.remove(token_path)
+        token_path = self.token_path or self.gen_token_path()
+        if not os.path.exists(token_path):
+            return None
+        try:
+            with open(token_path) as f:
+                token = f.read()
+                if token == "":
+                    return None
+                else:
+                    return token
+        except FileNotFoundError:
+            return None
+
+    def _delete_saved_token(self):
+        if self.token_path:
+            try:
+                os.remove(self.token_path)
+            except FileNotFoundError:
+                return None
 
     def _post_request(self, resource, request):
         """ internal method, used to handle all post requests and serializing / deserializing
@@ -977,7 +988,6 @@ class Openbis:
             raise ValueError("Your session expired, please log in again")
 
         if DEBUG_LEVEL >=LOG_DEBUG: print(json.dumps(request))
-        
         resp = requests.post(
             full_url,
             json.dumps(request),
@@ -1035,7 +1045,7 @@ class Openbis:
             self.token = result
 
             if save_token:
-                self.save_token()
+                self._save_token()
                 self._password(password)
             # update the OPENBIS_TOKEN environment variable, if OPENBIS_URL is identical to self.url
             if os.environ.get('OPENBIS_URL') == self.url:
@@ -2216,7 +2226,6 @@ class Openbis:
         search_criteria['operator'] = 'AND'
 
         fetchopts = get_fetchoptions('dataSet', including=['type','parents'])
-        print(fetchopts)
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
