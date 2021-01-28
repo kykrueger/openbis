@@ -30,7 +30,7 @@ from tabulate import tabulate
 
 from . import data_set as pbds
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
-from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid, extract_nested_permids, extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
+from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid, extract_nested_permids, extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId, is_number
 from .entity_type import EntityType, SampleType, DataSetType, MaterialType, ExperimentType
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject, Transaction
@@ -417,23 +417,7 @@ def _subcriteria_for_is_finished(is_finished):
 
 def _subcriteria_for_properties(prop, value, entity):
 
-    if isinstance(value, tuple):
-        str_type = "as.dto.common.search.NumberPropertySearchCriteria"
-        comparator, value = value
-        if comparator == '>':
-            eq_type = "as.dto.common.search.NumberGreaterThanValue"
-        elif comparator == '>=':
-            eq_type = "as.dto.common.search.NumberGreaterThanOrEqualToValue"
-        elif comparator == '<':
-            eq_type = "as.dto.common.search.NumberLessThanValue"
-        elif comparator == '<=':
-            eq_type = "as.dto.common.search.NumberLessThanOrEqualToValue"
-        else:
-            eq_type = "as.dto.common.search.NumberEqualToValue"
-    else:
-        eq_type = "as.dto.common.search.StringEqualToValue"
-        str_type=  "as.dto.common.search.StringPropertySearchCriteria"
-    fieldType = "PROPERTY"
+
     search_types = {
         'sample': {
             'parent'    : "as.dto.sample.search.SampleParentsSearchCriteria",
@@ -448,9 +432,15 @@ def _subcriteria_for_properties(prop, value, entity):
         }
     }
 
+    # default values of fieldType, str_type and eq_type
+    fieldType = "PROPERTY"
+    eq_type = "as.dto.common.search.StringEqualToValue"
+    str_type=  "as.dto.common.search.StringPropertySearchCriteria"
 
-    if 'date' in prop.lower() and re.search(r'\d+\-\d+\-\d+', value):
-        
+    is_date = False
+    if 'date' in prop.lower() and re.search(r'\d{4}\-\d{2}\-\d{2}', value):
+        is_date = True
+        eq_type = "as.dto.common.search.DateEqualToValue"
         if prop.lower() =='registrationdate':
             str_type = "as.dto.common.search.RegistrationDateSearchCriteria"
             fieldType = "ATTRIBUTE"
@@ -460,14 +450,70 @@ def _subcriteria_for_properties(prop, value, entity):
         else:
             str_type = "as.dto.common.search.DatePropertySearchCriteria"
 
-        if value.startswith('>'):
-            value = value[1:]
-            eq_type = "as.dto.common.search.DateLaterThanOrEqualToValue"
-        elif value.startswith('<'):
-            value = value[1:]
-            eq_type = "as.dto.common.search.DateEarlierThanOrEqualToValue"
-        else:
-            eq_type = "as.dto.common.search.DateEqualToValue"
+
+    if any(str(value).startswith(operator) for operator in ['>','<','=']):
+        match = re.search(r"""
+            ^
+            (?P<comp_operator>\>\=|\>|\<\=|\<|\=\=|\=)  # extract the comparative operator
+            \s*
+            (?P<value>.*)                           # extract the value
+            """,
+            value,
+            flags=re.X
+        )
+        if match:
+            comp_operator = match.groupdict()['comp_operator']
+            value = match.groupdict()['value']
+
+            # date comparison
+            if is_date:
+                if comp_operator == '>':
+                    eq_type = "as.dto.common.search.DateLaterThanOrEqualToValue"
+                elif comp_operator == '>=':
+                    eq_type = "as.dto.common.search.DateLaterThanOrEqualToValue"
+                elif comp_operator == '<':
+                    eq_type = "as.dto.common.search.DateEarlierThanOrEqualToValue"
+                elif comp_operator == '<=':
+                    eq_type = "as.dto.common.search.DateEarlierThanOrEqualToValue"
+                else:
+                    eq_type = "as.dto.common.search.DateEqualToValue"
+
+            # numeric comparison
+            elif is_number(value):
+                str_type = "as.dto.common.search.NumberPropertySearchCriteria"
+                if comp_operator == '>':
+                    eq_type = "as.dto.common.search.NumberGreaterThanValue"
+                elif comp_operator == '>=':
+                    eq_type = "as.dto.common.search.NumberGreaterThanOrEqualToValue"
+                elif comp_operator == '<':
+                    eq_type = "as.dto.common.search.NumberLessThanValue"
+                elif comp_operator == '<=':
+                    eq_type = "as.dto.common.search.NumberLessThanOrEqualToValue"
+                else:
+                    eq_type = "as.dto.common.search.NumberEqualToValue"
+
+            # string comparison
+            else:
+                if comp_operator == '>':
+                    eq_type = "as.dto.common.search.StringGreaterThanValue"
+                elif comp_operator == '>=':
+                    eq_type = "as.dto.common.search.StringGreaterThanOrEqualToValue"
+                elif comp_operator == '<':
+                    eq_type = "as.dto.common.search.StringLessThanValue"
+                elif comp_operator == '<=':
+                    eq_type = "as.dto.common.search.StringLessThanOrEqualToValue"
+                else:
+                    eq_type = "as.dto.common.search.StringEqualToValue"
+            return {
+                "@type": str_type,
+                "fieldName": prop.upper(),
+                "fieldType": fieldType,
+                "fieldValue": {
+                    "value": value,
+                    "@type": eq_type
+                }
+            }
+
 
     # searching for parent/child/container identifier
     elif any(relation == prop.lower() for relation in ['parent','child','container']):
@@ -524,17 +570,17 @@ def _subcriteria_for_properties(prop, value, entity):
                     }
                 ]
             }
+
     # searching for properties
-    else:
-        return {
-            "@type": str_type,
-            "fieldName": prop.upper(),
-            "fieldType": fieldType,
-            "fieldValue": {
-                "value": value,
-                "@type": eq_type
-            }
+    return {
+        "@type": str_type,
+        "fieldName": prop.upper(),
+        "fieldType": fieldType,
+        "fieldValue": {
+            "value": value,
+            "@type": eq_type
         }
+    }
 
 def _subcriteria_for(thing, entity, parents_or_children='', operator='AND'):
     """Returns the sub-search criteria for «thing», which can be either:
@@ -988,6 +1034,8 @@ class Openbis:
             raise ValueError("Your session expired, please log in again")
 
         if DEBUG_LEVEL >=LOG_DEBUG: print(json.dumps(request))
+        #print(json.dumps(request)) 
+
         resp = requests.post(
             full_url,
             json.dumps(request),
