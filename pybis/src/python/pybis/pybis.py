@@ -416,14 +416,23 @@ def _subcriteria_for_is_finished(is_finished):
 
 
 def _subcriteria_for_properties(prop, value, entity):
+    """This internal method creates the JSON RPC criterias for searching
+    in properties. It distinguishes between numbers, dates and strings
+    and uses the comparative operator (< > >= <=), if available.
+    creationDate and modificationDate attributes can be searched as well.
+    To search in the properties of parents, children, etc. the user has to
+    prefix the propery accordingly:
 
+    - parent_propertyName
+    - child_propertyName
+    - container_propertyName
+    """
 
     search_types = {
         'sample': {
             'parent'    : "as.dto.sample.search.SampleParentsSearchCriteria",
             'child'     : "as.dto.sample.search.SampleChildrenSearchCriteria",
             'container' : "as.dto.sample.search.SampleContainerSearchCriteria",
-            'component' : "as.dto.sample.search.SampleContainerSearchCriteria",
         },
         'dataset': {
             'parent'    : "as.dto.dataset.search.DataSetParentsSearchCriteria",
@@ -441,10 +450,10 @@ def _subcriteria_for_properties(prop, value, entity):
     if 'date' in prop.lower() and re.search(r'\d{4}\-\d{2}\-\d{2}', value):
         is_date = True
         eq_type = "as.dto.common.search.DateEqualToValue"
-        if prop.lower() =='registrationdate':
+        if prop.lower().endswith('registrationdate'):
             str_type = "as.dto.common.search.RegistrationDateSearchCriteria"
             fieldType = "ATTRIBUTE"
-        elif prop.lower() =='modificationdate':
+        elif prop.lower().endswith('modificationdate'):
             str_type = "as.dto.common.search.ModificationDateSearchCriteria"
             fieldType = "ATTRIBUTE"
         else:
@@ -504,23 +513,14 @@ def _subcriteria_for_properties(prop, value, entity):
                     eq_type = "as.dto.common.search.StringLessThanOrEqualToValue"
                 else:
                     eq_type = "as.dto.common.search.StringEqualToValue"
-            return {
-                "@type": str_type,
-                "fieldName": prop.upper(),
-                "fieldType": fieldType,
-                "fieldValue": {
-                    "value": value,
-                    "@type": eq_type
-                }
-            }
 
 
     # searching for parent/child/container identifier
-    elif any(relation == prop.lower() for relation in ['parent','child','container']):
+    if any(relation == prop.lower() for relation in ['parent','child','container']):
         relation=prop.lower()
         if is_identifier(value):
             identifier_search_type = "as.dto.common.search.IdentifierSearchCriteria"
-        # find any parent, child or container
+        # find any parent, child, container
         elif value == '*':
             return {
                 "@type": search_types[entity][relation],
@@ -562,7 +562,7 @@ def _subcriteria_for_properties(prop, value, entity):
                     {
                         "@type": str_type,
                         "fieldName": property_name.upper(),
-                        "fieldType": "PROPERTY",
+                        "fieldType": fieldType,
                         "fieldValue": {
                             "@type": eq_type,
                             "value": value,
@@ -1034,7 +1034,6 @@ class Openbis:
             raise ValueError("Your session expired, please log in again")
 
         if DEBUG_LEVEL >=LOG_DEBUG: print(json.dumps(request))
-        #print(json.dumps(request)) 
 
         resp = requests.post(
             full_url,
@@ -2273,7 +2272,7 @@ class Openbis:
         search_criteria['criteria'] = sub_criteria
         search_criteria['operator'] = 'AND'
 
-        fetchopts = get_fetchoptions('dataSet', including=['type','parents'])
+        fetchopts = get_fetchoptions('dataSet', including=['type','parents','children','containers','components'])
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
@@ -3840,6 +3839,9 @@ class Openbis:
             datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
             datasets['type'] = datasets['type'].map(extract_code)
             datasets['permId'] = datasets['code']
+            for column in ['parents','children','components','containers']:
+                if column in datasets:
+                    datasets[column] = datasets[column].map(extract_identifiers)
             datasets['size'] = datasets['physicalData'].map(lambda x: x.get('size') if x else '')
             datasets['status'] = datasets['physicalData'].map(lambda x: x.get('status') if x else '')
             datasets['presentInArchive'] = datasets['physicalData'].map(lambda x: x.get('presentInArchive') if x else '')
