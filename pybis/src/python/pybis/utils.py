@@ -255,3 +255,14 @@ def extract_userId(user):
         return user['userId']
     else:
         return str(user)
+
+def is_number(value):
+   """detects whether a given value
+   is either an integer or a floating point number
+   1, 2, 3,  etc.
+   1.0, 2.1, etc.
+   .5, .6    etc.
+   """
+   number_regex = re.compile(r'^(?=.)([+-]?([0-9]*)(\.([0-9]+))?)$')
+   return number_regex.search(value)
+
