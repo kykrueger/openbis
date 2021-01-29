@@ -1,3 +1,10 @@
+## Changes with pybis-1.18.0
+
+- speed improvement when searching for samples and dataSets and then cycling through the results
+- implemented search for number comparison, date comparison, string comparison (<, >, <=, >=)
+- implemented search for parents identities and properties
+- fixed minor bugs when connecting
+
 ## Changes with pybis-1.17.4
 
 - fixed another vocabularies update bug
