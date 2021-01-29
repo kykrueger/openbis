@@ -183,6 +183,12 @@ def extract_identifier(ident):
         return str(ident)
     return ident['identifier']
 
+def extract_identifiers(items):
+    if not items:
+        return []
+    return list(
+        data['identifier']['identifier'] if 'identifier' in data else data['permId']['permId'] for data in items
+    )
 
 def extract_nested_identifier(ident):
     if not isinstance(ident, dict):
