@@ -218,7 +218,7 @@ public class SearchSampleTypeTest extends AbstractTest
         testSearch(criteria1, "CELL_PLATE", "DILUTION_PLATE", "DYNAMIC_PLATE", "MASTER_PLATE", "REINFECT_PLATE");
 
         final SampleTypeSearchCriteria criteria2 = new SampleTypeSearchCriteria();
-        criteria2.withCode().thatEquals("*_PLATE");
+        criteria2.withCode().withoutWildcards().thatEquals("*_PLATE");
         testSearch(criteria2);
     }
 
@@ -230,7 +230,7 @@ public class SearchSampleTypeTest extends AbstractTest
         testSearch(criteria1, "DILUTION_PLATE", "REINFECT_PLATE");
 
         final SampleTypeSearchCriteria criteria2 = new SampleTypeSearchCriteria();
-        criteria2.withCode().thatEquals("????????_PLATE");
+        criteria2.withCode().withoutWildcards().thatEquals("????????_PLATE");
         testSearch(criteria2);
     }
 
@@ -260,7 +260,7 @@ public class SearchSampleTypeTest extends AbstractTest
         testSearch(criteria1, "DELETION_TEST", "DILUTION_PLATE");
 
         final SampleTypeSearchCriteria criteria2 = new SampleTypeSearchCriteria();
-        criteria2.withCode().thatStartsWith("D*N_");
+        criteria2.withCode().withoutWildcards().thatStartsWith("D*N_");
         testSearch(criteria2);
     }
 
@@ -272,7 +272,7 @@ public class SearchSampleTypeTest extends AbstractTest
         testSearch(criteria1, "DYNAMIC_PLATE");
 
         final SampleTypeSearchCriteria criteria2 = new SampleTypeSearchCriteria();
-        criteria2.withCode().thatStartsWith("D??????_");
+        criteria2.withCode().withoutWildcards().thatStartsWith("D??????_");
         testSearch(criteria2);
     }
 
@@ -284,7 +284,7 @@ public class SearchSampleTypeTest extends AbstractTest
         testSearch(criteria1, "CELL_PLATE", "DILUTION_PLATE", "DYNAMIC_PLATE", "MASTER_PLATE", "REINFECT_PLATE");
 
         final SampleTypeSearchCriteria criteria2 = new SampleTypeSearchCriteria();
-        criteria2.withCode().thatEndsWith("_P*E");
+        criteria2.withCode().withoutWildcards().thatEndsWith("_P*E");
         testSearch(criteria2);
     }
 
@@ -296,7 +296,7 @@ public class SearchSampleTypeTest extends AbstractTest
         testSearch(criteria1, "DELETION_TEST");
 
         final SampleTypeSearchCriteria criteria2 = new SampleTypeSearchCriteria();
-        criteria2.withCode().thatEndsWith("_???T");
+        criteria2.withCode().withoutWildcards().thatEndsWith("_???T");
         testSearch(criteria2);
     }
 
@@ -308,7 +308,7 @@ public class SearchSampleTypeTest extends AbstractTest
         testSearch(criteria1, "IMPOSSIBLE", "IMPOSSIBLE_TO_UPDATE");
 
         final SampleTypeSearchCriteria criteria2 = new SampleTypeSearchCriteria();
-        criteria2.withCode().thatContains("POS*BLE");
+        criteria2.withCode().withoutWildcards().thatContains("POS*BLE");
         testSearch(criteria2);
     }
 
@@ -320,7 +320,7 @@ public class SearchSampleTypeTest extends AbstractTest
         testSearch(criteria1, "CONTROL_LAYOUT");
 
         final SampleTypeSearchCriteria criteria2 = new SampleTypeSearchCriteria();
-        criteria2.withCode().thatContains("R??_");
+        criteria2.withCode().withoutWildcards().thatContains("R??_");
         testSearch(criteria2);
     }
 
@@ -354,7 +354,7 @@ public class SearchSampleTypeTest extends AbstractTest
 
         final SampleTypeSearchCriteria criteria2 = new SampleTypeSearchCriteria();
         criteria2.withOrOperator();
-        criteria2.withCode().thatStartsWith("D*N_");
+        criteria2.withCode().withoutWildcards().thatStartsWith("D*N_");
         criteria2.withCodes().thatIn(Arrays.asList("MASTER_PLATE", "CELL_PLATE"));
         testSearch(criteria2, "CELL_PLATE", "MASTER_PLATE");
     }

@@ -2457,3 +2457,4 @@ Delete Persons Operation Result
 Person Deletion Options
 isUseWildcards
 withWildcards
+withoutWildcards

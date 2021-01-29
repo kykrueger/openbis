@@ -86,7 +86,7 @@ public class TranslatorUtils
         sqlBuilder.append(SP);
         if (valueClass == StringEqualToValue.class)
         {
-            if (useWildcards)
+            if (useWildcards && containsWildcards(finalValue))
             {
                 sqlBuilder.append(ILIKE).append(SP).append(QU);
                 args.add(toPSQLWildcards(finalValue));
