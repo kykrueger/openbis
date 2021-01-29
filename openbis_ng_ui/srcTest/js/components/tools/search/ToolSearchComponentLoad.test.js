@@ -83,7 +83,7 @@ async function testLoadWithSearchText(resultsFound) {
               name: testPlugin.getName(),
               description: testPlugin.getDescription(),
               pluginKind: testPlugin.getPluginKind(),
-              entityKind: testPlugin.getEntityKinds()[0],
+              entityKind: 'OBJECT',
               registrator: testPlugin.registrator.userId
             }
           },
@@ -246,7 +246,7 @@ async function testLoadWithObjectType(resultsFound) {
                 name: testPlugin.getName(),
                 description: testPlugin.getDescription(),
                 pluginKind: testPlugin.getPluginKind(),
-                entityKind: testPlugin.getEntityKinds()[0],
+                entityKind: 'OBJECT',
                 registrator: testPlugin.registrator.userId
               }
             },

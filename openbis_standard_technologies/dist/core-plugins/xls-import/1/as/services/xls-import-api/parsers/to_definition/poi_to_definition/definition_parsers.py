@@ -10,7 +10,7 @@ class DefinitionParserFactory(object):
         if definition_type in ['VOCABULARY_TYPE', 'SAMPLE_TYPE', 'EXPERIMENT_TYPE', 'DATASET_TYPE', 'EXPERIMENT',
                                'SAMPLE']:
             return GeneralDefinitionParser
-        elif definition_type in ['PROPERTY_TYPE', 'SPACE', 'PROJECT'] or definition_type.startswith('SAMPLE:'):
+        elif definition_type in ['PROPERTY_TYPE', 'SPACE', 'PROJECT']:
             return PropertiesOnlyDefinitionParser
         else:
             raise UnsupportedOperationException(
@@ -38,13 +38,7 @@ class PropertiesOnlyDefinitionParser(object):
 
         poi_definition = PoiCleaner.clean_data(poi_definition, row_numbers)
         definition = Definition()
-
-        type = poi_definition[DEFINITION_TYPE_ROW][DEFINITION_TYPE_CELL]
-        if type.startswith('SAMPLE:'):
-            definition.type = 'SAMPLE'
-            definition.attributes['sample type'] = type[7:]
-        else:
-            definition.type = type
+        definition.type = poi_definition[DEFINITION_TYPE_ROW][DEFINITION_TYPE_CELL]
 
         if PropertiesOnlyDefinitionParser.hasProperties(poi_definition):
             properties_headers = poi_definition[PROPERTIES_HEADER_ROW]

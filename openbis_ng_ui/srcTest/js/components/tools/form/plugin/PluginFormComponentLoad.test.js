@@ -62,10 +62,10 @@ async function testLoadNew(pluginType) {
         label: 'Entity Kind',
         value: null,
         options: [
-          { value: 'MATERIAL' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' }
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'SAMPLE', label: 'OBJECT' },
+          { value: 'DATA_SET', label: 'DATA_SET' }
         ],
         enabled: true,
         mode: 'edit'
@@ -83,10 +83,10 @@ async function testLoadNew(pluginType) {
         label: 'Entity Kind',
         value: null,
         options: [
-          { value: 'MATERIAL' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' }
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'SAMPLE', label: 'OBJECT' },
+          { value: 'DATA_SET', label: 'DATA_SET' }
         ],
         enabled: true,
         mode: 'edit'
@@ -139,10 +139,10 @@ async function testLoadExistingJython(plugin) {
         label: 'Entity Kind',
         value: plugin.getEntityKinds()[0],
         options: [
-          { value: 'MATERIAL' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' }
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'SAMPLE', label: 'OBJECT' },
+          { value: 'DATA_SET', label: 'DATA_SET' }
         ],
         mode: 'view'
       },
@@ -209,10 +209,10 @@ async function testLoadExistingJython(plugin) {
         label: 'Entity Kind',
         value: plugin.getEntityKinds()[0],
         options: [
-          { value: 'MATERIAL' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' }
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'SAMPLE', label: 'OBJECT' },
+          { value: 'DATA_SET', label: 'DATA_SET' }
         ],
         enabled: false,
         mode: 'edit'
@@ -289,10 +289,10 @@ async function testLoadExistingPredeployed(plugin) {
             ? plugin.getEntityKinds()[0]
             : null,
         options: [
-          { value: 'MATERIAL' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' }
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'SAMPLE', label: 'OBJECT' },
+          { value: 'DATA_SET', label: 'DATA_SET' }
         ],
         mode: 'view'
       },
