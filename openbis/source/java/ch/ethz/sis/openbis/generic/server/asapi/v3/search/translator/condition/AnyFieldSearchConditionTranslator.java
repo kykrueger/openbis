@@ -34,6 +34,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.toTsQueryText;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendTsVectorMatch;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
 
@@ -195,10 +196,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                     }
                 } else
                 {
-                    sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD)
-                            .append(TS_VECTOR_COLUMN).append(SP).append(DOUBLE_AT)
-                            .append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
-                    args.add(toTsQueryText(criterion.getFieldValue()));
+                    appendTsVectorMatch(sqlBuilder, criterion.getFieldValue(), MAIN_TABLE_ALIAS, args);
                 }
 
                 sqlBuilder.append(RP).append(NL);

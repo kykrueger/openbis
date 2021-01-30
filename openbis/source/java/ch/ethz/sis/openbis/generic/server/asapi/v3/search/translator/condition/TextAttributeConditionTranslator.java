@@ -23,11 +23,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.u
 import java.util.List;
 import java.util.Map;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.
-        toTsQueryText;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.TS_VECTOR_COLUMN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendTsVectorMatch;
 
 public class TextAttributeConditionTranslator implements IConditionTranslator<TextAttributeSearchCriteria>
 {
@@ -44,9 +41,7 @@ public class TextAttributeConditionTranslator implements IConditionTranslator<Te
             final List<Object> args, final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final Map<String, String> dataTypeByPropertyCode)
     {
-        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP).append(DOUBLE_AT)
-                .append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
-        args.add(toTsQueryText(criterion.getFieldValue()));
+        appendTsVectorMatch(sqlBuilder, criterion.getFieldValue(), MAIN_TABLE_ALIAS, args);
     }
 
 }

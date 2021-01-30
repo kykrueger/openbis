@@ -31,8 +31,8 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.VARCHAR;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.toTsQueryText;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendTsVectorMatch;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
@@ -284,10 +284,8 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 sqlBuilder.append(NL).append(END);
             } else
             {
-                sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias()).append(PERIOD)
-                        .append(TS_VECTOR_COLUMN).append(SP).append(DOUBLE_AT)
-                        .append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
-                args.add(toTsQueryText(criterion.getFieldValue()));
+                appendTsVectorMatch(sqlBuilder, criterion.getFieldValue(),
+                        aliases.get(tableMapper.getValuesTable()).getSubTableAlias(), args);
             }
 
             sqlBuilder.append(NL).append(END);

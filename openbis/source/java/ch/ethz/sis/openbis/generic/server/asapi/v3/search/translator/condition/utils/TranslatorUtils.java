@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.DATE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.TIMESTAMP_WITHOUT_TZ;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.toTsQueryText;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
@@ -752,6 +753,18 @@ public class TranslatorUtils
         spacesJoinInformation.setSubTableAlias(aliasFactory.createAlias());
         spacesJoinInformation.setSubTableIdField(ID_COLUMN);
         return spacesJoinInformation;
+    }
+
+    public static void appendTsVectorMatch(final StringBuilder sqlBuilder, final AbstractStringValue stringValue, final String alias, final List<Object> args)
+    {
+        final String tsQueryValue = toTsQueryText(stringValue);
+        sqlBuilder.append(alias).append(PERIOD)
+                .append(TS_VECTOR_COLUMN).append(SP).append(DOUBLE_AT)
+                .append(SP).append(LP).append(QU).append(DOUBLE_COLON).append(TSQUERY)
+                .append(SP).append(BARS).append(SP)
+                .append(TO_TSQUERY).append(LP).append(QU).append(RP).append(RP);
+        args.add(tsQueryValue);
+        args.add(tsQueryValue);
     }
 
 }
