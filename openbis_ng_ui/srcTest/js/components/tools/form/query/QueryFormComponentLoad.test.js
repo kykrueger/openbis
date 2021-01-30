@@ -77,11 +77,11 @@ async function testLoadNew() {
         label: 'Query Type',
         value: null,
         options: [
-          { value: 'GENERIC' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' },
-          { value: 'MATERIAL' }
+          { value: 'GENERIC', label: 'GENERIC' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'DATA_SET', label: 'DATA_SET' },
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'SAMPLE', label: 'OBJECT' }
         ],
         enabled: true,
         mode: 'edit'
@@ -228,11 +228,11 @@ async function testLoadExisting(query) {
         label: 'Query Type',
         value: query.getQueryType(),
         options: [
-          { value: 'GENERIC' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' },
-          { value: 'MATERIAL' }
+          { value: 'GENERIC', label: 'GENERIC' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'DATA_SET', label: 'DATA_SET' },
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'SAMPLE', label: 'OBJECT' }
         ],
         enabled: true,
         mode: 'edit'

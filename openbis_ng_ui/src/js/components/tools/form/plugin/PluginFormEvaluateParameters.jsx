@@ -2,6 +2,7 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
+import EntityKind from '@src/js/components/common/dto/EntityKind.js'
 import EntityAutocompleterField from '@src/js/components/common/form/EntityAutocompleterField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
@@ -47,7 +48,7 @@ class PluginFormEvaluateParameters extends React.PureComponent {
 
     const options = openbis.EntityKind.values.map(entityKind => {
       return {
-        label: entityKind,
+        label: new EntityKind(entityKind).getLabel(),
         value: entityKind
       }
     })

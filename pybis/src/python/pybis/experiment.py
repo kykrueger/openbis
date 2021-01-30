@@ -32,7 +32,9 @@ class Experiment(
             'get_datasets()', 'get_samples()',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
-            'save()'
+            'save()',
+            'attrs',
+            'props',
         ] + super().__dir__()
 
     @property
@@ -55,8 +57,14 @@ class Experiment(
     def __setattr__(self, name, value):
         if name in ['set_properties', 'add_tags()', 'del_tags()', 'set_tags()']:
             raise ValueError("These are methods which should not be overwritten")
-
-        setattr(self.__dict__['a'], name, value)
+        elif name in ['p', 'props']:
+            if isinstance(value, dict):
+                for p in value:
+                    setattr(self.__dict__['p'], p, value[p])
+            else:
+                raise ValueError("please provide a dictionary for setting properties")
+        else:
+            setattr(self.__dict__['a'], name, value)
 
     def _repr_html_(self):
         html = self.a._repr_html_()

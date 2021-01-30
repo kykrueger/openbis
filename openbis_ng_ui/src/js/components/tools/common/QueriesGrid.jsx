@@ -2,6 +2,7 @@ import React from 'react'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import QueryLink from '@src/js/components/common/link/QueryLink.jsx'
 import UserLink from '@src/js/components/common/link/UserLink.jsx'
+import QueryType from '@src/js/components/common/dto/QueryType.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
@@ -45,7 +46,7 @@ class QueriesGrid extends React.PureComponent {
           {
             name: 'queryType',
             label: messages.get(messages.QUERY_TYPE),
-            getValue: ({ row }) => row.queryType.value
+            getValue: ({ row }) => new QueryType(row.queryType.value).getLabel()
           },
           {
             name: 'entityTypeCodePattern',

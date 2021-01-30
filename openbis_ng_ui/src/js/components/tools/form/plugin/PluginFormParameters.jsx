@@ -6,6 +6,7 @@ import Message from '@src/js/components/common/form/Message.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
+import EntityKind from '@src/js/components/common/dto/EntityKind.js'
 import openbis from '@src/js/services/openbis.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
@@ -175,7 +176,7 @@ class PluginFormParameters extends React.PureComponent {
 
     const options = openbis.EntityKind.values.map(entityKind => {
       return {
-        label: entityKind,
+        label: new EntityKind(entityKind).getLabel(),
         value: entityKind
       }
     })
