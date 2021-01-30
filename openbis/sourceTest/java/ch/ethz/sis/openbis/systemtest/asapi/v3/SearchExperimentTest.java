@@ -1616,6 +1616,27 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 "/TEST-SPACE/NOE/EXPERIMENT-TO-DELETE");
     }
 
+    @Test
+    public void testSearchWithPermIdWithPropertyFullTextSearch()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withProperty("DESCRIPTION").thatMatchesText("desc1");
+        // TODO: write the other criteria.
+
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-1");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAnyPropertyFullTextSearch()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withAnyProperty().thatMatchesText("experiment");
+        criteria.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE",
+                "/CISD/NEMO/EXP11");
+    }
+
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
             final double realValue)
     {
