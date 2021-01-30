@@ -19,16 +19,13 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyPropertySearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.toTsQueryText;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.CONTROLLED_VOCABULARY_TERM_TABLE;
@@ -70,8 +67,8 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
         }
     }
 
-    static void doTranslate(final StringFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases)
+    static void doTranslate(final StringFieldSearchCriteria criterion, final TableMapper tableMapper,
+            final List<Object> args, final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases)
     {
         final AbstractStringValue value = criterion.getFieldValue();
         final boolean useWildcards = criterion.isUseWildcards();
@@ -83,22 +80,32 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
 
         if (value.getClass() != AnyStringValue.class)
         {
-            sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
-                    .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
-            final String finalValue = TranslatorUtils.stripQuotationMarks(value.getValue());
-            TranslatorUtils.appendStringComparatorOp(value.getClass(), finalValue, useWildcards, sqlBuilder, args);
-
-            sqlBuilder.append(SP).append(OR).append(SP).append(aliases.get(CONTROLLED_VOCABULARY_TERM_TABLE).getSubTableAlias())
-                    .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP);
-            TranslatorUtils.appendStringComparatorOp(value.getClass(), finalValue, useWildcards, sqlBuilder,
-                    args);
-
-            if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
-                    || tableMapper == TableMapper.DATA_SET)
+            if (value.getClass() != StringMatchesValue.class)
             {
-                appendSamplePropertyComparison(sqlBuilder, value, useWildcards, aliases, CODE_COLUMN, args);
-                appendSamplePropertyComparison(sqlBuilder, value, useWildcards, aliases, PERM_ID_COLUMN, args);
-                appendSamplePropertyComparison(sqlBuilder, value, useWildcards, aliases, SAMPLE_IDENTIFIER_COLUMN, args);
+                sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
+                        .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
+                final String finalValue = TranslatorUtils.stripQuotationMarks(value.getValue());
+                TranslatorUtils.appendStringComparatorOp(value.getClass(), finalValue, useWildcards, sqlBuilder, args);
+
+                sqlBuilder.append(SP).append(OR).append(SP).append(aliases.get(CONTROLLED_VOCABULARY_TERM_TABLE)
+                        .getSubTableAlias()).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP);
+                TranslatorUtils.appendStringComparatorOp(value.getClass(), finalValue, useWildcards, sqlBuilder,
+                        args);
+
+                if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
+                        || tableMapper == TableMapper.DATA_SET)
+                {
+                    appendSamplePropertyComparison(sqlBuilder, value, useWildcards, aliases, CODE_COLUMN, args);
+                    appendSamplePropertyComparison(sqlBuilder, value, useWildcards, aliases, PERM_ID_COLUMN, args);
+                    appendSamplePropertyComparison(sqlBuilder, value, useWildcards, aliases, SAMPLE_IDENTIFIER_COLUMN,
+                            args);
+                }
+            } else
+            {
+                sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias()).append(PERIOD)
+                        .append(TS_VECTOR_COLUMN).append(SP).append(DOUBLE_AT)
+                        .append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
+                args.add(toTsQueryText(criterion.getFieldValue()));
             }
         } else
         {

@@ -3130,7 +3130,7 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
-    public void testSearchWithPermIdWithFullTextSearch()
+    public void testSearchWithPermIdWithAttributeFullTextSearch()
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
 
@@ -3138,6 +3138,35 @@ public class SearchSampleTest extends AbstractSampleTest
         criteria.withPermId().thatContains("7-");
 
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1", "/CISD/CP-TEST-2", "/TEST-SPACE/CP-TEST-4");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithPropertyFullTextSearch()
+    {
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria().withAndOperator();
+
+        criteria1.withProperty("COMMENT").thatMatchesText("test");
+        criteria1.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria1, "/CISD/3VCP7");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria().withAndOperator();
+
+        criteria2.withProperty("DESCRIPTION").thatMatchesText("test");
+        criteria2.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria2, "/CISD/CL1");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAnyPropertyFullTextSearch()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        criteria.withAnyProperty().thatMatchesText("test");
+        criteria.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria, "/CISD/CL1", "/CISD/3VCP7");
     }
 
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)
