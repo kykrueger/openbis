@@ -85,7 +85,8 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             case ATTRIBUTE:
             {
                 final String criterionFieldName = criterion.getFieldName();
-                final String columnName = AttributesMapper.getColumnName(criterionFieldName, tableMapper.getEntitiesTable(), criterionFieldName);
+                final String columnName = AttributesMapper.getColumnName(criterionFieldName,
+                        tableMapper.getEntitiesTable(), criterionFieldName);
                 final AbstractStringValue value = criterion.getFieldValue();
                 normalizeValue(value, columnName);
 

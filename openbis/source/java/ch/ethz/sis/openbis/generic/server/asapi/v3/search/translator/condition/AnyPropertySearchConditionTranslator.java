@@ -75,13 +75,13 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
         final JoinInformation joinInformation = aliases.get(tableMapper.getAttributeTypesTable());
         final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
 
-        sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
-                .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP).append(LP);
-
         if (value.getClass() != AnyStringValue.class)
         {
             if (value.getClass() != StringMatchesValue.class)
             {
+                sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
+                        .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP).append(LP);
+
                 sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
                 final String finalValue = TranslatorUtils.stripQuotationMarks(value.getValue());
@@ -100,6 +100,8 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
                     appendSamplePropertyComparison(sqlBuilder, value, useWildcards, aliases, SAMPLE_IDENTIFIER_COLUMN,
                             args);
                 }
+
+                sqlBuilder.append(RP);
             } else
             {
                 sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias()).append(PERIOD)
@@ -111,8 +113,6 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
         {
             sqlBuilder.append(TRUE);
         }
-
-        sqlBuilder.append(RP);
     }
 
     private static void appendSamplePropertyComparison(final StringBuilder sqlBuilder,

@@ -3169,6 +3169,17 @@ public class SearchSampleTest extends AbstractSampleTest
         testSearch(TEST_USER, criteria, "/CISD/CL1", "/CISD/3VCP7");
     }
 
+    @Test
+    public void testSearchWithPermIdWithAnyFieldFullTextSearch()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        criteria.withAnyField().thatMatchesText("test cp-test-1 cp-test-2");
+        criteria.withPermId().thatContains("19");
+
+        testSearch(TEST_USER, criteria, "/CISD/CL1", "/TEST-SPACE/EV-TEST", "/CISD/CP-TEST-1");
+    }
+
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)
     {
         String sessionToken = v3api.login(user, PASSWORD);
