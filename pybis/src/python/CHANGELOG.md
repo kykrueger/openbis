@@ -1,3 +1,7 @@
+## Changes with pybis-1.18.2
+
+- added deletion to transaction
+
 ## Changes with pybis-1.18.1
 
 - fixed del_parents() bug accidentally introduced in 1.18.0

@@ -75,7 +75,7 @@ class Sample(
             'space', 'project', 'experiment', 'container', 'tags',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
-            'save()', 'delete()',
+            'save()', 'delete()', 'mark_to_be_deleted()', 'unmark_to_be_deleted()', 'is_marked_to_be_deleted()',
             'attrs',
             'props',
         ] + super().__dir__()

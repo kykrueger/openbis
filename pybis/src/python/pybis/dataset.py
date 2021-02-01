@@ -125,6 +125,7 @@ class DataSet(
             "get_files()", 'file_list','physicalData',
             'download()','is_physical()', 'symlink()', 'is_symlink()',
             'archive()', 'unarchive()',
+            'save()', 'delete()', 'mark_to_be_deleted()', 'unmark_to_be_deleted()', 'is_marked_to_be_deleted()',
             'attrs','props',
         ] + super().__dir__()
 
