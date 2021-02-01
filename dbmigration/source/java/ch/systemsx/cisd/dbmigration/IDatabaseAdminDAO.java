@@ -68,11 +68,11 @@ public interface IDatabaseAdminDAO
 
     /**
      * Applies scripts for full text search.
-     *
-     * @param scriptProvider script provider.
+     *  @param scriptProvider script provider.
      * @param version version of scripts.
+     * @param applyMainScript if {@code true} the main script should be applied, otherwise only before and after scripts are applied.
      */
-    void applyFullTextSearchScripts(ISqlScriptProvider scriptProvider, String version);
+    void applyFullTextSearchScripts(ISqlScriptProvider scriptProvider, String version, final boolean applyMainScript);
 
     /**
      * Drops the database.

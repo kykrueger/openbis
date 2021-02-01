@@ -37,10 +37,10 @@ import java.io.*;
  */
 public final class DBMigrationEngine
 {
-    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, DBMigrationEngine.class);
-
     /** Path to the file which has the last version of applied full text search migration scripts. */
-    private static final String FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH = "etc/full-text-search-document-version";
+    public static final String FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH = "etc/full-text-search-document-version";
+
+    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, DBMigrationEngine.class);
 
     /**
      * Creates or migrates a database specified in the context for/to the specified version.
@@ -48,7 +48,8 @@ public final class DBMigrationEngine
      * @return the SQL script provider.
      */
     public static ISqlScriptProvider createOrMigrateDatabaseAndGetScriptProvider(
-            final DatabaseConfigurationContext context, final String databaseVersion, final String fullTextSearchDocumentVersion)
+            final DatabaseConfigurationContext context, final String databaseVersion,
+            final String fullTextSearchDocumentVersion)
     {
         assert context != null : "Unspecified database configuration context.";
         assert StringUtils.isNotBlank(databaseVersion) : "Unspecified database version.";
@@ -183,7 +184,8 @@ public final class DBMigrationEngine
                 || Integer.parseInt(fullTextSearchDocumentVersion) > ftsDocumentVersionFromFile))
         {
             operationLog.info("Applying full text search scripts...");
-            adminDAO.applyFullTextSearchScripts(scriptProvider, fullTextSearchDocumentVersion);
+            adminDAO.applyFullTextSearchScripts(scriptProvider, fullTextSearchDocumentVersion,
+                    !shouldCreateFromScratch);
             operationLog.info("Full text search scripts applied.");
             operationLog.info(String.format("Writing new version to file %s.", file.getAbsolutePath()));
             writeVersionToFile(file, fullTextSearchDocumentVersion);
