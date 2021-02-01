@@ -142,7 +142,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, criteria2, "/CISD/NEMO/EXP1", "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP11");
 
         final ExperimentSearchCriteria criteria3 = new ExperimentSearchCriteria();
-        criteria3.withIdentifier().thatEquals("/cisd/Nemo/Exp1*");
+        criteria3.withIdentifier().withoutWildcards().thatEquals("/cisd/Nemo/Exp1*");
         testSearch(TEST_USER, criteria3);
 
         final ExperimentSearchCriteria criteria4 = new ExperimentSearchCriteria();
@@ -150,7 +150,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, criteria4, "/CISD/NEMO/EXP-TEST-2", "/CISD/NOE/EXP-TEST-2");
 
         final ExperimentSearchCriteria criteria5 = new ExperimentSearchCriteria();
-        criteria5.withIdentifier().thatEquals("/CISD/*/EXP-TEST-2");
+        criteria5.withIdentifier().withoutWildcards().thatEquals("/CISD/*/EXP-TEST-2");
         testSearch(TEST_USER, criteria5);
     }
 
@@ -166,7 +166,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, criteria2, "/CISD/DEFAULT/EXP-WELLS", "/CISD/DEFAULT/EXP-REUSE");
 
         final ExperimentSearchCriteria criteria3 = new ExperimentSearchCriteria();
-        criteria3.withIdentifier().thatStartsWith("/CISD/DEFAULT/*S*");
+        criteria3.withIdentifier().withoutWildcards().thatStartsWith("/CISD/DEFAULT/*S*");
         testSearch(TEST_USER, criteria3);
     }
 
@@ -178,7 +178,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, criteria1, "/CISD/NEMO/EXP-TEST-2", "/CISD/NOE/EXP-TEST-2", "/TEST-SPACE/NOE/EXP-TEST-2");
 
         final ExperimentSearchCriteria criteria2 = new ExperimentSearchCriteria();
-        criteria2.withIdentifier().thatEndsWith("-TEST-*");
+        criteria2.withIdentifier().withoutWildcards().thatEndsWith("-TEST-*");
         testSearch(TEST_USER, criteria2);
 
         final ExperimentSearchCriteria criteria3 = new ExperimentSearchCriteria();
@@ -199,7 +199,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, criteria2, "/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST");
 
         final ExperimentSearchCriteria criteria3 = new ExperimentSearchCriteria();
-        criteria3.withIdentifier().thatContains("TE*JECT");
+        criteria3.withIdentifier().withoutWildcards().thatContains("TE*JECT");
         testSearch(TEST_USER, criteria3);
     }
 
@@ -772,7 +772,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     public void testSearchWithAnyPropertyThatEqualsWithWildcards()
     {
         final ExperimentSearchCriteria criteria1 = new ExperimentSearchCriteria();
-        criteria1.withAnyProperty().thatEquals("*EMAL*");
+        criteria1.withAnyProperty().withoutWildcards().thatEquals("*EMAL*");
         testSearch(TEST_USER, criteria1);
 
         final ExperimentSearchCriteria criteria2 = new ExperimentSearchCriteria();
@@ -840,7 +840,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, criteria1, "/CISD/NEMO/EXP-TEST-1", "/CISD/NEMO/EXP-TEST-2");
 
         final ExperimentSearchCriteria criteria2 = new ExperimentSearchCriteria();
-        criteria2.withAnyField().thatEquals("/CISD/NEMO/EXP-TEST-*");
+        criteria2.withAnyField().withoutWildcards().thatEquals("/CISD/NEMO/EXP-TEST-*");
         testSearch(TEST_USER, criteria2);
 
         final ExperimentSearchCriteria criteria3 = new ExperimentSearchCriteria();
@@ -853,7 +853,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 "/TEST-SPACE/NOE/EXP-TEST-2");
 
         final ExperimentSearchCriteria criteria5 = new ExperimentSearchCriteria();
-        criteria5.withAnyField().thatEndsWith("TEST-?");
+        criteria5.withAnyField().withoutWildcards().thatEndsWith("TEST-?");
         testSearch(TEST_USER, criteria5);
     }
 

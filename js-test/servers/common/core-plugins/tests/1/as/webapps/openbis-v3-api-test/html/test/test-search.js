@@ -1249,7 +1249,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			var fSearch1 = function(facade) {
 				var criteria = new c.DataSetSearchCriteria();
-				criteria.withCode().thatEquals("*-40?");
+				criteria.withCode().withoutWildcards().thatEquals("*-40?");
 				criteria.withSample();
 				return facade.searchDataSets(criteria, c.createDataSetFetchOptions());
 			}

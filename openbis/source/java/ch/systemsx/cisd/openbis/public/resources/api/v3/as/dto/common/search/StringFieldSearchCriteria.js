@@ -46,6 +46,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractFieldSearchCriteria", 
 			this.useWildcards = true;
 			return this;
 		}
+		prototype.withoutWildcards = function() {
+			this.useWildcards = false;
+			return this;
+		}
 		prototype.isUseWildcards = function() {
 			return this.useWildcards;
 		}
