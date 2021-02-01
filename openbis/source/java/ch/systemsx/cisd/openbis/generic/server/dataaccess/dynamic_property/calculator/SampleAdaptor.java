@@ -146,8 +146,8 @@ public class SampleAdaptor extends AbstractEntityAdaptor implements ISampleAdapt
 
         final SampleFetchOptions fetchOptions = new SampleFetchOptions();
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
-        criteria.withContainer().withPermId().withWildcards().thatEquals(samplePE.getPermId());
-        criteria.withType().withCode().withWildcards().thatEquals(typeCodeRegexp);
+        criteria.withContainer().withPermId().thatEquals(samplePE.getPermId());
+        criteria.withType().withCode().thatEquals(typeCodeRegexp);
 
         final PersonPE systemUser = personDAO.tryFindPersonByUserId(PersonPE.SYSTEM_USER_ID);
         final Collection<Long> ids = searchSamplesOperationExecutor.executeDirectSQLSearchForIds(systemUser, criteria,
@@ -176,8 +176,8 @@ public class SampleAdaptor extends AbstractEntityAdaptor implements ISampleAdapt
 
         final DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
-        criteria.withSample().withPermId().withWildcards().thatEquals(samplePE.getPermId());
-        criteria.withType().withCode().withWildcards().thatEquals(typeCodeRegexp);
+        criteria.withSample().withPermId().thatEquals(samplePE.getPermId());
+        criteria.withType().withCode().thatEquals(typeCodeRegexp);
 
         final PersonPE systemUser = personDAO.tryFindPersonByUserId(PersonPE.SYSTEM_USER_ID);
         final Collection<Long> ids = searchDataSetsOperationExecutor.executeDirectSQLSearchForIds(systemUser, criteria,

@@ -24,7 +24,7 @@ public abstract class StringFieldSearchCriteria extends AbstractFieldSearchCrite
 
     private static final long serialVersionUID = 1L;
 
-    private boolean useWildcards = false;
+    private boolean useWildcards = true;
 
     public StringFieldSearchCriteria(String fieldName, SearchFieldType fieldType)
     {
@@ -75,6 +75,12 @@ public abstract class StringFieldSearchCriteria extends AbstractFieldSearchCrite
     public StringFieldSearchCriteria withWildcards()
     {
         useWildcards = true;
+        return this;
+    }
+
+    public StringFieldSearchCriteria withoutWildcards()
+    {
+        useWildcards = false;
         return this;
     }
 
