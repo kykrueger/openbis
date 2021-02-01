@@ -1,3 +1,7 @@
+## Changes with pybis-1.18.1
+
+- fixed del_parents() bug accidentally introduced in 1.18.0
+
 ## Changes with pybis-1.18.0
 
 - speed improvement when searching for samples and dataSets and then cycling through the results
