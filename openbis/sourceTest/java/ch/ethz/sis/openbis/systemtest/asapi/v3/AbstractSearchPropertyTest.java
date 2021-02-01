@@ -622,7 +622,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 { DataType.INTEGER, "12345", "startsWith 123 or endsWith 355", true },
                 { DataType.INTEGER, "12345", "startsWith 113 or endsWith 355", false },
                 { DataType.INTEGER, "12345", "contains 234", true },
-                { DataType.INTEGER, "12345", "contains 437", false },
+                { DataType.INTEGER, "12345", "contains 4375", false },
                 { DataType.REAL, "12.345", "startsWith 12. and endsWith 45", true },
                 { DataType.REAL, "12.345", "startsWith 12. or endsWith 45", true },
                 { DataType.REAL, "12.345", "contains .34", true },
