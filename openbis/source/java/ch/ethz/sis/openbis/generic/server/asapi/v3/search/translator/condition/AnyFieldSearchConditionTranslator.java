@@ -117,7 +117,8 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 AnyPropertySearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
                 sqlBuilder.append(separator);
 
-                IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases, UNIQUE_PREFIX);
+                IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases,
+                        UNIQUE_PREFIX);
                 sqlBuilder.append(separator);
 
                 if (tableMapper.hasModifier())
@@ -132,7 +133,8 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
 
                 final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream().collect(
                         StringBuilder::new,
-                        (stringBuilder, fieldToSQLTypesEntry) -> {
+                        (stringBuilder, fieldToSQLTypesEntry) ->
+                        {
                             final String fieldName = fieldToSQLTypesEntry.getKey();
                             final PSQLTypes fieldSQLType = fieldToSQLTypesEntry.getValue();
                             final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
@@ -144,16 +146,19 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                                     if (fieldSQLType == TIMESTAMP_WITH_TZ)
                                     {
                                         final Optional<Object[]> dateFormatWithResultOptional = DATE_FORMATS.stream()
-                                                .map(dateFormat -> {
+                                                .map(dateFormat ->
+                                                {
                                                     final Date formattedValue = formatValue(stringValue, dateFormat);
                                                     return (formattedValue == null) ? null
                                                             : new Object[] { TRUNCATION_INTERVAL_BY_DATE_FORMAT.get(
                                                                     dateFormat.getClass()), formattedValue };
                                                 }).filter(Objects::nonNull).findFirst();
 
-                                        dateFormatWithResultOptional.ifPresent(dateFormatWithResult -> {
+                                        dateFormatWithResultOptional.ifPresent(dateFormatWithResult ->
+                                        {
                                             stringBuilder.append(separator).append(DATE_TRUNC).append(LP);
-                                            stringBuilder.append(SQ).append(dateFormatWithResult[0]).append(SQ).append(COMMA).append(SP).append(alias)
+                                            stringBuilder.append(SQ).append(dateFormatWithResult[0]).append(SQ)
+                                                    .append(COMMA).append(SP).append(alias)
                                                     .append(PERIOD).append(fieldName);
                                             stringBuilder.append(RP).append(SP).append(EQ).append(SP).append(QU);
                                             args.add(dateFormatWithResult[1]);
