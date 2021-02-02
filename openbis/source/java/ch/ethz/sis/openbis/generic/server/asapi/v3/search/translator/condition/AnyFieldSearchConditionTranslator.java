@@ -139,43 +139,53 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                             final PSQLTypes fieldSQLType = fieldToSQLTypesEntry.getValue();
                             final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
 
-                            if (equalsToComparison || fieldSQLType == TIMESTAMP_WITH_TZ)
-                            {
-                                if (includeColumn)
-                                {
-                                    if (fieldSQLType == TIMESTAMP_WITH_TZ)
-                                    {
-                                        final Optional<Object[]> dateFormatWithResultOptional = DATE_FORMATS.stream()
-                                                .map(dateFormat ->
-                                                {
-                                                    final Date formattedValue = formatValue(stringValue, dateFormat);
-                                                    return (formattedValue == null) ? null
-                                                            : new Object[] { TRUNCATION_INTERVAL_BY_DATE_FORMAT.get(
-                                                                    dateFormat.getClass()), formattedValue };
-                                                }).filter(Objects::nonNull).findFirst();
-
-                                        dateFormatWithResultOptional.ifPresent(dateFormatWithResult ->
-                                        {
-                                            stringBuilder.append(separator).append(DATE_TRUNC).append(LP);
-                                            stringBuilder.append(SQ).append(dateFormatWithResult[0]).append(SQ)
-                                                    .append(COMMA).append(SP).append(alias)
-                                                    .append(PERIOD).append(fieldName);
-                                            stringBuilder.append(RP).append(SP).append(EQ).append(SP).append(QU);
-                                            args.add(dateFormatWithResult[1]);
-                                        });
-                                    } else
-                                    {
-                                        stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName);
-                                        stringBuilder.append(SP).append(EQ).append(SP).append(QU).append(DOUBLE_COLON)
-                                                .append(fieldSQLType.toString());
-                                        args.add(stringValue);
-                                    }
-                                }
-                            } else
+                            if (CODE_COLUMN.equals(fieldName))
                             {
                                 stringBuilder.append(separator);
-                                TranslatorUtils.translateStringComparison(alias, fieldName, value, useWildcards,
-                                        VARCHAR, stringBuilder, args);
+                                CodeSearchConditionTranslator.translateSearchByCodeCondition(stringBuilder, tableMapper,
+                                        value.getClass(), stringValue, useWildcards, args);
+                            } else
+                            {
+                                if (equalsToComparison || fieldSQLType == TIMESTAMP_WITH_TZ)
+                                {
+                                    if (includeColumn)
+                                    {
+                                        if (fieldSQLType == TIMESTAMP_WITH_TZ)
+                                        {
+                                            final Optional<Object[]> dateFormatWithResultOptional =
+                                                    DATE_FORMATS.stream().map(dateFormat ->
+                                                    {
+                                                        final Date formattedValue = formatValue(stringValue,
+                                                                dateFormat);
+                                                        return (formattedValue == null) ? null
+                                                                : new Object[]{TRUNCATION_INTERVAL_BY_DATE_FORMAT.get(
+                                                                dateFormat.getClass()), formattedValue};
+                                                    }).filter(Objects::nonNull).findFirst();
+
+                                            dateFormatWithResultOptional.ifPresent(dateFormatWithResult ->
+                                            {
+                                                stringBuilder.append(separator).append(DATE_TRUNC).append(LP);
+                                                stringBuilder.append(SQ).append(dateFormatWithResult[0]).append(SQ)
+                                                        .append(COMMA).append(SP).append(alias)
+                                                        .append(PERIOD).append(fieldName);
+                                                stringBuilder.append(RP).append(SP).append(EQ).append(SP).append(QU);
+                                                args.add(dateFormatWithResult[1]);
+                                            });
+                                        } else
+                                        {
+                                            stringBuilder.append(separator).append(alias).append(PERIOD)
+                                                    .append(fieldName);
+                                            stringBuilder.append(SP).append(EQ).append(SP).append(QU)
+                                                    .append(DOUBLE_COLON).append(fieldSQLType.toString());
+                                            args.add(stringValue);
+                                        }
+                                    }
+                                } else
+                                {
+                                    stringBuilder.append(separator);
+                                    TranslatorUtils.translateStringComparison(alias, fieldName, value, useWildcards,
+                                            VARCHAR, stringBuilder, args);
+                                }
                             }
                         },
                         StringBuilder::append);

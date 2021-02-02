@@ -55,18 +55,8 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
                 if (value != null && value.getValue() != null)
                 {
                     final String stringValue = value.getValue();
-                    if (tableMapper == SAMPLE)
-                    {
-                        buildCodeQueryForSamples(sqlBuilder, () -> TranslatorUtils.appendStringComparatorOp(
-                                value.getClass(), stringValue, useWildcards, sqlBuilder, args));
-                    } else
-                    {
-                        final String column = (tableMapper == TAG) ? NAME_COLUMN : CODE_COLUMN;
-                        sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD)
-                                .append(column).append(SP);
-                        TranslatorUtils.appendStringComparatorOp(value.getClass(), stringValue.toUpperCase(),
-                                useWildcards, sqlBuilder, args);
-                    }
+                    translateSearchByCodeCondition(sqlBuilder, tableMapper, value.getClass(), stringValue, useWildcards,
+                            args);
                 } else
                 {
                     sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN)
@@ -81,6 +71,24 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
             {
                 throw new IllegalArgumentException();
             }
+        }
+    }
+
+    static void translateSearchByCodeCondition(final StringBuilder sqlBuilder, final TableMapper tableMapper,
+            final Class<?> valueClass, final String stringValue, final boolean useWildcards,
+            final List<Object> args)
+    {
+        if (tableMapper == SAMPLE)
+        {
+            buildCodeQueryForSamples(sqlBuilder, () -> TranslatorUtils.appendStringComparatorOp(
+                    valueClass, stringValue, useWildcards, sqlBuilder, args));
+        } else
+        {
+            final String column = (tableMapper == TAG) ? NAME_COLUMN : CODE_COLUMN;
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD)
+                    .append(column).append(SP);
+            TranslatorUtils.appendStringComparatorOp(valueClass, stringValue.toUpperCase(),
+                    useWildcards, sqlBuilder, args);
         }
     }
 
