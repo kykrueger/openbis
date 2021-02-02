@@ -602,6 +602,23 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithSampleCode()
+    {
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContainsExactly("B1B3:B01");
+
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        assertTrue(result.getObjects().size() > 0);
+
+        final GlobalSearchObject object = result.getObjects().get(0);
+
+        assertSample(object, "200811050924274-995", "/CISD/B1B3:B01", "Code: B1B3:B01");
+    }
+
+    @Test
     public void testSearchWithSamplePermIdAndNothingFetched()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();

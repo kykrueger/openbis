@@ -13,6 +13,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchWildCa
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CodeSearchConditionTranslator;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
@@ -910,8 +911,19 @@ public class GlobalSearchCriteriaTranslator
     private static void buildAttributesMatchSelection(final StringBuilder sqlBuilder, final String[] criterionValues,
             final TableMapper tableMapper, final List<Object> args)
     {
-        final String thenValue = MAIN_TABLE_ALIAS + PERIOD + CODE_COLUMN;
+        final String thenValue;
+        if (tableMapper == SAMPLE)
+        {
+            final StringBuilder thenValueBuilder = new StringBuilder();
+            CodeSearchConditionTranslator.buildCodeQueryForSamples(thenValueBuilder, () -> {});
+            thenValue = thenValueBuilder.toString();
+        } else
+        {
+            thenValue = MAIN_TABLE_ALIAS + PERIOD + CODE_COLUMN;
+        }
+
         buildCaseWhenIn(sqlBuilder, args, criterionValues, new String[]{thenValue}, thenValue, NULL);
+
         sqlBuilder.append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
 
         switch (tableMapper)

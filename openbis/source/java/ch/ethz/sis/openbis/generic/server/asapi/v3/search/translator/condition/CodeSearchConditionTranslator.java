@@ -106,7 +106,7 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
      * @param sqlBuilder query builder.
      * @param comparisonBuilder runnable which adds comparison operators to the query builder.
      */
-    static void buildCodeQueryForSamples(final StringBuilder sqlBuilder, final Runnable comparisonBuilder)
+    public static void buildCodeQueryForSamples(final StringBuilder sqlBuilder, final Runnable comparisonBuilder)
     {
         sqlBuilder.append(CASE).append(NL)
                 .append(SP).append(SP).append(WHEN).append(SP)
