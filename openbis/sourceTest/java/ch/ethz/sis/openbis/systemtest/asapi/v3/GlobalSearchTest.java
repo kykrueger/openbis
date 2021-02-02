@@ -1136,6 +1136,9 @@ public class GlobalSearchTest extends AbstractTest
         }
     }
 
+    /**
+     * Often failure in this test indicates that full text search main SQL script has not been executed.
+     */
     @Test
     public void testComplexScoreSortingForAll()
     {

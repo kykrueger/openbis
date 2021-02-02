@@ -185,7 +185,7 @@ public final class DBMigrationEngine
         {
             operationLog.info("Applying full text search scripts...");
             adminDAO.applyFullTextSearchScripts(scriptProvider, fullTextSearchDocumentVersion,
-                    !shouldCreateFromScratch);
+                    shouldCreateFromScratch);
             operationLog.info("Full text search scripts applied.");
             operationLog.info(String.format("Writing new version to file %s.", file.getAbsolutePath()));
             writeVersionToFile(file, fullTextSearchDocumentVersion);
