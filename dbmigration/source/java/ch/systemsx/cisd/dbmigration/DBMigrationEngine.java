@@ -16,19 +16,26 @@
 
 package ch.systemsx.cisd.dbmigration;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import ch.rinn.restrictions.Private;
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISqlScriptExecutor;
 import ch.systemsx.cisd.common.db.Script;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
+import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.dbmigration.java.IMigrationStepExecutor;
-
-import java.io.*;
 
 /**
  * Class for creating and migrating a database.
@@ -188,7 +195,7 @@ public final class DBMigrationEngine
                     shouldCreateFromScratch);
             operationLog.info("Full text search scripts applied.");
             operationLog.info(String.format("Writing new version to file %s.", file.getAbsolutePath()));
-            writeVersionToFile(file, fullTextSearchDocumentVersion);
+            FileUtilities.writeToFile(file, fullTextSearchDocumentVersion);
         } else
         {
             operationLog.info("Skipped application of full text search scripts.");
@@ -196,49 +203,16 @@ public final class DBMigrationEngine
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void writeVersionToFile(final File file, final String version)
-    {
-        if (!file.exists())
-        {
-            try
-            {
-                file.createNewFile();
-            } catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-
-        try (final FileOutputStream fileOutputStream = new FileOutputStream(file))
-        {
-            fileOutputStream.write(version.getBytes());
-        } catch (final IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private Integer readVersionFromFile(final File file)
     {
-        try (final FileInputStream fileInputStream = new FileInputStream(file))
+        try
         {
-            byte[] buffer = new byte[15];
-            fileInputStream.read(buffer);
-            return Integer.parseInt(new String(buffer).trim());
-        } catch (final FileNotFoundException e)
-        {
-            operationLog.debug(String.format("File '%s' not found", file.getAbsolutePath()));
-            return null;
-        } catch (final IOException e)
-        {
-            operationLog.error(String.format("Error reading from file '%s'", file.getAbsolutePath()), e);
-            throw new RuntimeException(e);
+            return Integer.parseInt(FileUtilities.loadToString(file).trim());
         } catch (final NumberFormatException e)
         {
             operationLog.error(String.format("Contents of the file '%s' cannot be parsed as integer",
                     file.getAbsolutePath()));
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
