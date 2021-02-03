@@ -205,6 +205,11 @@ public final class DBMigrationEngine
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private Integer readVersionFromFile(final File file)
     {
+        if (file.exists() == false)
+        {
+            operationLog.debug(String.format("File '%s' not found", file.getAbsolutePath()));
+            return null;
+        }
         try
         {
             return Integer.parseInt(FileUtilities.loadToString(file).trim());
