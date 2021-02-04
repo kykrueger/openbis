@@ -70,7 +70,10 @@ public final class DBMigrationEngine
                 new DBMigrationEngine(migrationDAOFactory, sqlScriptProvider, context
                         .isCreateFromScratch());
         migrationEngine.migrateTo(databaseVersion);
-        migrationEngine.migrateFullTextSearch(fullTextSearchDocumentVersion);
+        if (Integer.parseInt(databaseVersion) >= 180)
+        {
+            migrationEngine.migrateFullTextSearch(fullTextSearchDocumentVersion);
+        }
 
         /*
          * This triggers population of a lazily populated hashmap of error codes which requires locking and connection to the database. This can lead
