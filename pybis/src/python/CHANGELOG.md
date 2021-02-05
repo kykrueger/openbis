@@ -1,3 +1,7 @@
+## Changes with pybis-1.18.3
+
+- prevent other users to read the saved token (chmod 600)
+
 ## Changes with pybis-1.18.2
 
 - added deletion to transaction
