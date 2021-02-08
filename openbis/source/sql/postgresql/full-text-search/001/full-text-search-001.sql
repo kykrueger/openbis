@@ -62,7 +62,6 @@ BEGIN
             NEW.tsvector_document := setweight((escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
                                      setweight((escape_tsvector_string(NEW.sample_identifier) || ':1')::tsvector,
                                          'A') ||
-                                     setweight((escape_tsvector_string(sample_code) || ':1')::tsvector, 'B') ||
                                      setweight((escape_tsvector_string(container_code) || ':1')::tsvector, 'B') ||
                                      setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
         ELSE
