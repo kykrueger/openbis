@@ -25,5 +25,5 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 @JsonObject("as.dto.plugin.PluginKind")
 public enum PluginKind
 {
-    JYTHON, PREDEPLOYED;
+    JYTHON, @Deprecated(since = "20.10", forRemoval = true) PREDEPLOYED;
 }
