@@ -260,7 +260,8 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
     }
 
     @Override
-    public void applyFullTextSearchScripts(final ISqlScriptProvider scriptProvider, final String version)
+    public void applyFullTextSearchScripts(final ISqlScriptProvider scriptProvider, final String version,
+            final boolean applyMainScript)
     {
         final Script[] scripts = scriptProvider.tryGetFullTextSearchScripts(version);
 
@@ -277,9 +278,15 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
         operationLog.info("Finished executing full text search preparation script.");
         try
         {
-            operationLog.info("Executing full text search main script...");
-            scriptExecutor.execute(mainScript, false, null);
-            operationLog.info("Finished executing full text search main script.");
+            if (applyMainScript)
+            {
+                operationLog.info("Executing full text search main script...");
+                scriptExecutor.execute(mainScript, false, null);
+                operationLog.info("Finished executing full text search main script.");
+            } else
+            {
+                operationLog.info("Skipping execution of full text search main script...");
+            }
         } finally
         {
             operationLog.info("Executing full text search cleanup script...");

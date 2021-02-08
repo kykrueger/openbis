@@ -61,8 +61,8 @@ public class TranslatorUtils
     }
 
     public static void translateStringComparison(final String tableAlias, final String columnName,
-            final AbstractStringValue value, final PSQLTypes casting, final StringBuilder sqlBuilder,
-            final List<Object> args)
+            final AbstractStringValue value, final boolean useWildcards, final PSQLTypes casting,
+            final StringBuilder sqlBuilder, final List<Object> args)
     {
         sqlBuilder.append(LOWER).append(LP).append(tableAlias).append(PERIOD).append(columnName).append(RP);
         if (casting != null)
@@ -71,29 +71,29 @@ public class TranslatorUtils
         }
 
         final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim()).toLowerCase();
-        appendStringComparatorOp(value.getClass(), strippedValue, sqlBuilder, args);
+        appendStringComparatorOp(value.getClass(), strippedValue, useWildcards, sqlBuilder, args);
     }
 
-    public static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder,
-            final List<Object> args)
+    public static void appendStringComparatorOp(final AbstractStringValue value, final boolean useWildcards,
+            final StringBuilder sqlBuilder, final List<Object> args)
     {
-        appendStringComparatorOp(value.getClass(), value.getValue(), sqlBuilder, args);
+        appendStringComparatorOp(value.getClass(), value.getValue(), useWildcards, sqlBuilder, args);
     }
 
     public static void appendStringComparatorOp(final Class<?> valueClass, final String finalValue,
-            final StringBuilder sqlBuilder, final List<Object> args)
+            final boolean useWildcards, final StringBuilder sqlBuilder, final List<Object> args)
     {
         sqlBuilder.append(SP);
         if (valueClass == StringEqualToValue.class)
         {
-            if (!containsWildcards(finalValue))
-            {
-                sqlBuilder.append(EQ).append(SP).append(QU);
-                args.add(finalValue);
-            } else
+            if (useWildcards && containsWildcards(finalValue))
             {
                 sqlBuilder.append(ILIKE).append(SP).append(QU);
                 args.add(toPSQLWildcards(finalValue));
+            } else
+            {
+                sqlBuilder.append(EQ).append(SP).append(QU);
+                args.add(finalValue);
             }
         } else if (valueClass == StringLessThanValue.class)
         {
@@ -114,15 +114,15 @@ public class TranslatorUtils
         } else if (valueClass == StringStartsWithValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
-            args.add(toPSQLWildcards(finalValue) + PERCENT);
+            args.add((useWildcards ? toPSQLWildcards(finalValue) : finalValue) + PERCENT);
         } else if (valueClass == StringEndsWithValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
-            args.add(PERCENT + toPSQLWildcards(finalValue));
+            args.add(PERCENT + (useWildcards ? toPSQLWildcards(finalValue) : finalValue));
         } else if (valueClass == StringContainsValue.class || valueClass == StringContainsExactlyValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
-            args.add(PERCENT + toPSQLWildcards(finalValue) + PERCENT);
+            args.add(PERCENT + (useWildcards ? toPSQLWildcards(finalValue) : finalValue) + PERCENT);
         } else if (valueClass == AnyStringValue.class)
         {
             sqlBuilder.append(IS_NOT_NULL);

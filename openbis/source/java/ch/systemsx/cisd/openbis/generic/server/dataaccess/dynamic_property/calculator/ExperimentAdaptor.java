@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 
 /**
  * {@link IEntityAdaptor} implementation for {@link ExperimentPE}.
- * 
+ *
  * @author Piotr Buczek
  */
 public class ExperimentAdaptor extends AbstractEntityAdaptor implements IExperimentAdaptor,

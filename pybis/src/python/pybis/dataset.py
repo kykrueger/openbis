@@ -122,9 +122,10 @@ class DataSet(
             'set_parents()', 'set_children()', 'set_components()', 'set_contained()', 'set_containers()',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
-            "get_files()", 'file_list',
+            "get_files()", 'file_list','physicalData',
             'download()','is_physical()', 'symlink()', 'is_symlink()',
             'archive()', 'unarchive()',
+            'save()', 'delete()', 'mark_to_be_deleted()', 'unmark_to_be_deleted()', 'is_marked_to_be_deleted()',
             'attrs','props',
         ] + super().__dir__()
 
@@ -162,7 +163,7 @@ class DataSet(
     @property
     def linkedData(self):
         if 'linkedData' in self.data:
-            return LinkedData(self.data['linkedData'])
+            return LinkedData(data=self.data['linkedData'])
 
 
     @property

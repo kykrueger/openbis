@@ -82,7 +82,7 @@ public class NameSearchConditionTranslator implements IConditionTranslator<NameS
                             .append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(NAME_COLUMN)
                             .append(RP);
                     TranslatorUtils.appendStringComparatorOp(value.getClass(), stringValue.toUpperCase(),
-                            sqlBuilder, args);
+                            criterion.isUseWildcards(), sqlBuilder, args);
                 } else
                 {
                     sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(NAME_COLUMN)

@@ -67,6 +67,7 @@ In an **interactive session** e.g. inside a Jupyter notebook, you can use `getpa
 ```
 from pybis import Openbis
 o = Openbis('https://example.com')
+o = Openbis('example.com')          # https:// is assumed
 
 import getpass
 password = getpass.getpass()
@@ -622,25 +623,45 @@ sample.add_attachment('testfile.xls')
 sample.delete('deleted for some reason')
 ```
 
-## create many samples in a transaction
+## create/update/delete many samples in a transaction
 
-Creating a sample takes some time. If you need to create many samples, you might want to create them in one transaction. This will transfer all your sample data at once. The Upside of this is the **gain in speed**. The downside: this is a **all-or-nothing** operation, which means, either all samples will be registered or none (if any error occurs).
+Creating a single sample takes some time. If you need to create many samples, you might want to create them in one transaction. This will transfer all your sample data at once. The Upside of this is the **gain in speed**. The downside: this is a **all-or-nothing** operation, which means, either all samples will be registered or none (if any error occurs).
 
-You can mix creation or update of existing samples within the transaction.
-
+**create many samples in one transaction**
 
 ```
-sample1 = o.new_sample(...)
-sample2 = o.new_sample(...)
-sample3 = o.new_sample(...)
-
 trans = o.new_transaction()
-trans.add(sample1)
-trans.add(sample2)
-trans.add(sample3)
+for i in range (0, 100):
+    sample = o.new_sample(...)
+    trans.add(sample)
 
 trans.commit()
 ```
+
+**update many samples in one transaction**
+
+```
+trans = o.new_transaction()
+for sample in o.get_samples(count=100):
+    sample.prop.some_property = 'different value'
+    trans.add(sample)
+
+trans.commit()
+```
+
+**delete many samples in one transaction**
+
+```
+trans = o.new_transaction()
+for sample in o.get_samples(count=100):
+    sample.mark_to_be_deleted()
+    trans.add(sample)
+
+trans.reason('go what has to go')
+trans.commit()
+```
+**Note:** You can use the `mark_to_be_deleted()`, `unmark_to_be_deleted()` and `is_marked_to_be_deleted()` methods to set and read the internal flag.
+
 
 ### parents, children, components and container
 
@@ -718,6 +739,15 @@ samples = o.get_samples(
         'registrator.email',
         'type.generatedCodePrefix'
     ],
+    parent_property = 'value',        # search in a parent's property
+    child_property  = 'value',        # search in a child's property
+    container_property = 'value'      # search in a container's property
+    parent = '/MY_SPACE/PARENT_SAMPLE', # sample has this as its parent
+    parent = '*',                     # sample has at least one parent
+    child  = '/MY_SPACE/CHILD_SAMPLE',
+    child  = '*',                     # sample has at least one child
+    container = 'MY_SPACE/CONTAINER',
+    container = '*'                   # sample lives in a container
     props=['$NAME', 'MATING_TYPE']    # show these properties in the result
 )
 
@@ -851,6 +881,15 @@ datasets = o.get_datasets(
     count      = 10,                  # enable paging
     registrationDate = "2020-01-01",  # date format: YYYY-MM-DD
     modificationDate = "<2020-12-31", # use > or < to search for specified date and later / earlier
+    parent_property = 'value',        # search in a parent's property
+    child_property  = 'value',        # search in a child's property
+    container_property = 'value'      # search in a container's property
+    parent = '/MY_SPACE/PARENT_DS',   # has this dataset as its parent
+    parent = '*',                     # has at least one parent dataset
+    child  = '/MY_SPACE/CHILD_DS',
+    child  = '*',                     # has at least one child dataset
+    container = 'MY_SPACE/CONTAINER_DS',
+    container = '*',                  # belongs to a container dataset
     attrs=[                           # show these attributes in the dataFrame
         'sample.code',
         'registrator.email',
