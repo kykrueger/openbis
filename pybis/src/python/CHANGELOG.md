@@ -1,3 +1,15 @@
+## Changes with pybis-1.18.3
+
+- prevent other users to read the saved token (chmod 600)
+
+## Changes with pybis-1.18.2
+
+- added deletion to transaction
+
+## Changes with pybis-1.18.1
+
+- fixed del_parents() bug accidentally introduced in 1.18.0
+
 ## Changes with pybis-1.18.0
 
 - speed improvement when searching for samples and dataSets and then cycling through the results

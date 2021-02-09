@@ -157,7 +157,7 @@ public class H2AdminDAO extends AbstractDatabaseAdminDAO
     }
 
     @Override
-    public void applyFullTextSearchScripts(final ISqlScriptProvider scriptProvider, final String version)
+    public void applyFullTextSearchScripts(final ISqlScriptProvider scriptProvider, final String version, final boolean applyMainScript)
     {
         // No implementation.
     }

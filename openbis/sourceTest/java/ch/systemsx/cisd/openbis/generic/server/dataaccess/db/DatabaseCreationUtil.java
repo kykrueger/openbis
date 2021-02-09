@@ -141,12 +141,6 @@ public final class DatabaseCreationUtil
 
     private static String getPreviousVersion(final String currentVersion)
     {
-        Integer ver = new Integer(currentVersion);
-        String prevVer = "" + (ver - 1);
-        while (prevVer.length() != 3)
-        {
-            prevVer = "0" + prevVer;
-        }
-        return prevVer;
+        return String.format("%03d", Integer.parseInt(currentVersion) - 1);
     }
 }

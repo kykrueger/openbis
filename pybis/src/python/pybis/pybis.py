@@ -991,6 +991,8 @@ class Openbis:
         with open(token_path, 'w') as f:
             f.write(token)
             self.token_path = token_path
+        # prevent other users to be able to read the token
+        os.chmod(token_path, 0o600)
 
     def _get_saved_token(self):
         """Read the token from the .pybis 

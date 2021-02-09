@@ -16,19 +16,26 @@
 
 package ch.systemsx.cisd.dbmigration;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import ch.rinn.restrictions.Private;
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISqlScriptExecutor;
 import ch.systemsx.cisd.common.db.Script;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
+import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.dbmigration.java.IMigrationStepExecutor;
-
-import java.io.*;
 
 /**
  * Class for creating and migrating a database.
@@ -37,10 +44,10 @@ import java.io.*;
  */
 public final class DBMigrationEngine
 {
-    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, DBMigrationEngine.class);
-
     /** Path to the file which has the last version of applied full text search migration scripts. */
-    private static final String FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH = "etc/full-text-search-document-version";
+    public static final String FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH = "etc/full-text-search-document-version";
+
+    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, DBMigrationEngine.class);
 
     /**
      * Creates or migrates a database specified in the context for/to the specified version.
@@ -48,7 +55,8 @@ public final class DBMigrationEngine
      * @return the SQL script provider.
      */
     public static ISqlScriptProvider createOrMigrateDatabaseAndGetScriptProvider(
-            final DatabaseConfigurationContext context, final String databaseVersion, final String fullTextSearchDocumentVersion)
+            final DatabaseConfigurationContext context, final String databaseVersion,
+            final String fullTextSearchDocumentVersion)
     {
         assert context != null : "Unspecified database configuration context.";
         assert StringUtils.isNotBlank(databaseVersion) : "Unspecified database version.";
@@ -62,7 +70,10 @@ public final class DBMigrationEngine
                 new DBMigrationEngine(migrationDAOFactory, sqlScriptProvider, context
                         .isCreateFromScratch());
         migrationEngine.migrateTo(databaseVersion);
-        migrationEngine.migrateFullTextSearch(fullTextSearchDocumentVersion);
+        if (Integer.parseInt(databaseVersion) >= 180)
+        {
+            migrationEngine.migrateFullTextSearch(fullTextSearchDocumentVersion);
+        }
 
         /*
          * This triggers population of a lazily populated hashmap of error codes which requires locking and connection to the database. This can lead
@@ -183,10 +194,11 @@ public final class DBMigrationEngine
                 || Integer.parseInt(fullTextSearchDocumentVersion) > ftsDocumentVersionFromFile))
         {
             operationLog.info("Applying full text search scripts...");
-            adminDAO.applyFullTextSearchScripts(scriptProvider, fullTextSearchDocumentVersion);
+            adminDAO.applyFullTextSearchScripts(scriptProvider, fullTextSearchDocumentVersion,
+                    shouldCreateFromScratch);
             operationLog.info("Full text search scripts applied.");
             operationLog.info(String.format("Writing new version to file %s.", file.getAbsolutePath()));
-            writeVersionToFile(file, fullTextSearchDocumentVersion);
+            FileUtilities.writeToFile(file, fullTextSearchDocumentVersion);
         } else
         {
             operationLog.info("Skipped application of full text search scripts.");
@@ -194,49 +206,21 @@ public final class DBMigrationEngine
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void writeVersionToFile(final File file, final String version)
-    {
-        if (!file.exists())
-        {
-            try
-            {
-                file.createNewFile();
-            } catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-
-        try (final FileOutputStream fileOutputStream = new FileOutputStream(file))
-        {
-            fileOutputStream.write(version.getBytes());
-        } catch (final IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private Integer readVersionFromFile(final File file)
     {
-        try (final FileInputStream fileInputStream = new FileInputStream(file))
-        {
-            byte[] buffer = new byte[15];
-            fileInputStream.read(buffer);
-            return Integer.parseInt(new String(buffer).trim());
-        } catch (final FileNotFoundException e)
+        if (file.exists() == false)
         {
             operationLog.debug(String.format("File '%s' not found", file.getAbsolutePath()));
             return null;
-        } catch (final IOException e)
+        }
+        try
         {
-            operationLog.error(String.format("Error reading from file '%s'", file.getAbsolutePath()), e);
-            throw new RuntimeException(e);
+            return Integer.parseInt(FileUtilities.loadToString(file).trim());
         } catch (final NumberFormatException e)
         {
             operationLog.error(String.format("Contents of the file '%s' cannot be parsed as integer",
                     file.getAbsolutePath()));
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 

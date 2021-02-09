@@ -714,9 +714,9 @@ class AttrHolder():
             ident = self._ident_for_whatever(parent)
             for i, item in enumerate(self.__dict__['_parents']):
                 if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
-                    self.__dict__['_parents'].pop(i, None)
+                    self.__dict__['_parents'].pop(i)
                 elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
-                    self.__dict__['_parents'].pop(i, None)
+                    self.__dict__['_parents'].pop(i)
 
 
     def get_children(self, **kwargs):
