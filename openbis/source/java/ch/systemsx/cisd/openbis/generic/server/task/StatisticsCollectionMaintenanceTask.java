@@ -88,7 +88,7 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
 
             final long personsCount = getPersonsCount(sessionToken);
 
-            final Map<StatisticsKeys, String> statisticsMap = new HashMap<>(5);
+            final Map<StatisticsKeys, String> statisticsMap = new EnumMap<>(StatisticsKeys.class);
             statisticsMap.put(StatisticsKeys.SERVER_ID, getThisServerId());
             statisticsMap.put(StatisticsKeys.USERS_COUNT, String.valueOf(personsCount));
             statisticsMap.put(StatisticsKeys.OPENBIS_VERSION, BuildAndEnvironmentInfo.INSTANCE.getVersion());
