@@ -68,6 +68,8 @@ public class StatisticsReceiverHandler extends Service
 
     private static final String UNKNOWN_COUNTRY_CODE = "?";
 
+    private static final String FORWARDED_HEADER = "X-FORWARDED-FOR";
+
     static
     {
         final long cleanupPeriod = ALLOWED_REPETITION_TIME_DIFFERENCE / 2;
@@ -111,19 +113,29 @@ public class StatisticsReceiverHandler extends Service
             final Integer usersCount = Integer.valueOf(statisticsMap.get(StatisticsKeys.USERS_COUNT));
             final String openbisVersion = statisticsMap.get(StatisticsKeys.OPENBIS_VERSION);
 
-            // TODO: do we need only NAT IP address or actual LAN address of the client?
-//            final String xForwardedHeader = request.getHeader("X-FORWARDED-FOR");
-//            final String serverIp;
-//            if (xForwardedHeader == null)
-//            {
-//                serverIp = request.getRemoteAddr();
-//            } else
-//            {
-//                serverIp = xForwardedHeader.split(",", 2)[0].trim();
-//            }
+            final Enumeration<String> headers = request.getHeaders(FORWARDED_HEADER);
 
-            final String serverIp = request.getRemoteAddr();
+            // Getting the last FORWARDED_HEADER. The last one will be truly from the reverse proxy on the server.
+            String xForwardedHeader = null;
+            while (headers.hasMoreElements())
+            {
+                xForwardedHeader = headers.nextElement();
+            }
+
+            final String serverIp;
+            if (xForwardedHeader == null)
+            {
+                serverIp = request.getRemoteAddr();
+                LOGGER.traceAccess("Getting server IP from the request directly.");
+            } else
+            {
+                serverIp = xForwardedHeader.split(",", 2)[0].trim();
+                LOGGER.traceAccess(String.format("Getting server IP from %s header.", FORWARDED_HEADER));
+            }
+            LOGGER.traceAccess(String.format("Server IP: %s", serverIp));
+
             final String serverCountryCode = findCountryCodeByIp(serverIp);
+            LOGGER.traceAccess(String.format("Country code: %s", serverCountryCode));
 
             LOGGER.traceAccess(String.format("Request headers: %s", getHeadersFromRequest(request)));
             LOGGER.traceAccess(String.format("Request data: %s", statisticsMap.toString()));
@@ -177,8 +189,16 @@ public class StatisticsReceiverHandler extends Service
         return builder.toString();
     }
 
-//    private static String returnIpFromForwardedHeader(final String header)
+//    private static String returnIpFromForwardedHeader(final HttpServletRequest request)
 //    {
+//        LOGGER.traceAccess("Finding address.");
+//        final String header = request.getHeader(FORWARDED_HEADER);
+//        if (header == null || header.isBlank())
+//        {
+//            LOGGER.traceAccess(String.format("Header %s is empty. Returning remote address.", FORWARDED_HEADER));
+//            return request.getRemoteAddr();
+//        }
+//
 //        final String[] tokens = header.split(",");
 //
 //        final Optional<String> optionalForToken =
@@ -189,10 +209,17 @@ public class StatisticsReceiverHandler extends Service
 //            final String forToken = optionalForToken.get();
 //            final String forSubtoken = forToken.split(";", 2)[0];
 //            final String value = forSubtoken.substring(4);
+//
+//            LOGGER.traceAccess(String.format("Found 'for' token. forToken = %s, forSubtoken=%s, value=%s",
+//                    forToken, forSubtoken, value));
+//
 //            return value.startsWith("\"") && value.endsWith("\"") ? value.substring(1, value.length() - 1) : value;
+//        } else if (tokens.length >= 1)
+//        {
+//            LOGGER.traceAccess("'for=' token not found. Returning remote address.");
 //        } else
 //        {
-//            return null;
+//            return request.getRemoteAddr();
 //        }
 //    }
 
