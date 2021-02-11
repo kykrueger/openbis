@@ -43,6 +43,7 @@ if [ -d $ROOT/openBIS-server ]; then
     restore $CONF/../openBIS-server/jetty/webapps/openbis/custom/welcomePageSimpleGeneric.html $ROOT/openBIS-server/jetty/webapps/openbis/custom welcomePageSimpleGeneric.html
     restore $CONF/config.json $ROOT/big_data_link_server config.json
     restore $CONF/full-text-search-document-version $ROOT/openBIS-server/jetty/etc full-text-search-document-version
+    restore $CONF/instance-id $ROOT/openBIS-server/jetty/etc instance-id
 
     copyConfig $CONF/core-plugins "html/etc$" $ROOT/core-plugins
     copyFolderIfExists $CONF/start.d $ROOT/openBIS-server/jetty/start.d
