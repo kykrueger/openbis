@@ -152,37 +152,47 @@ public class TranslatorUtils
     private static String toPSQLWildcards(final String str)
     {
         final StringBuilder sb = new StringBuilder();
-        str.chars().forEach((value) ->
+        final char[] chars = str.toCharArray();
+        for (int i = 0; i < chars.length; i++)
         {
-            final char ch = (char) value;
-            switch (ch)
+            final char ch = chars[i];
+            if (i > 0 && chars[i - 1] == BACKSLASH)
             {
-                case UNDERSCORE:
-                    // Fall through.
-                case PERCENT:
-                    // Fall through.
-                case BACKSLASH:
+                sb.append(ch);
+            } else
+            {
+                switch (ch)
                 {
-                    sb.append(BACKSLASH).append(ch);
-                    break;
-                }
-                case ASTERISK:
-                {
-                    sb.append(PERCENT);
-                    break;
-                }
-                case QU:
-                {
-                    sb.append(UNDERSCORE);
-                    break;
-                }
-                default:
-                {
-                    sb.append(ch);
-                    break;
+                    case UNDERSCORE:
+                        // Fall through.
+                    case PERCENT:
+                    {
+                        sb.append(BACKSLASH).append(ch);
+                        break;
+                    }
+                    case BACKSLASH:
+                    {
+                        break;
+                    }
+                    case ASTERISK:
+                    {
+                        sb.append(PERCENT);
+                        break;
+                    }
+                    case QU:
+                    {
+                        sb.append(UNDERSCORE);
+                        break;
+                    }
+                    default:
+                    {
+                        sb.append(ch);
+                        break;
+                    }
                 }
             }
-        });
+        }
+
         return sb.toString();
     }
 
