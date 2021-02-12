@@ -106,7 +106,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 final String alias = SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
                 final boolean useWildcards = criterion.isUseWildcards();
-                final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim());
+                final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue());
                 final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
                 final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
                 final String separator = SP + OR + SP;
