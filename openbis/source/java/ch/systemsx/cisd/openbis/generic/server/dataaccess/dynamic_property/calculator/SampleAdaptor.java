@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 
 /**
  * {@link IEntityAdaptor} implementation for {@link SamplePE}.
- *
+ * 
  * @author Piotr Buczek
  */
 public class SampleAdaptor extends AbstractEntityAdaptor implements ISampleAdaptor,
