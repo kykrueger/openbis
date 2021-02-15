@@ -16,29 +16,13 @@
 
 package ch.systemsx.cisd.openbis.systemtest.task;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import javax.annotation.Resource;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.AbstractTest;
@@ -54,6 +38,16 @@ import ch.systemsx.cisd.openbis.generic.server.task.UserGroup;
 import ch.systemsx.cisd.openbis.generic.server.task.UserManager;
 import ch.systemsx.cisd.openbis.generic.server.task.UserManagerReport;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.util.*;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 /**
  * @author Franz-Josef Elmer
@@ -159,7 +153,7 @@ public class UserManagerTest extends AbstractTest
         // Given
         // 1. create user U2 with home space TEST-SPACE and SPACE_ADMIN on this space
         createUserForTestSpace(U2);
-        // 2. create groip G1 with users U1 (admin) and U2
+        // 2. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
         UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
@@ -191,6 +185,63 @@ public class UserManagerTest extends AbstractTest
         builder.homeSpace(U1, "G1_U1");
         builder.homeSpace(U2, "TEST-SPACE");
         builder.assertExpectations();
+    }
+
+    @Test
+    public void testGroupWithoutUserSpaces()
+    {
+        // Given
+        // 1. create user U2 with home space TEST-SPACE and SPACE_ADMIN on this space
+        createUserForTestSpace(U2);
+
+        // 2. create groups:
+        // - G1 with users U1 (admin) and U2
+        // - G2 with users U3 (admin) and U4
+        // - SHARED with users U1 (admin), U2, U3 (admin) and U4
+        // - G1 and G2 have default value (i.e. true) of 'createUserSpace' flag while SHARED has 'createUserSpace' flag set to false
+        MockLogger logger = new MockLogger();
+        Map<Role, List<String>> commonSpaces = commonSpaces();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
+        userManager.setGlobalSpaces(Arrays.asList("A"));
+        userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
+        userManager.addGroup(new UserGroupAsBuilder("G2").admins(U3.getUserId()), users(U3, U4));
+        userManager.addGroup(new UserGroupAsBuilder("SHARED").admins(U1.getUserId(), U3.getUserId()).createUserSpace(false), users(U1, U2, U3, U4));
+
+        // When
+        UserManagerReport report = manage(userManager);
+
+        // Then
+        assertEquals(report.getErrorReport(), "");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.commonSpaces(commonSpaces);
+        builder.users(U1, U2, U3, U4);
+        builder.groups("G1", "G2", "SHARED");
+        builder.space("A").observer(U1, U2, U3, U4);
+        builder.space("G1_ALPHA").admin(U1).user(U2).non(U3, U4);
+        builder.space("G1_BETA").admin(U1).user(U2).non(U3, U4);
+        builder.space("G1_GAMMA").admin(U1).observer(U2).non(U3, U4);
+        builder.space("G1_U1").admin(U1).non(U2, U3, U4);
+        builder.space("G1_U2").admin(U1, U2).non(U3, U4);
+        builder.space("G2_ALPHA").admin(U3).user(U4).non(U1, U2);
+        builder.space("G2_BETA").admin(U3).user(U4).non(U1, U2);
+        builder.space("G2_GAMMA").admin(U3).observer(U4).non(U1, U2);
+        builder.space("G2_U3").admin(U3).non(U1, U2, U4);
+        builder.space("G2_U4").admin(U3, U4).non(U1, U2);
+        builder.space("SHARED_ALPHA").admin(U1, U3).user(U2, U4);
+        builder.space("SHARED_BETA").admin(U1, U3).user(U2, U4);
+        builder.space("SHARED_GAMMA").admin(U1, U3).observer(U2, U4);
+        builder.space("TEST-SPACE").admin(U2).non(U1, U3, U4);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "TEST-SPACE");
+        builder.homeSpace(U3, "G2_U3");
+        builder.homeSpace(U4, "G2_U4");
+        builder.assertExpectations();
+
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        Map<ISpaceId, Space> sharedUserSpaces =
+                v3api.getSpaces(sessionToken, Arrays.asList(new SpacePermId("SHARED_U1"), new SpacePermId("SHARED_U2"), new SpacePermId("SHARED_U3"),
+                        new SpacePermId("SHARED_U4")), new SpaceFetchOptions());
+        assertEquals(sharedUserSpaces, Collections.emptyMap());
     }
 
     @Test
@@ -1451,6 +1502,12 @@ public class UserManagerTest extends AbstractTest
             setEnabled(false);
             return this;
         }
+
+        UserGroupAsBuilder createUserSpace(boolean createUserSpace)
+        {
+            setCreateUserSpace(createUserSpace);
+            return this;
+        }
     }
 
     private static class UserManagerBuilder
@@ -1485,17 +1542,17 @@ public class UserManagerTest extends AbstractTest
         UserManager get()
         {
             NullAuthenticationService authenticationService = new NullAuthenticationService()
+            {
+                @Override
+                public Principal getPrincipal(String user) throws IllegalArgumentException
                 {
-                    @Override
-                    public Principal getPrincipal(String user) throws IllegalArgumentException
+                    if (usersUnknownByAuthenticationService.contains(user))
                     {
-                        if (usersUnknownByAuthenticationService.contains(user))
-                        {
-                            throw new IllegalArgumentException("Unknown user " + user);
-                        }
-                        return new Principal(user, "John", "Doe", "jd@abc.de");
+                        throw new IllegalArgumentException("Unknown user " + user);
                     }
-                };
+                    return new Principal(user, "John", "Doe", "jd@abc.de");
+                }
+            };
             UserManager userManager = new UserManager(authenticationService, service, shareIdsMappingFile, logger, report);
             userManager.setGlobalSpaces(globalSpaces);
             userManager.setCommon(commonSpacesByRole, commonSamples, commonExperiments);

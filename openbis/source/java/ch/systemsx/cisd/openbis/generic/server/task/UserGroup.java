@@ -23,11 +23,13 @@ public class UserGroup
     private String name;
 
     private String key;
-    
+
     private boolean enabled = true;
 
+    private boolean createUserSpace = true;
+
     private List<String> ldapGroupKeys;
-    
+
     private List<String> users;
 
     private List<String> admins;
@@ -57,6 +59,16 @@ public class UserGroup
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
+    }
+
+    public boolean isCreateUserSpace()
+    {
+        return createUserSpace;
+    }
+
+    public void setCreateUserSpace(boolean createUserSpace)
+    {
+        this.createUserSpace = createUserSpace;
     }
 
     public List<String> getAdmins()
