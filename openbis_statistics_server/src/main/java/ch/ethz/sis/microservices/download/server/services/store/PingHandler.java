@@ -16,9 +16,10 @@
 
 package ch.ethz.sis.microservices.download.server.services.store;
 
-import ch.ethz.sis.microservices.download.server.logging.LogManager;
-import ch.ethz.sis.microservices.download.server.logging.Logger;
 import ch.ethz.sis.microservices.download.server.services.Service;
+import ch.ethz.sis.microservices.download.server.startup.StatisticsMain;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -30,12 +31,12 @@ public class PingHandler extends Service
 
     private static final long serialVersionUID = 2L;
 
-    private static final Logger LOGGER = LogManager.getLogger(PingHandler.class);
+    private static final Logger LOGGER = LogManager.getLogger(StatisticsMain.class);
 
     protected void doAction(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException
     {
-        LOGGER.traceAccess("Ping called.");
+        LOGGER.trace("Ping called.");
         response.setStatus(HttpServletResponse.SC_OK);
     }
 

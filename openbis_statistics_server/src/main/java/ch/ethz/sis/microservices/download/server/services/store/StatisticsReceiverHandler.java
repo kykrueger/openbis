@@ -17,13 +17,14 @@
 package ch.ethz.sis.microservices.download.server.services.store;
 
 import ch.ethz.sis.microservices.download.server.json.jackson.JacksonObjectMapper;
-import ch.ethz.sis.microservices.download.server.logging.LogManager;
-import ch.ethz.sis.microservices.download.server.logging.Logger;
 import ch.ethz.sis.microservices.download.server.services.Service;
+import ch.ethz.sis.microservices.download.server.startup.StatisticsMain;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.maxmind.db.CHMCache;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +36,6 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,7 +44,7 @@ public class StatisticsReceiverHandler extends Service
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = LogManager.getLogger(StatisticsReceiverHandler.class);
+    private static final Logger LOGGER = LogManager.getLogger(StatisticsMain.class);
 
     static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -126,29 +126,29 @@ public class StatisticsReceiverHandler extends Service
             if (xForwardedHeader == null)
             {
                 serverIp = request.getRemoteAddr();
-                LOGGER.traceAccess("Getting server IP from the request directly.");
+                LOGGER.trace("Getting server IP from the request directly.");
             } else
             {
                 serverIp = xForwardedHeader.split(",", 2)[0].trim();
-                LOGGER.traceAccess(String.format("Getting server IP from %s header.", FORWARDED_HEADER));
+                LOGGER.trace(String.format("Getting server IP from %s header.", FORWARDED_HEADER));
             }
-            LOGGER.traceAccess(String.format("Server IP: %s", serverIp));
+            LOGGER.trace(String.format("Server IP: %s", serverIp));
 
             final String serverCountryCode = findCountryCodeByIp(serverIp);
-            LOGGER.traceAccess(String.format("Country code: %s", serverCountryCode));
+            LOGGER.trace(String.format("Country code: %s", serverCountryCode));
 
-            LOGGER.traceAccess(String.format("Request headers: %s", getHeadersFromRequest(request)));
-            LOGGER.traceAccess(String.format("Request data: %s", statisticsMap.toString()));
+            LOGGER.trace(String.format("Request headers: %s", getHeadersFromRequest(request)));
+            LOGGER.trace(String.format("Request data: %s", statisticsMap.toString()));
 
             final String csvLine = convertToCSV(serverId, receivedInstant.toString(),
                     String.valueOf(usersCount), serverCountryCode, openbisVersion);
 
-            LOGGER.traceAccess(String.format("Writing to CSV: '%s'", csvLine));
+            LOGGER.trace(String.format("Writing to CSV: '%s'", csvLine));
 
             final boolean callSuspicious = isCallSuspicious(serverId, serverIp, submissionInstant, receivedInstant);
             writeLineToFile(callSuspicious ? flaggedStatisticsFilePath : statisticsFilePath, csvLine);
 
-            LOGGER.traceAccess(String.format("callSuspicious=%b", callSuspicious));
+            LOGGER.trace(String.format("callSuspicious=%b", callSuspicious));
 
             INSTANT_BY_SERVER_ID.put(serverId, receivedInstant);
             if (serverIp != null && !serverIp.isBlank())
@@ -189,40 +189,6 @@ public class StatisticsReceiverHandler extends Service
         return builder.toString();
     }
 
-//    private static String returnIpFromForwardedHeader(final HttpServletRequest request)
-//    {
-//        LOGGER.traceAccess("Finding address.");
-//        final String header = request.getHeader(FORWARDED_HEADER);
-//        if (header == null || header.isBlank())
-//        {
-//            LOGGER.traceAccess(String.format("Header %s is empty. Returning remote address.", FORWARDED_HEADER));
-//            return request.getRemoteAddr();
-//        }
-//
-//        final String[] tokens = header.split(",");
-//
-//        final Optional<String> optionalForToken =
-//                Arrays.stream(tokens).filter(token -> token.toLowerCase().startsWith("for=")).findFirst();
-//
-//        if (optionalForToken.isPresent())
-//        {
-//            final String forToken = optionalForToken.get();
-//            final String forSubtoken = forToken.split(";", 2)[0];
-//            final String value = forSubtoken.substring(4);
-//
-//            LOGGER.traceAccess(String.format("Found 'for' token. forToken = %s, forSubtoken=%s, value=%s",
-//                    forToken, forSubtoken, value));
-//
-//            return value.startsWith("\"") && value.endsWith("\"") ? value.substring(1, value.length() - 1) : value;
-//        } else if (tokens.length >= 1)
-//        {
-//            LOGGER.traceAccess("'for=' token not found. Returning remote address.");
-//        } else
-//        {
-//            return request.getRemoteAddr();
-//        }
-//    }
-
     private boolean isCallSuspicious(final String serverId, final String serverIp,
             final Instant submissionInstant, final Instant receivedInstant)
     {
@@ -257,37 +223,11 @@ public class StatisticsReceiverHandler extends Service
         return escapedData;
     }
 
-    private static <T> T getParameterOfType(final HttpServletRequest request, final String parameterName,
-            final Function<String, T> valueOf)
-    {
-        final String stringParameter = request.getParameter(parameterName);
-        return stringParameter != null ? valueOf.apply(stringParameter) : null;
-    }
-
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException,
             IOException
     {
         doAction(request, response);
-    }
-
-    protected void writeOutput(HttpServletResponse response, int httpResponseCode, boolean success)
-            throws IOException
-    {
-        byte[] resultAsBytes = null;
-        try
-        {
-            Map<String, String> result = new HashMap<>();
-            result.put("success", Boolean.toString(success));
-            resultAsBytes = JacksonObjectMapper.getInstance().writeValue(result);
-        } catch (Exception ex)
-        {
-            LOGGER.catching(ex);
-        }
-
-        response.setContentType("application/json; charset=utf-8");
-        response.getOutputStream().write(resultAsBytes);
-        response.setStatus(httpResponseCode);
     }
 
     protected void success(final HttpServletResponse response) throws ServletException, IOException

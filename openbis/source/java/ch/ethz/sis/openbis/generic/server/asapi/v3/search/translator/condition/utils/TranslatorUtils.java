@@ -70,7 +70,7 @@ public class TranslatorUtils
             sqlBuilder.append(DOUBLE_COLON).append(casting);
         }
 
-        final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim()).toLowerCase();
+        final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue()).toLowerCase();
         appendStringComparatorOp(value.getClass(), strippedValue, useWildcards, sqlBuilder, args);
     }
 

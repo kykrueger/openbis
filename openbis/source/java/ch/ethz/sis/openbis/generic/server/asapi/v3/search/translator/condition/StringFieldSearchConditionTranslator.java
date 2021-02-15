@@ -265,7 +265,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                     sqlBuilder.append(RP);
                 }
 
-                final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim())
+                final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue())
                         .toLowerCase();
 
                 TranslatorUtils.appendStringComparatorOp(value.getClass(), strippedValue, useWildcards,
