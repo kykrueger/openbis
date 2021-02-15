@@ -41,11 +41,10 @@ CREATE OR REPLACE FUNCTION samples_all_tsvector_document_trigger() RETURNS trigg
 DECLARE proj_code VARCHAR;
         space_code VARCHAR;
         container_code VARCHAR;
+        sample_code VARCHAR;
         identifier VARCHAR := '/';
 BEGIN
-    IF TG_OP != 'DELETE' AND (TG_OP = 'INSERT' OR
-                (NEW.space_id IS DISTINCT FROM OLD.space_id OR NEW.proj_id IS DISTINCT FROM OLD.proj_id OR
-                NEW.samp_id_part_of IS DISTINCT FROM OLD.samp_id_part_of)) THEN
+    IF TG_OP != 'DELETE' THEN
         IF NEW.space_id IS NOT NULL THEN
             SELECT code INTO STRICT space_code FROM spaces WHERE id = NEW.space_id;
             identifier := identifier || space_code || '/';
@@ -58,15 +57,21 @@ BEGIN
 
         IF NEW.samp_id_part_of IS NOT NULL THEN
             SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
-            identifier := identifier || container_code || ':' || NEW.code;
+            sample_code := container_code || ':' || NEW.code;
+            NEW.sample_identifier := identifier || sample_code;
+            NEW.tsvector_document := setweight((escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
+                                     setweight((escape_tsvector_string(NEW.sample_identifier) || ':1')::tsvector,
+                                         'A') ||
+                                     setweight((escape_tsvector_string(sample_code) || ':1')::tsvector, 'B') ||
+                                     setweight((escape_tsvector_string(container_code) || ':1')::tsvector, 'B') ||
+                                     setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
         ELSE
-            identifier := identifier || NEW.code;
+            NEW.sample_identifier := identifier || NEW.code;
+            NEW.tsvector_document := setweight((escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
+                                     setweight((escape_tsvector_string(NEW.sample_identifier) || ':1')::tsvector,
+                                         'A') ||
+                                     setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
         END IF;
-
-        NEW.sample_identifier := identifier;
-        NEW.tsvector_document := setweight((escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
-                setweight((escape_tsvector_string(identifier) || ':1')::tsvector, 'A') ||
-                setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
     END IF;
     RETURN NEW;
 END

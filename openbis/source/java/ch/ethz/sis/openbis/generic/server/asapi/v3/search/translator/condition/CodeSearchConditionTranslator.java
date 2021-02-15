@@ -55,18 +55,8 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
                 if (value != null && value.getValue() != null)
                 {
                     final String stringValue = value.getValue();
-                    if (tableMapper == SAMPLE)
-                    {
-                        buildCodeQueryForSamples(sqlBuilder, () -> TranslatorUtils.appendStringComparatorOp(
-                                value.getClass(), stringValue, useWildcards, sqlBuilder, args));
-                    } else
-                    {
-                        final String column = (tableMapper == TAG) ? NAME_COLUMN : CODE_COLUMN;
-                        sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD)
-                                .append(column).append(SP);
-                        TranslatorUtils.appendStringComparatorOp(value.getClass(), stringValue.toUpperCase(),
-                                useWildcards, sqlBuilder, args);
-                    }
+                    translateSearchByCodeCondition(sqlBuilder, tableMapper, value.getClass(), stringValue, useWildcards,
+                            args);
                 } else
                 {
                     sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN)
@@ -84,6 +74,24 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
         }
     }
 
+    static void translateSearchByCodeCondition(final StringBuilder sqlBuilder, final TableMapper tableMapper,
+            final Class<?> valueClass, final String stringValue, final boolean useWildcards,
+            final List<Object> args)
+    {
+        if (tableMapper == SAMPLE)
+        {
+            buildCodeQueryForSamples(sqlBuilder, () -> TranslatorUtils.appendStringComparatorOp(
+                    valueClass, stringValue, useWildcards, sqlBuilder, args));
+        } else
+        {
+            final String column = (tableMapper == TAG) ? NAME_COLUMN : CODE_COLUMN;
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD)
+                    .append(column).append(SP);
+            TranslatorUtils.appendStringComparatorOp(valueClass, stringValue.toUpperCase(),
+                    useWildcards, sqlBuilder, args);
+        }
+    }
+
     /**
      * Builds the following query part
      * <pre>
@@ -98,7 +106,7 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
      * @param sqlBuilder query builder.
      * @param comparisonBuilder runnable which adds comparison operators to the query builder.
      */
-    static void buildCodeQueryForSamples(final StringBuilder sqlBuilder, final Runnable comparisonBuilder)
+    public static void buildCodeQueryForSamples(final StringBuilder sqlBuilder, final Runnable comparisonBuilder)
     {
         sqlBuilder.append(CASE).append(NL)
                 .append(SP).append(SP).append(WHEN).append(SP)

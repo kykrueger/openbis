@@ -1089,6 +1089,22 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithCodeWithWildcardsMatchingComponents()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withCode().withWildcards().thatEquals("B1B3*");
+        testSearch(TEST_USER, criteria, "/CISD/B1B3", "/CISD/B1B3:B01", "/CISD/B1B3:B03");
+    }
+
+    @Test
+    public void testSearchWithAnyFieldMatchingCodeOfComponents()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withCode().thatEquals("B1B3:B01");
+        testSearch(TEST_USER, criteria, "/CISD/B1B3:B01");
+    }
+
+    @Test
     public void testSearchWithTagWithIdSetToPermId()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
