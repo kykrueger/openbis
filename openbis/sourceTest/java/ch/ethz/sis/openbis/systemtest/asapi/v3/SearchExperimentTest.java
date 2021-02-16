@@ -1619,11 +1619,11 @@ public class SearchExperimentTest extends AbstractExperimentTest
     @Test
     public void testSearchWithPermIdWithPropertyFullTextSearch()
     {
-        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withOrOperator();
         criteria.withProperty("DESCRIPTION").thatMatchesText("desc1");
-        // TODO: write the other criteria.
+        criteria.withCode().thatEquals("EXP1");
 
-        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-1");
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-1", "/CISD/NEMO/EXP1");
     }
 
     @Test
