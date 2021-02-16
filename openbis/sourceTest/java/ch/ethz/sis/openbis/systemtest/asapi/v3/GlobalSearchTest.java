@@ -602,6 +602,59 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithSampleCode()
+    {
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContainsExactly("B1B3:B01");
+
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        assertTrue(result.getObjects().size() > 0);
+
+        final GlobalSearchObject object = result.getObjects().get(0);
+
+        assertSample(object, "200811050924274-995", "/CISD/B1B3:B01", "Code: B1B3:B01");
+    }
+
+    @Test
+    public void testSearchWithSampleCodeOfContainer()
+    {
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContainsExactly("B1B3");
+
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        assertTrue(result.getObjects().size() >= 2);
+
+        assertSample(result.getObjects().get(0), "200811050924274-994", "/CISD/B1B3", "Code: B1B3");
+        assertSample(result.getObjects().get(1), "200811050924274-995", "/CISD/B1B3:B01", "Code: B1B3");
+    }
+
+    @Test
+    public void testSearchWithSampleCodeOfComponent()
+    {
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        fo.sortBy().objectPermId().asc();
+        fo.withMatch();
+
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContainsExactly("A01");
+
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        assertEquals(result.getObjects().size(), 4);
+
+        assertSample(result.getObjects().get(0), "200811050919915-9", "/CISD/CL1:A01", "Code: A01");
+        assertSample(result.getObjects().get(1), "200811050927630-1004", "/CISD/MP1-MIXED:A01", "Code: A01");
+        assertSample(result.getObjects().get(2), "200811050928301-1009", "/CISD/MP2-NO-CL:A01", "Code: A01");
+        assertSample(result.getObjects().get(3), "200811050944030-974", "/CISD/CL-3V:A01", "Code: A01");
+    }
+
+    @Test
     public void testSearchWithSamplePermIdAndNothingFetched()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
@@ -1136,6 +1189,9 @@ public class GlobalSearchTest extends AbstractTest
         }
     }
 
+    /**
+     * Often failure in this test indicates that full text search main SQL script has not been executed.
+     */
     @Test
     public void testComplexScoreSortingForAll()
     {

@@ -105,7 +105,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 final String alias = SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
                 final boolean useWildcards = criterion.isUseWildcards();
-                final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim());
+                final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue());
                 final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
                 final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
                 final String separator = SP + OR + SP;
@@ -136,12 +136,18 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                             .collect(
                             StringBuilder::new,
                             (stringBuilder, fieldToSQLTypesEntry) ->
-                            {
-                                final String fieldName = fieldToSQLTypesEntry.getKey();
+
+                            {    final String fieldName = fieldToSQLTypesEntry.getKey();
                                 final PSQLTypes fieldSQLType = fieldToSQLTypesEntry.getValue();
                                 final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
 
-                                if (equalsToComparison || fieldSQLType == TIMESTAMP_WITH_TZ)
+                                if (CODE_COLUMN.equals(fieldName))
+                            {
+                                stringBuilder.append(separator);
+                                CodeSearchConditionTranslator.translateSearchByCodeCondition(stringBuilder, tableMapper,
+                                        value.getClass(), stringValue, useWildcards, args);
+                            } else
+                            {if (equalsToComparison || fieldSQLType == TIMESTAMP_WITH_TZ)
                                 {
                                     if (includeColumn)
                                     {
@@ -149,8 +155,8 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                                         {
                                             final Optional<Object[]> dateFormatWithResultOptional = DATE_FORMATS
                                                     .stream().map(dateFormat ->
-                                                    {
-                                                        final Date formattedValue = formatValue(stringValue,
+
+                                                        {final Date formattedValue = formatValue(stringValue,
                                                                 dateFormat);
                                                         return (formattedValue == null) ? null
                                                                 : new Object[]{TRUNCATION_INTERVAL_BY_DATE_FORMAT.get(
@@ -180,6 +186,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                                     stringBuilder.append(separator);
                                     TranslatorUtils.translateStringComparison(alias, fieldName, value, useWildcards,
                                             VARCHAR, stringBuilder, args);
+                                }
                                 }
                             },
                             StringBuilder::append);

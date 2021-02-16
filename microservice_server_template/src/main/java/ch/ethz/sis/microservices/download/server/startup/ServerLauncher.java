@@ -25,7 +25,7 @@ public class ServerLauncher
         for (ServiceConfig serviceConfig : services)
         {
             logger.info("Loading Service: " + serviceConfig.getClassName() + " URL: " + serviceConfig.getUrl());
-            Service service = (Service) Class.forName(serviceConfig.getClassName()).newInstance();
+            Service service = (Service) Class.forName(serviceConfig.getClassName()).getConstructor().newInstance();
             service.setServiceConfig(serviceConfig);
             ServletHolder servletHolder = new ServletHolder(service);
             handler.addServletWithMapping(servletHolder, serviceConfig.getUrl());

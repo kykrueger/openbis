@@ -85,6 +85,14 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithCodeForNonAdminUserWhereDataSetIsOwnedBySpaceSample()
+    {
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withCode().thatEquals("20120628092259000-23");
+        testSearch(TEST_ROLE_V3, criteria, "20120628092259000-23");
+    }
+
+    @Test
     public void testSearchWithCodes()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();

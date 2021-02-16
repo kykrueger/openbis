@@ -30,6 +30,8 @@ import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.dbmigration.ISqlScriptProvider;
 import ch.systemsx.cisd.dbmigration.postgresql.DumpPreparator;
 
+import static ch.systemsx.cisd.dbmigration.DBMigrationEngine.FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH;
+
 /**
  * Utility methods around database creation.
  *
@@ -73,11 +75,13 @@ public final class DatabaseCreationUtil
         final DatabaseConfigurationContext context =
                 createDatabaseConfigurationContext(databaseKind);
         context.setCreateFromScratch(true);
+        new File(FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH).delete();
         final ISqlScriptProvider scriptProvider =
                 DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(context,
                         databaseVersion, fullTextSearchDocumentVersion);
         context.setCreateFromScratch(false);
         context.setScriptFolder("source/sql");
+        new File(FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH).delete();
         DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(context,
                 DatabaseVersionHolder.getDatabaseVersion(), fullTextSearchDocumentVersion);
         createDumpForJava(databaseKind,
@@ -136,17 +140,11 @@ public final class DatabaseCreationUtil
             return; // never executed
         }
         createFilesFromADumpOfAMigratedDatabase(sourceDbVersion,
-                getPreviousVersion(DatabaseVersionHolder.getDatabaseFullTextSearchDocumentVersion()));
+                DatabaseVersionHolder.getDatabaseFullTextSearchDocumentVersion());
     }
 
     private static String getPreviousVersion(final String currentVersion)
     {
-        Integer ver = new Integer(currentVersion);
-        String prevVer = "" + (ver - 1);
-        while (prevVer.length() != 3)
-        {
-            prevVer = "0" + prevVer;
-        }
-        return prevVer;
+        return String.format("%03d", Integer.parseInt(currentVersion) - 1);
     }
 }

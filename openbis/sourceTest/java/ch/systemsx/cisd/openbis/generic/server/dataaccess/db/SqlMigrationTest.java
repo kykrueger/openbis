@@ -16,11 +16,10 @@
 
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
-import java.io.File;
-
+import ch.systemsx.cisd.dbmigration.migration.SqlMigrationTestAbstract;
 import org.testng.annotations.Test;
 
-import ch.systemsx.cisd.dbmigration.migration.SqlMigrationTestAbstract;
+import java.io.File;
 
 /**
  * @author pkupczyk
@@ -32,7 +31,8 @@ public class SqlMigrationTest extends SqlMigrationTestAbstract
     { "slow" })
     public void test_migration() throws Exception
     {
-        testMigration(DatabaseVersionHolder.getDatabaseVersion());
+        testMigration(DatabaseVersionHolder.getDatabaseVersion(),
+                DatabaseVersionHolder.getDatabaseFullTextSearchDocumentVersion());
     }
 
     @Override
