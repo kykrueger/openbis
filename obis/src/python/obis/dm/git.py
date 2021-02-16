@@ -44,7 +44,7 @@ class GitWrapper(object):
             first_line = result.output.split("\n")[0].split(":")
             if len(first_line) > 1:
                 self.annex_version = first_line[1].strip()
-                self.annex_major_version = int(self.version.split(".")[0])
+                self.annex_major_version = int(self.annex_version.split(".")[0])
         return True
 
     def git_init(self):
