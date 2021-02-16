@@ -319,6 +319,7 @@ CREATE INDEX etpt_exty_fk_i ON experiment_type_property_types USING btree (exty_
 CREATE INDEX etpt_pers_fk_i ON experiment_type_property_types USING btree (pers_id_registerer);
 CREATE INDEX etpt_prty_fk_i ON experiment_type_property_types USING btree (prty_id);
 CREATE INDEX events_search_entity_project_i ON events_search USING btree (entity_project);
+CREATE INDEX events_search_entity_project_perm_id_i ON events_search USING btree (entity_project_perm_id);
 CREATE INDEX events_search_entity_registerer_i ON events_search USING btree (entity_registerer);
 CREATE INDEX events_search_entity_registration_timestamp_i ON events_search USING btree (entity_registration_timestamp);
 CREATE INDEX events_search_entity_space_i ON events_search USING btree (entity_space);
