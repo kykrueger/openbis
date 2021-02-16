@@ -39,7 +39,7 @@ class GitWrapper(object):
         if self._git(['annex', 'help']).failure():
             # git help should have a returncode of 0
             return False
-        result = self._git(['annex', 'version'])
+        result = run_shell([self.git_path, 'annex', 'version'])
         if result.success():
             first_line = result.output.split("\n")[0].split(":")
             if len(first_line) > 1:
