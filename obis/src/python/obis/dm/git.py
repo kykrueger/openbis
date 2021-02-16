@@ -39,12 +39,16 @@ class GitWrapper(object):
         if self._git(['annex', 'help']).failure():
             # git help should have a returncode of 0
             return False
-        result = self._git(['annex', 'version'])
+        result = run_shell([self.git_path, 'annex', 'version'])
         if result.success():
             first_line = result.output.split("\n")[0].split(":")
             if len(first_line) > 1:
                 self.annex_version = first_line[1].strip()
-                self.annex_major_version = int(self.version.split(".")[0])
+                try:
+                    self.annex_major_version = int(self.annex_version.split(".")[0])
+                except Exception as e:
+                    print("Invalid git-annex version line:",result.output)
+                    return False
         return True
 
     def git_init(self):
