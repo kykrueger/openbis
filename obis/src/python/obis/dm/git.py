@@ -48,7 +48,7 @@ class GitWrapper(object):
                     self.annex_major_version = int(self.annex_version.split(".")[0])
                 except Exception as e:
                     print("Invalid git-annex version line:",result.output)
-                    return false
+                    return False
         return True
 
     def git_init(self):
