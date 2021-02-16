@@ -1637,6 +1637,17 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 "/CISD/NEMO/EXP11");
     }
 
+    @Test
+    public void testSearchWithPermIdWithAnyFieldFullTextSearch()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withAnyField().thatMatchesText("experiment exp-x exp-y exp-wells");
+        criteria.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE",
+                "/CISD/NEMO/EXP11", "/CISD/DEFAULT/EXP-WELLS");
+    }
+
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
             final double realValue)
     {
