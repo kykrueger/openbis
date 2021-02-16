@@ -72,6 +72,8 @@ import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogLevel;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
+import ch.systemsx.cisd.openbis.generic.shared.util.ServerUtils;
+
 import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -190,7 +192,7 @@ public class UserManager
         {
             for (Principal principal : principalsByUserId.values())
             {
-                String userId = principal.getUserId();
+                String userId = getUserId(principal, group.isUseEmailAsUserId());
                 UserInfo userInfo = userInfosByUserId.get(userId);
                 if (userInfo == null)
                 {
@@ -606,10 +608,11 @@ public class UserManager
         String adminGroupCode = createAdminGroupCode(groupCode);
         AuthorizationGroupPermId adminGroupId = new AuthorizationGroupPermId(adminGroupCode);
         boolean createUserSpace = group == null || group.isCreateUserSpace();
+        boolean useEmailAsUserId = group != null && group.isUseEmailAsUserId();
 
         for (Principal user : groupUsers.values())
         {
-            String userId = user.getUserId();
+            String userId = getUserId(user, useEmailAsUserId);
             usersToBeRemoved.remove(userId);
             PersonPermId personId = new PersonPermId(userId);
             if (currentUsersOfGroup.containsKey(userId) == false)
@@ -640,7 +643,7 @@ public class UserManager
                     context.getReport().reuseUser(userId);
                 }
 
-                if(createUserSpace)
+                if (createUserSpace)
                 {
                     getHomeSpaceRequest(userId).setHomeSpace(userSpaceId);
                     RoleAssignmentCreation roleCreation = new RoleAssignmentCreation();
@@ -664,10 +667,11 @@ public class UserManager
                 removePersonFromAuthorizationGroup(context, adminGroupCode, userId);
             }
         }
-        removeUsersFromGroup(context, groupCode, usersToBeRemoved);
+        removeUsersFromGroup(context, groupCode, usersToBeRemoved, useEmailAsUserId);
     }
 
-    private void removeUsersFromGroup(Context context, String groupCode, Set<String> usersToBeRemoved)
+    private void removeUsersFromGroup(Context context, String groupCode, Set<String> usersToBeRemoved,
+            boolean useEmailAsUserId)
     {
         String adminGroupCode = createAdminGroupCode(groupCode);
         for (String userId : usersToBeRemoved)
@@ -684,7 +688,8 @@ public class UserManager
             for (RoleAssignment roleAssignment : user.getRoleAssignments())
             {
                 Space space = roleAssignment.getSpace();
-                if (space != null && space.getCode().startsWith(createCommonSpaceCode(groupCode, userId.toUpperCase())))
+                String userSpace = createCommonSpaceCode(groupCode, userId.toUpperCase());
+                if (space != null && space.getCode().startsWith(userSpace))
                 {
                     context.delete(roleAssignment.getId());
                     context.report.unassignRoleFrom(userId, roleAssignment.getRole(), space.getPermId());
@@ -695,6 +700,11 @@ public class UserManager
                 }
             }
         }
+    }
+
+    private String getUserId(Principal user, boolean useEmailAsUserId)
+    {
+        return useEmailAsUserId ? ServerUtils.escapeEmail(user.getEmail()) : user.getUserId();
     }
 
     private SpacePermId createUserSpace(Context context, String groupCode, String userId)

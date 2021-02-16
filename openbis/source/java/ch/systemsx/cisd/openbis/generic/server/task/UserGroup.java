@@ -27,6 +27,8 @@ public class UserGroup
     private boolean enabled = true;
 
     private boolean createUserSpace = true;
+    
+    private boolean useEmailAsUserId;
 
     private List<String> ldapGroupKeys;
 
@@ -64,6 +66,16 @@ public class UserGroup
     public boolean isCreateUserSpace()
     {
         return createUserSpace;
+    }
+
+    public boolean isUseEmailAsUserId()
+    {
+        return useEmailAsUserId;
+    }
+
+    public void setUseEmailAsUserId(boolean useEmailAsUserId)
+    {
+        this.useEmailAsUserId = useEmailAsUserId;
     }
 
     public void setCreateUserSpace(boolean createUserSpace)
