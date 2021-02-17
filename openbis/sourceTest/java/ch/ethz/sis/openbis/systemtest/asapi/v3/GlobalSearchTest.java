@@ -633,6 +633,8 @@ public class GlobalSearchTest extends AbstractTest
         final GlobalSearchObject object = result.getObjects().get(0);
 
         assertSample(object, "200811050924274-995", "/CISD/B1B3:B01", "Code: B1B3:B01");
+        assertNotNull(result.getObjects().get(1).getMatch());
+        assertNotNull(result.getObjects().get(2).getMatch());
     }
 
     @Test
