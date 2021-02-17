@@ -1284,9 +1284,10 @@ public class GlobalSearchCriteriaTranslator
 
     private static String toTsQueryText(final AbstractStringValue stringValue)
     {
-        return (StringContainsExactlyValue.class.isAssignableFrom(stringValue.getClass()))
-                ? '\'' + stringValue.getValue().toLowerCase().replaceAll("'", "''") + '\''
-                : stringValue.getValue().toLowerCase().replaceAll("['&|:!()<>]", " ").trim().replaceAll("\\s+", " | ");
+        return ('\'' + stringValue.getValue().toLowerCase().replaceAll("'", "''") + '\'') +
+                ((StringContainsExactlyValue.class.isAssignableFrom(stringValue.getClass()))
+                ? "" : " | " + stringValue.getValue().toLowerCase().replaceAll("['&|:!()<>]", " ").trim()
+                .replaceAll("\\s+", " | "));
     }
 
 }

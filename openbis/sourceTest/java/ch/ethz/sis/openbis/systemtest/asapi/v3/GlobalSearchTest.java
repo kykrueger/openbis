@@ -602,7 +602,7 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithSampleCode()
+    public void testSearchWithSampleCodeThatContainsExactly()
     {
         final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withMatch();
@@ -611,7 +611,24 @@ public class GlobalSearchTest extends AbstractTest
         criteria.withText().thatContainsExactly("B1B3:B01");
 
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        assertTrue(result.getObjects().size() > 0);
+        assertEquals(result.getObjects().size(), 1);
+
+        final GlobalSearchObject object = result.getObjects().get(0);
+
+        assertSample(object, "200811050924274-995", "/CISD/B1B3:B01", "Code: B1B3:B01");
+    }
+
+    @Test
+    public void testSearchWithSampleCodeThatContains()
+    {
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContains("B1B3:B01");
+
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        assertEquals(result.getObjects().size(), 3);
 
         final GlobalSearchObject object = result.getObjects().get(0);
 
