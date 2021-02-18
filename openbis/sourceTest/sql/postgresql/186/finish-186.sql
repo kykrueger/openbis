@@ -323,6 +323,7 @@ CREATE INDEX events_search_entity_project_perm_id_i ON events_search USING btree
 CREATE INDEX events_search_entity_registerer_i ON events_search USING btree (entity_registerer);
 CREATE INDEX events_search_entity_registration_timestamp_i ON events_search USING btree (entity_registration_timestamp);
 CREATE INDEX events_search_entity_space_i ON events_search USING btree (entity_space);
+CREATE INDEX events_search_entity_space_perm_id_i ON events_search USING btree (entity_space_perm_id);
 CREATE INDEX events_search_exac_id_i ON events_search USING btree (exac_id);
 CREATE INDEX events_search_pers_id_registerer_i ON events_search USING btree (pers_id_registerer);
 CREATE INDEX events_search_registration_timestamp_i ON events_search USING btree (registration_timestamp);

@@ -1491,6 +1491,7 @@ CREATE TABLE events_search (
     event_type event_type NOT NULL,
     entity_type text_value NOT NULL,
     entity_space text_value,
+    entity_space_perm_id text_value,
     entity_project text_value,
     entity_project_perm_id text_value,
     entity_registerer text_value,
