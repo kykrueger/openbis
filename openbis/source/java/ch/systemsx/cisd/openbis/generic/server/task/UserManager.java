@@ -704,7 +704,11 @@ public class UserManager
 
     private String getUserId(Principal user, boolean useEmailAsUserId)
     {
-        return useEmailAsUserId ? ServerUtils.escapeEmail(user.getEmail()) : user.getUserId();
+        if (useEmailAsUserId && StringUtils.isNotBlank(user.getEmail()))
+        {
+            return  ServerUtils.escapeEmail(user.getEmail());
+        }
+        return user.getUserId();
     }
 
     private SpacePermId createUserSpace(Context context, String groupCode, String userId)
