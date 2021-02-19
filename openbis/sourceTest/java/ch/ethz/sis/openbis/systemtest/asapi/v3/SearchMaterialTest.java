@@ -1786,6 +1786,18 @@ public class SearchMaterialTest extends AbstractTest
                 new MaterialPermId("INHIBITOR", "CONTROL"));
     }
 
+    @Test
+    public void testSearchWithCodeWithAnyFieldFullTextSearch()
+    {
+        final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
+
+        criteria.withAnyField().thatMatchesText("virus gene inhibitor sirna");
+        criteria.withCode().thatContains("i");
+
+        testSearch(TEST_USER, criteria, new MaterialPermId("VIRUS1", "VIRUS"), new MaterialPermId("VIRUS2", "VIRUS"),
+                new MaterialPermId("INHIBITOR", "CONTROL"), new MaterialPermId("XX444_B", "SIRNA"));
+    }
+
     private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
             final String formattedValue)
     {
