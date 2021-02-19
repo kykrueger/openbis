@@ -1751,7 +1751,7 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithCodeWithFullTextSearch()
+    public void testSearchWithCodeWithAttributeFullTextSearch()
     {
         final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
 
@@ -1761,6 +1761,17 @@ public class SearchMaterialTest extends AbstractTest
 
         testSearch(TEST_USER, criteria, new MaterialPermId("BACTERIUM2", "BACTERIUM"),
                 new MaterialPermId("VIRUS2", "VIRUS"));
+    }
+
+    @Test
+    public void testSearchWithCodeWithPropertyFullTextSearch()
+    {
+        final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
+
+        criteria.withProperty("DESCRIPTION").thatMatchesText("virus gene inhibitor");
+        criteria.withCode().thatContains("N");
+
+        testSearch(TEST_USER, criteria, new MaterialPermId("MYGENE1", "GENE"));
     }
 
     private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
