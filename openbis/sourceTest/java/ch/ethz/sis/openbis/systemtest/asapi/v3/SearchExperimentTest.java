@@ -1627,10 +1627,31 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchWithPermIdWithStringPropertyFullTextSearch()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withOrOperator();
+        criteria.withStringProperty("DESCRIPTION").thatMatchesText("desc1");
+        criteria.withCode().thatEquals("EXP1");
+
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-1", "/CISD/NEMO/EXP1");
+    }
+
+    @Test
     public void testSearchWithPermIdWithAnyPropertyFullTextSearch()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
         criteria.withAnyProperty().thatMatchesText("experiment");
+        criteria.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE",
+                "/CISD/NEMO/EXP11");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAnyStringPropertyFullTextSearch()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withAnyStringProperty().thatMatchesText("experiment");
         criteria.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE",
