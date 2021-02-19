@@ -1717,6 +1717,17 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithPermIdWithStringPropertyFullTextSearch()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        criteria.withStringProperty("COMMENT").thatMatchesText("virtual female bacterium1");
+        criteria.withPermId().thatEndsWith("1");
+
+        testSearch(TEST_USER, criteria, "20110509092359990-11");
+    }
+
+    @Test
     public void testSearchWithPermIdWithAnyPropertyFullTextSearch()
     {
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
@@ -1725,6 +1736,17 @@ public class SearchDataSetTest extends AbstractDataSetTest
         criteria.withPermId().thatEndsWith("1");
 
         testSearch(TEST_USER, criteria, "20110509092359990-11", "20081105092159111-1");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAnyStringPropertyFullTextSearch()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        criteria.withAnyStringProperty().thatMatchesText("virtual female bacterium1");
+        criteria.withPermId().thatEndsWith("1");
+
+        testSearch(TEST_USER, criteria, "20110509092359990-11");
     }
 
     @Test
