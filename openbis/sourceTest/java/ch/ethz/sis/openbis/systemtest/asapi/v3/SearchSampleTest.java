@@ -3235,11 +3235,40 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithPermIdWithStringPropertyFullTextSearch()
+    {
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria().withAndOperator();
+
+        criteria1.withStringProperty("COMMENT").thatMatchesText("test");
+        criteria1.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria1, "/CISD/3VCP7");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria().withAndOperator();
+
+        criteria2.withStringProperty("DESCRIPTION").thatMatchesText("test");
+        criteria2.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria2, "/CISD/CL1");
+    }
+
+    @Test
     public void testSearchWithPermIdWithAnyPropertyFullTextSearch()
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
 
         criteria.withAnyProperty().thatMatchesText("test");
+        criteria.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria, "/CISD/CL1", "/CISD/3VCP7");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAnyStringPropertyFullTextSearch()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        criteria.withAnyStringProperty().thatMatchesText("test");
         criteria.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria, "/CISD/CL1", "/CISD/3VCP7");
