@@ -1694,7 +1694,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithCodeWithFullTextSearch()
+    public void testSearchWithPermIdWithAttributeFullTextSearch()
     {
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
 
@@ -1703,6 +1703,39 @@ public class SearchDataSetTest extends AbstractDataSetTest
         criteria.withPermId().thatStartsWith("COMPONENT");
 
         testSearch(TEST_USER, criteria, "COMPONENT_1A", "COMPONENT_1B", "COMPONENT_2A");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithPropertyFullTextSearch()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        criteria.withProperty("COMMENT").thatMatchesText("virtual female bacterium1");
+        criteria.withPermId().thatEndsWith("1");
+
+        testSearch(TEST_USER, criteria, "20110509092359990-11");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAnyPropertyFullTextSearch()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        criteria.withAnyProperty().thatMatchesText("virtual female bacterium1");
+        criteria.withPermId().thatEndsWith("1");
+
+        testSearch(TEST_USER, criteria, "20110509092359990-11", "20081105092159111-1");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAnyFieldFullTextSearch()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        criteria.withAnyField().thatMatchesText("virtual female bacterium1 20081105092259900-1 20081105092259900-2");
+        criteria.withPermId().thatEndsWith("1");
+
+        testSearch(TEST_USER, criteria, "20110509092359990-11", "20081105092159111-1", "20081105092259900-1");
     }
 
     private List<DataSet> search(final String sessionToken, final DataSetSearchCriteria criteria,

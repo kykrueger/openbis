@@ -1605,7 +1605,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
-    public void testSearchWithPermIdWithFullTextSearch()
+    public void testSearchWithPermIdWithAttributeFullTextSearch()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
 
