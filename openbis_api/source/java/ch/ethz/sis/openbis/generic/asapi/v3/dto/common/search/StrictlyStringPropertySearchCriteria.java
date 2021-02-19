@@ -34,4 +34,9 @@ public class StrictlyStringPropertySearchCriteria extends StringFieldSearchCrite
         super(fieldName, SearchFieldType.PROPERTY);
     }
 
+    public void thatMatchesText(final String text)
+    {
+        setFieldValue(new StringMatchesValue(text));
+    }
+
 }

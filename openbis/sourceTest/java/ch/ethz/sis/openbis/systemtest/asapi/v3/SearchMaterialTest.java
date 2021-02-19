@@ -1775,6 +1775,17 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithCodeWithStringPropertyFullTextSearch()
+    {
+        final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
+
+        criteria.withStringProperty("DESCRIPTION").thatMatchesText("virus gene inhibitor");
+        criteria.withCode().thatContains("N");
+
+        testSearch(TEST_USER, criteria, new MaterialPermId("MYGENE1", "GENE"));
+    }
+
+    @Test
     public void testSearchWithCodeWithAnyPropertyFullTextSearch()
     {
         final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
