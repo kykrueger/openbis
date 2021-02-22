@@ -89,4 +89,15 @@ public abstract class StringFieldSearchCriteria extends AbstractFieldSearchCrite
         return useWildcards;
     }
 
+    @Override
+    public String toString()
+    {
+        String result = super.toString();
+        if (useWildcards == false)
+        {
+            result += " (not using wildcards)";
+        }
+        return result;
+    }
+
 }

@@ -17,13 +17,14 @@
 package ch.ethz.sis.microservices.download.server.services.store;
 
 import ch.ethz.sis.microservices.download.server.json.jackson.JacksonObjectMapper;
-import ch.ethz.sis.microservices.download.server.logging.LogManager;
-import ch.ethz.sis.microservices.download.server.logging.Logger;
 import ch.ethz.sis.microservices.download.server.services.Service;
+import ch.ethz.sis.microservices.download.server.startup.StatisticsMain;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.maxmind.db.CHMCache;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +36,6 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,7 +44,7 @@ public class StatisticsReceiverHandler extends Service
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = LogManager.getLogger(StatisticsReceiverHandler.class);
+    private static final Logger LOGGER = LogManager.getLogger(StatisticsMain.class);
 
     static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -67,6 +67,8 @@ public class StatisticsReceiverHandler extends Service
     private static final long ALLOWED_REPETITION_TIME_DIFFERENCE = 300;
 
     private static final String UNKNOWN_COUNTRY_CODE = "?";
+
+    private static final String FORWARDED_HEADER = "X-FORWARDED-FOR";
 
     static
     {
@@ -111,32 +113,42 @@ public class StatisticsReceiverHandler extends Service
             final Integer usersCount = Integer.valueOf(statisticsMap.get(StatisticsKeys.USERS_COUNT));
             final String openbisVersion = statisticsMap.get(StatisticsKeys.OPENBIS_VERSION);
 
-            // TODO: do we need only NAT IP address or actual LAN address of the client?
-//            final String xForwardedHeader = request.getHeader("X-FORWARDED-FOR");
-//            final String serverIp;
-//            if (xForwardedHeader == null)
-//            {
-//                serverIp = request.getRemoteAddr();
-//            } else
-//            {
-//                serverIp = xForwardedHeader.split(",", 2)[0].trim();
-//            }
+            final Enumeration<String> headers = request.getHeaders(FORWARDED_HEADER);
 
-            final String serverIp = request.getRemoteAddr();
+            // Getting the last FORWARDED_HEADER. The last one will be truly from the reverse proxy on the server.
+            String xForwardedHeader = null;
+            while (headers.hasMoreElements())
+            {
+                xForwardedHeader = headers.nextElement();
+            }
+
+            final String serverIp;
+            if (xForwardedHeader == null)
+            {
+                serverIp = request.getRemoteAddr();
+                LOGGER.trace("Getting server IP from the request directly.");
+            } else
+            {
+                serverIp = xForwardedHeader.split(",", 2)[0].trim();
+                LOGGER.trace(String.format("Getting server IP from %s header.", FORWARDED_HEADER));
+            }
+            LOGGER.trace(String.format("Server IP: %s", serverIp));
+
             final String serverCountryCode = findCountryCodeByIp(serverIp);
+            LOGGER.trace(String.format("Country code: %s", serverCountryCode));
 
-            LOGGER.traceAccess(String.format("Request headers: %s", getHeadersFromRequest(request)));
-            LOGGER.traceAccess(String.format("Request data: %s", statisticsMap.toString()));
+            LOGGER.trace(String.format("Request headers: %s", getHeadersFromRequest(request)));
+            LOGGER.trace(String.format("Request data: %s", statisticsMap.toString()));
 
             final String csvLine = convertToCSV(serverId, receivedInstant.toString(),
                     String.valueOf(usersCount), serverCountryCode, openbisVersion);
 
-            LOGGER.traceAccess(String.format("Writing to CSV: '%s'", csvLine));
+            LOGGER.trace(String.format("Writing to CSV: '%s'", csvLine));
 
             final boolean callSuspicious = isCallSuspicious(serverId, serverIp, submissionInstant, receivedInstant);
             writeLineToFile(callSuspicious ? flaggedStatisticsFilePath : statisticsFilePath, csvLine);
 
-            LOGGER.traceAccess(String.format("callSuspicious=%b", callSuspicious));
+            LOGGER.trace(String.format("callSuspicious=%b", callSuspicious));
 
             INSTANT_BY_SERVER_ID.put(serverId, receivedInstant);
             if (serverIp != null && !serverIp.isBlank())
@@ -177,25 +189,6 @@ public class StatisticsReceiverHandler extends Service
         return builder.toString();
     }
 
-//    private static String returnIpFromForwardedHeader(final String header)
-//    {
-//        final String[] tokens = header.split(",");
-//
-//        final Optional<String> optionalForToken =
-//                Arrays.stream(tokens).filter(token -> token.toLowerCase().startsWith("for=")).findFirst();
-//
-//        if (optionalForToken.isPresent())
-//        {
-//            final String forToken = optionalForToken.get();
-//            final String forSubtoken = forToken.split(";", 2)[0];
-//            final String value = forSubtoken.substring(4);
-//            return value.startsWith("\"") && value.endsWith("\"") ? value.substring(1, value.length() - 1) : value;
-//        } else
-//        {
-//            return null;
-//        }
-//    }
-
     private boolean isCallSuspicious(final String serverId, final String serverIp,
             final Instant submissionInstant, final Instant receivedInstant)
     {
@@ -230,37 +223,11 @@ public class StatisticsReceiverHandler extends Service
         return escapedData;
     }
 
-    private static <T> T getParameterOfType(final HttpServletRequest request, final String parameterName,
-            final Function<String, T> valueOf)
-    {
-        final String stringParameter = request.getParameter(parameterName);
-        return stringParameter != null ? valueOf.apply(stringParameter) : null;
-    }
-
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException,
             IOException
     {
         doAction(request, response);
-    }
-
-    protected void writeOutput(HttpServletResponse response, int httpResponseCode, boolean success)
-            throws IOException
-    {
-        byte[] resultAsBytes = null;
-        try
-        {
-            Map<String, String> result = new HashMap<>();
-            result.put("success", Boolean.toString(success));
-            resultAsBytes = JacksonObjectMapper.getInstance().writeValue(result);
-        } catch (Exception ex)
-        {
-            LOGGER.catching(ex);
-        }
-
-        response.setContentType("application/json; charset=utf-8");
-        response.getOutputStream().write(resultAsBytes);
-        response.setStatus(httpResponseCode);
     }
 
     protected void success(final HttpServletResponse response) throws ServletException, IOException

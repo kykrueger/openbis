@@ -88,7 +88,7 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
 
             final long personsCount = getPersonsCount(sessionToken);
 
-            final Map<StatisticsKeys, String> statisticsMap = new HashMap<>(5);
+            final Map<StatisticsKeys, String> statisticsMap = new EnumMap<>(StatisticsKeys.class);
             statisticsMap.put(StatisticsKeys.SERVER_ID, getThisServerId());
             statisticsMap.put(StatisticsKeys.USERS_COUNT, String.valueOf(personsCount));
             statisticsMap.put(StatisticsKeys.OPENBIS_VERSION, BuildAndEnvironmentInfo.INSTANCE.getVersion());
@@ -104,19 +104,17 @@ public class StatisticsCollectionMaintenanceTask extends AbstractMaintenanceTask
             }
 
             final Request request = JettyHttpClientFactory.getHttpClient()
-                    // TODO: change it to the address of the real server.
-                    .POST("http://localhost:8080/statistics")
+                    .POST("http://statistics.openbis.ch/statistics")
                     .content(new BytesContentProvider(body));
-            final byte[] response;
             try
             {
                 final ContentResponse contentResponse = request.send();
-                response = contentResponse.getContent();
+                contentResponse.getContent();
                 final int statusCode = contentResponse.getStatus();
                 if (statusCode >= 400)
                 {
                     notificationLog.warn(String.format("Error sending statistics collection request. " +
-                                    "Error code received: %d (%s)", statusCode, contentResponse.getReason()));
+                            "Error code received: %d (%s)", statusCode, contentResponse.getReason()));
                 }
             } catch (final InterruptedException | TimeoutException | ExecutionException e)
             {

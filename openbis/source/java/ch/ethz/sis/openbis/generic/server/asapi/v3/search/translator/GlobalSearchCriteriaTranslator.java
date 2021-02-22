@@ -19,6 +19,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.*;
@@ -744,10 +746,10 @@ public class GlobalSearchCriteriaTranslator
         }
         sqlBuilder.append(SP).append(SPACE_CODE_ALIAS).append(COMMA).append(NL);
 
-        final String[] criterionValues = criterion.getFieldValue().getValue().toLowerCase().trim().split("\\s+");
+        final String[] criterionValues = stringValue.getValue().toLowerCase().trim().split("\\s+");
         if (forAttributes)
         {
-            buildAttributesMatchSelection(sqlBuilder, criterionValues, tableMapper, args);
+            buildAttributesMatchSelection(sqlBuilder, stringValue.getClass(), criterionValues, tableMapper, args);
             sqlBuilder.append(COMMA).append(NL);
 
             if (tableMapper == SAMPLE)
@@ -901,18 +903,18 @@ public class GlobalSearchCriteriaTranslator
 
     /**
      * Appends selection text for the attributes that they may match.
-     *
      * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
+     * @param stringValueClass
      * @param criterionValues full text search values to be put to the full text search matching function.
      * @param tableMapper the table mapper.
      * @param args query arguments.
      */
-    private static void buildAttributesMatchSelection(final StringBuilder sqlBuilder, final String[] criterionValues,
+    private static void buildAttributesMatchSelection(final StringBuilder sqlBuilder,
+            final Class<? extends AbstractStringValue> stringValueClass,
+            final String[] criterionValues,
             final TableMapper tableMapper, final List<Object> args)
     {
-        final String thenValue = MAIN_TABLE_ALIAS + PERIOD + CODE_COLUMN;
-        buildCaseWhenIn(sqlBuilder, args, criterionValues, new String[]{thenValue}, thenValue, NULL);
-        sqlBuilder.append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
+        buildCodeMatch(sqlBuilder, criterionValues, stringValueClass, tableMapper, args);
 
         switch (tableMapper)
         {
@@ -942,6 +944,84 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(SP).append(PERM_ID_MATCH_ALIAS);
     }
 
+    private static void buildCodeMatch(final StringBuilder sqlBuilder, final String[] criterionValues,
+            final Class<? extends AbstractStringValue> stringValueClass,
+            final TableMapper tableMapper, final List<Object> args)
+    {
+        final String mainTableCode = MAIN_TABLE_ALIAS + PERIOD + CODE_COLUMN;
+        if (tableMapper == SAMPLE)
+        {
+            final StringBuilder thenValueBuilder = new StringBuilder();
+            final String[] modifiedCriterionValues = StringContainsExactlyValue.class.isAssignableFrom(stringValueClass)
+                    ? criterionValues
+                    : Arrays.stream(criterionValues).flatMap(value ->
+                    {
+                        final String[] splitValues = value.split(":", 2);
+                        return splitValues.length > 1 ? Stream.of(value, splitValues[0], splitValues[1])
+                                : Stream.of(value);
+                    }).collect(Collectors.toList()).toArray(new String[0]);
+            buildCaseWhenIn(thenValueBuilder, args, modifiedCriterionValues, new String[]{mainTableCode}, mainTableCode,
+                    NULL);
+
+            final StringBuilder elseValueBuilder = new StringBuilder();
+
+            final String[] conditionValues = {createSubstrCall('/', null), mainTableCode, createSubstrCall('/', ':')};
+            buildCaseWhen(elseValueBuilder, new String[] {
+                    makeInCondition(conditionValues[0], args, modifiedCriterionValues),
+                    makeInCondition(conditionValues[1], args, modifiedCriterionValues),
+                    makeInCondition(conditionValues[2], args, modifiedCriterionValues)},
+                    conditionValues, NULL);
+
+            buildCaseWhen(sqlBuilder, new String[] {MAIN_TABLE_ALIAS + PERIOD + PART_OF_SAMPLE_COLUMN + SP + IS + SP
+                    + NULL}, new String[] {thenValueBuilder.toString()}, elseValueBuilder.toString());
+        } else
+        {
+            buildCaseWhenIn(sqlBuilder, args, criterionValues, new String[]{mainTableCode}, mainTableCode, NULL);
+        }
+
+        sqlBuilder.append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
+    }
+
+    private static String makeInCondition(final String str, final List<Object> args, final String[] criterionValues)
+    {
+        final StringBuilder result = new StringBuilder();
+        appendMatchingColumnCondition(result, str, args, criterionValues);
+        return result.toString();
+    }
+
+    private static String createSubstrCall(final Character char1, final Character char2)
+    {
+        final String mainTableSampleIdentifier = MAIN_TABLE_ALIAS + PERIOD + SAMPLE_IDENTIFIER_COLUMN;
+        final String result = SUBSTR + LP + mainTableSampleIdentifier + COMMA + SP
+                + LENGTH + LP + mainTableSampleIdentifier + RP + SP + MINUS + SP + createStrposReverseCall(char1)
+                + SP + PLUS + SP + "2";
+        return char2 == null ? result + RP
+                : result + COMMA + SP + createStrposReverseCall(char1) + SP + MINUS + SP
+                + createStrposReverseCall(char2) + SP + MINUS + SP + "1" + RP;
+    }
+
+    private static String createStrposReverseCall(final char ch)
+    {
+        return STRPOS + LP + REVERSE + LP + MAIN_TABLE_ALIAS + PERIOD + SAMPLE_IDENTIFIER_COLUMN + RP + COMMA + SP
+                + SQ + ch + SQ + RP;
+    }
+
+    /**
+     * Adds extra values for code search criteria if code search string contains container separator.
+     *
+     * @param criterionValues initial criteria search values.
+     * @return original values plus extracted parent/child criteria values if any.
+     */
+    private static String[] expandExtraCodeValues(final String[] criterionValues)
+    {
+        return Arrays.stream(criterionValues).flatMap(criterionValue ->
+        {
+            final String[] subcodes = criterionValue.split(":", 1);
+            return subcodes.length > 1 ? Stream.of(criterionValue, subcodes[0], subcodes[1]) :
+                    Stream.of(criterionValue);
+        }).distinct().toArray(String[]::new);
+    }
+
     /**
      * Builds the following part of the query.
      * <pre>
@@ -964,7 +1044,30 @@ public class GlobalSearchCriteriaTranslator
             final String[] criterionValues, final String[] matchingColumns, final String thenValue,
             final String elseValue)
     {
-        sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
+        sqlBuilder.append(CASE).append(SP);
+        buildWhenIn(sqlBuilder, args, criterionValues, matchingColumns);
+        sqlBuilder.append(SP).append(THEN).append(SP).append(thenValue);
+        sqlBuilder.append(SP).append(ELSE).append(SP).append(elseValue).append(SP).append(END);
+    }
+
+    private static void buildCaseWhen(final StringBuilder sqlBuilder,
+            final String[] conditions, final String[] thenValues, final String elseValue)
+    {
+        sqlBuilder.append(CASE).append(NL);
+
+        for (int i = 0; i < conditions.length; i++)
+        {
+            sqlBuilder.append(SP).append(SP).append(WHEN).append(SP).append(conditions[i]);
+            sqlBuilder.append(SP).append(THEN).append(SP).append(thenValues[i]).append(NL);
+        }
+
+        sqlBuilder.append(SP).append(SP).append(ELSE).append(SP).append(elseValue).append(SP).append(END);
+    }
+
+    private static void buildWhenIn(final StringBuilder sqlBuilder, final List<Object> args,
+            final String[] criterionValues, final String[] matchingColumns)
+    {
+        sqlBuilder.append(WHEN).append(SP);
 
         final Spliterator<String> spliterator = Arrays.stream(matchingColumns).spliterator();
 
@@ -977,9 +1080,6 @@ public class GlobalSearchCriteriaTranslator
                 appendMatchingColumnCondition(sqlBuilder, matchingColumn, args, criterionValues);
             });
         }
-
-        sqlBuilder.append(SP).append(THEN).append(SP).append(thenValue);
-        sqlBuilder.append(SP).append(ELSE).append(SP).append(elseValue).append(SP).append(END);
     }
 
     /**
@@ -1197,9 +1297,15 @@ public class GlobalSearchCriteriaTranslator
 
     private static String toTsQueryText(final AbstractStringValue stringValue)
     {
-        return (StringContainsExactlyValue.class.isAssignableFrom(stringValue.getClass()))
-                ? '\'' + stringValue.getValue().toLowerCase().replaceAll("'", "''") + '\''
-                : stringValue.getValue().toLowerCase().replaceAll("['&|:!()<>]", " ").trim().replaceAll("\\s+", " | ");
+        return toTsQueryText(stringValue.getValue(), stringValue.getClass());
+    }
+
+    private static String toTsQueryText(final String value, final Class<? extends AbstractStringValue> stringValueClass)
+    {
+        return ('\'' + value.toLowerCase().replaceAll("'", "''") + '\'') +
+                ((StringContainsExactlyValue.class.isAssignableFrom(stringValueClass))
+                        ? "" : " | " + value.toLowerCase().replaceAll("['&|:!()<>]", " ").trim()
+                        .replaceAll("\\s+", " | "));
     }
 
 }
