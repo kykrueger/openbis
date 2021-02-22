@@ -97,7 +97,6 @@ def get_search_type_for_entity(entity, operator=None):
         "authorizationGroup": "as.dto.authorizationgroup.search.AuthorizationGroupSearchCriteria",
         "person": "as.dto.person.search.PersonSearchCriteria",
         "code": "as.dto.common.search.CodeSearchCriteria",
-        "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
         "global": "as.dto.global.GlobalSearchObject",
         "plugin": "as.dto.plugin.search.PluginSearchCriteria",
         "propertyType": "as.dto.property.search.PropertyTypeSearchCriteria",
@@ -665,7 +664,6 @@ def _subcriteria_for_identifier(ids, entity, parents_or_children='', operator='A
         **search_type,
         "operator": operator
     }
-    return criteria
 
 
 def _subcriteria_for_permid(permids, entity, parents_or_children='', operator='AND'):
@@ -980,7 +978,7 @@ class Openbis:
         if token is None:
             token = self.token
 
-        token_path = None;
+        token_path = None
         if parent_folder is None:
             token_path = self.gen_token_path()
         else:
@@ -1422,8 +1420,8 @@ class Openbis:
         }
         try:
             return self._post_request(self.as_v3, request)
-        except Exception as e:
-            raise ValueError("Could not generate a code for {}: {}".format(entity, e))
+        except Exception as exc:
+            raise ValueError("Could not generate a code: {}".format(exc))
             
 
     def new_person(self, userId, space=None):
@@ -1431,6 +1429,7 @@ class Openbis:
         """
         try:
             person = self.get_person(userId=userId)
+            return person
         except Exception:
             return Person(self, userId=userId, space=space) 
 
@@ -1593,8 +1592,8 @@ class Openbis:
         if len(resp) == 0:
             raise ValueError("No assigned role found for techId={}".format(techId))
         
-        for id in resp:
-            data = resp[id]
+        for permid in resp:
+            data = resp[permid]
             parse_jackson(data)
 
             if only_data:
@@ -2362,14 +2361,14 @@ class Openbis:
             raise ValueError(f"No such experiment: {code}")
 
         parse_jackson(resp)
-        for id in resp:
+        for permid in resp:
             if only_data:
-                return resp[id]
+                return resp[permid]
             else:
                 return Experiment(
                     openbis_obj = self,
                     type = self.get_experiment_type(resp[code]["type"]["code"]),
-                    data = resp[id]
+                    data = resp[permid]
                 )
     get_collection = get_experiment  # Alias
 
@@ -2511,7 +2510,7 @@ class Openbis:
                 delete_options
             ]
         }
-        resp = self._post_request(self.as_v3, request)
+        self._post_request(self.as_v3, request)
         return
 
 
@@ -2798,7 +2797,6 @@ class Openbis:
 
 
     def get_term(self, code, vocabularyCode, only_data=False):
-        entity_def = get_definition_for_entity('vocabularyTerm')
         search_request = {
             "code": code,
             "vocabularyCode": vocabularyCode,
@@ -3114,16 +3112,16 @@ class Openbis:
             objects = resp['objects']
             parse_jackson(objects)
             
-            for object in objects:
-                object['permId'] = object['permId']['permId']
-                if object.get('entityType') is not None:
-                    object['entityType'] = object['entityType']['code']
-                elif object.get('propertyType') is not None:
-                    object['propertyType'] = object['propertyType']['code']
-                elif object.get('propertyAssignment') is not None:
-                    object['entityType'] = object['propertyAssignment']['entityType']['code']
-                    object['propertyType'] = object['propertyAssignment']['propertyType']['code']
-                object['creationDate'] = format_timestamp(object['creationDate'])
+            for obj in objects:
+                obj['permId'] = obj['permId']['permId']
+                if obj.get('entityType') is not None:
+                    obj['entityType'] = obj['entityType']['code']
+                elif obj.get('propertyType') is not None:
+                    obj['propertyType'] = obj['propertyType']['code']
+                elif obj.get('propertyAssignment') is not None:
+                    obj['entityType'] = obj['propertyAssignment']['entityType']['code']
+                    obj['propertyType'] = obj['propertyAssignment']['propertyType']['code']
+                obj['creationDate'] = format_timestamp(obj['creationDate'])
                 
             return objects
 
@@ -3695,7 +3693,7 @@ class Openbis:
         }
         try:
             resp = self._post_request(self.as_v1, request)
-        except Exception as e:
+        except Exception:
             return False
 
         return resp
@@ -3976,8 +3974,7 @@ class Openbis:
         return params
 
 
-    @staticmethod
-    def decode_property(entity, property):
+    def _decode_property(self, entity, property):
         # match something like: property_name.term.label AS label_alias
         regex = re.compile(
             r"""^
@@ -4000,7 +3997,7 @@ class Openbis:
         match = re.search(regex, property)
         if not match:
             try:
-                params = decode_attribute(entity, property)
+                params = self.decode_attribute(entity, property)
                 return params
             except ValueError:
                 raise ValueError(f"unable to parse property: {property}")
@@ -4022,18 +4019,6 @@ class Openbis:
                 if obj is None: return ''
                 return obj.get(attribute_to_extract,'')
             return return_attribute
-
-        sample_types = {}
-        def collect_sample_types(permId):
-            if not isinstance(permId, dict):
-                permId = str(permId)
-            else:
-                permId = permId['permId']
-
-            if permId in sample_types:
-                return permId
-            else:
-                st = self.get_sample_type(permId)
 
         parse_jackson(response)
 
@@ -4239,12 +4224,12 @@ class Openbis:
     @staticmethod
     def sample_to_sample_id(sample):
         """Take sample which may be a string or object and return an identifier for it."""
-        return Openbis._object_to_object_id(sample, "as.dto.sample.id.SampleIdentifier", "as.dto.sample.id.SamplePermId");
+        return Openbis._object_to_object_id(sample, "as.dto.sample.id.SampleIdentifier", "as.dto.sample.id.SamplePermId")
 
     @staticmethod
     def experiment_to_experiment_id(experiment):
         """Take experiment which may be a string or object and return an identifier for it."""
-        return Openbis._object_to_object_id(experiment, "as.dto.experiment.id.ExperimentIdentifier", "as.dto.experiment.id.SamplePermId");
+        return Openbis._object_to_object_id(experiment, "as.dto.experiment.id.ExperimentIdentifier", "as.dto.experiment.id.SamplePermId")
 
     @staticmethod
     def _object_to_object_id(obj, identifierType, permIdType):
@@ -4506,16 +4491,16 @@ class ServerInformation():
         return self._info.get(name.replace('_', '-'))
     
     def get_major_version(self):
-        return int(self._info["api-version"].split(".")[0]);
+        return int(self._info["api-version"].split(".")[0])
     
     def get_minor_version(self):
-        return int(self._info["api-version"].split(".")[1]);
+        return int(self._info["api-version"].split(".")[1])
     
     def is_openbis_1605(self):
-        return (self.get_major_version() == 3) and (self.get_minor_version() <= 2);
+        return (self.get_major_version() == 3) and (self.get_minor_version() <= 2)
     
     def is_openbis_1806(self):
-        return (self.get_major_version() == 3) and (self.get_minor_version() >= 5);
+        return (self.get_major_version() == 3) and (self.get_minor_version() >= 5)
 
     def _repr_html_(self):
         html = """
