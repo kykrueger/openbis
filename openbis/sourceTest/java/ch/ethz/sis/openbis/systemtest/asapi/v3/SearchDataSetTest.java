@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DatePropertySearchCriteria;
@@ -80,6 +82,14 @@ public class SearchDataSetTest extends AbstractDataSetTest
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withCode().thatEquals("20081105092259000-18");
         testSearch(TEST_USER, criteria, "20081105092259000-18");
+    }
+
+    @Test
+    public void testSearchWithCodeForNonAdminUserWhereDataSetIsOwnedBySpaceSample()
+    {
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withCode().thatEquals("20120628092259000-23");
+        testSearch(TEST_ROLE_V3, criteria, "20120628092259000-23");
     }
 
     @Test
@@ -1605,6 +1615,63 @@ public class SearchDataSetTest extends AbstractDataSetTest
 
         testSearch(TEST_USER, criteria, "CONTAINER_1", "20081105092259000-21", "20081105092159111-1", "CONTAINER_3A",
                 "20081105092259900-1");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsMultipleNesting()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        final DataSetSearchCriteria subCriteria1 = criteria.withSubcriteria().withOrOperator();
+        subCriteria1.withSubcriteria().withCode().thatStartsWith("2008");
+        subCriteria1.withSubcriteria().withSubcriteria().withCode().thatStartsWith("CON");
+
+        final DataSetSearchCriteria subCriteria2 = criteria.withSubcriteria().withOrOperator();
+        subCriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withCode().thatEndsWith("1");
+        subCriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withSubcriteria().withCode()
+                .thatEndsWith("A");
+
+        testSearch(TEST_USER, criteria, "CONTAINER_1", "20081105092259000-21", "20081105092159111-1", "CONTAINER_3A",
+                "20081105092259900-1");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsWithParentsAndChildren()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        final DataSetSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withParents().withCode().thatStartsWith("20081105092259000-");
+        subcriteria1.withParents().withCode().thatStartsWith("20081105092259900-");
+        subcriteria1.withParents().withCode().thatStartsWith("20110509092359990-");
+        subcriteria1.withParents().withCode().thatStartsWith("20081105092159");
+
+        final DataSetSearchCriteria subcriteria2 = criteria.withSubcriteria().withOrOperator();
+        subcriteria2.withChildren().withCode().thatEndsWith("2");
+        subcriteria2.withChildren().withCode().thatEndsWith("AB");
+
+        testSearch(TEST_INSTANCE_ETLSERVER, criteria, "20081105092259900-0", "20081105092259900-1");
+    }
+
+    @Test
+    public void testNestedLogicalOperatorsWithParentsAndChildrenMultipleNesting()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        final DataSetSearchCriteria subcriteria1 = criteria.withSubcriteria().withOrOperator();
+        subcriteria1.withSubcriteria().withParents().withCode().thatStartsWith("20081105092259000-");
+        subcriteria1.withSubcriteria().withSubcriteria().withParents().withCode().thatStartsWith("20081105092259900-");
+        subcriteria1.withSubcriteria().withSubcriteria().withSubcriteria().withParents().withCode()
+                .thatStartsWith("20110509092359990-");
+        subcriteria1.withSubcriteria().withSubcriteria().withSubcriteria().withSubcriteria().withParents().withCode()
+                .thatStartsWith("20081105092159");
+
+        final DataSetSearchCriteria subcriteria2 = criteria.withSubcriteria().withOrOperator();
+        subcriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withSubcriteria().withSubcriteria()
+                .withChildren().withCode().thatEndsWith("2");
+        subcriteria2.withSubcriteria().withSubcriteria().withSubcriteria().withChildren().withCode().thatEndsWith("AB");
+
+        testSearch(TEST_INSTANCE_ETLSERVER, criteria, "20081105092259900-0", "20081105092259900-1");
     }
 
     @Test

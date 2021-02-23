@@ -87,6 +87,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.RoleAssignmentDeletionOptions = dtos.RoleAssignmentDeletionOptions;
 		this.SemanticAnnotationDeletionOptions = dtos.SemanticAnnotationDeletionOptions;
 		this.QueryDeletionOptions = dtos.QueryDeletionOptions;
+		this.PersonDeletionOptions = dtos.PersonDeletionOptions;
 		this.PersonPermId = dtos.PersonPermId;
 		this.Me = dtos.Me;
 		this.EntityTypePermId = dtos.EntityTypePermId;
@@ -136,6 +137,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.PropertyAssignmentSearchCriteria = dtos.PropertyAssignmentSearchCriteria;
 		this.SemanticAnnotationSearchCriteria = dtos.SemanticAnnotationSearchCriteria;
 		this.QuerySearchCriteria = dtos.QuerySearchCriteria;
+		this.QueryDatabaseSearchCriteria = dtos.QueryDatabaseSearchCriteria;
 		this.SpaceFetchOptions = dtos.SpaceFetchOptions;
 		this.ProjectFetchOptions = dtos.ProjectFetchOptions;
 		this.ExperimentFetchOptions = dtos.ExperimentFetchOptions;
@@ -158,6 +160,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.PropertyAssignmentFetchOptions = dtos.PropertyAssignmentFetchOptions;
 		this.SemanticAnnotationFetchOptions = dtos.SemanticAnnotationFetchOptions;
 		this.QueryFetchOptions = dtos.QueryFetchOptions;
+		this.QueryDatabaseFetchOptions = dtos.QueryDatabaseFetchOptions;
 		this.DeletionFetchOptions = dtos.DeletionFetchOptions;
 		this.DeletionSearchCriteria = dtos.DeletionSearchCriteria;
 		this.CustomASServiceSearchCriteria = dtos.CustomASServiceSearchCriteria;
@@ -290,6 +293,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.GetSemanticAnnotationsOperation = dtos.GetSemanticAnnotationsOperation;
 		this.GetOperationExecutionsOperation = dtos.GetOperationExecutionsOperation;
 		this.GetQueriesOperation = dtos.GetQueriesOperation;
+		this.GetQueryDatabasesOperation = dtos.GetQueryDatabasesOperation;
 
 		this.SearchSpacesOperation = dtos.SearchSpacesOperation;
 		this.SearchProjectsOperation = dtos.SearchProjectsOperation;
@@ -323,6 +327,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.SearchPropertyAssignmentsOperation = dtos.SearchPropertyAssignmentsOperation;
 		this.SearchSemanticAnnotationsOperation = dtos.SearchSemanticAnnotationsOperation;
 		this.SearchQueriesOperation = dtos.SearchQueriesOperation;
+		this.SearchQueryDatabasesOperation = dtos.SearchQueryDatabasesOperation;
 
 		this.DeleteSpacesOperation = dtos.DeleteSpacesOperation;
 		this.DeleteProjectsOperation = dtos.DeleteProjectsOperation;
@@ -345,6 +350,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.DeleteOperationExecutionsOperation = dtos.DeleteOperationExecutionsOperation;
 		this.DeleteSemanticAnnotationsOperation = dtos.DeleteSemanticAnnotationsOperation;
 		this.DeleteQueriesOperation = dtos.DeleteQueriesOperation;
+		this.DeletePersonsOperation = dtos.DeletePersonsOperation;
 
 		this.RevertDeletionsOperation = dtos.RevertDeletionsOperation;
 		this.ConfirmDeletionsOperation = dtos.ConfirmDeletionsOperation;
@@ -1051,6 +1057,13 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			return facade.deleteQueries([ id ], options);
 		}.bind(this);
 
+		this.deletePerson = function(facade, id) {
+			var c = this;
+			var options = new dtos.PersonDeletionOptions();
+			options.setReason("test reason");
+			return facade.deletePersons([ id ], options);
+		}.bind(this);
+
 		this.getObjectProperty = function(object, propertyName) {
 			var propertyNames = propertyName.split('.');
 			for ( var pn in propertyNames) {
@@ -1128,6 +1141,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			fo.withType();
 			fo.withExperiment().withProject().withSpace();
 			fo.withSpace();
+			fo.withProject();
 			fo.withProperties();
 			fo.withMaterialProperties();
 			fo.withSampleProperties();

@@ -60,22 +60,28 @@ public class TagSearchManager extends AbstractLocalSearchManager<TagSearchCriter
 
     private NameSearchCriteria convertToNameSearchCriterion(final AbstractFieldSearchCriteria<AbstractStringValue> criterion)
     {
-        return convertToOtherCriterion(criterion, NameSearchCriteria::new);
+        return convertToOtherCriterion(criterion, () ->
+        {
+            final NameSearchCriteria result = new NameSearchCriteria();
+            if (criterion instanceof StringFieldSearchCriteria &&
+                    ((StringFieldSearchCriteria) criterion).isUseWildcards())
+            {
+                result.withWildcards();
+            }
+            return result;
+        });
     }
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final TagSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        // Replacing perm ID and code search criteria with name search criteria, because for tags perm ID and code are equivalent to name
+        // Replacing perm ID search criteria with name search criteria, because for tags perm ID is equivalent to name
         final Collection<ISearchCriteria> newCriteria = criteria.getCriteria().stream().map(searchCriterion ->
         {
             if (searchCriterion instanceof PermIdSearchCriteria)
             {
                 return convertToNameSearchCriterion((PermIdSearchCriteria) searchCriterion);
-            } else if (searchCriterion instanceof CodeSearchCriteria)
-            {
-                return convertToNameSearchCriterion((CodeSearchCriteria) searchCriterion);
             } else
             {
                 return searchCriterion;
@@ -101,7 +107,8 @@ public class TagSearchManager extends AbstractLocalSearchManager<TagSearchCriter
     }
 
     @Override
-    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<Tag> sortOptions) {
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<Tag> sortOptions)
+    {
         return doSortIDs(ids, sortOptions, TableMapper.TAG);
     }
 

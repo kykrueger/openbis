@@ -1,5 +1,5 @@
 import React from 'react'
-import GroupsGrid from '@src/js/components/users/common/GroupsGrid.jsx'
+import UserGroupsGrid from '@src/js/components/users/common/UserGroupsGrid.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
 
@@ -7,6 +7,6 @@ export default class UserFormGridGroups extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'UserFormGridGroups.render')
 
-    return <GroupsGrid {...this.props} id={ids.USER_USER_GROUPS_GRID_ID} />
+    return <UserGroupsGrid {...this.props} id={ids.GROUPS_OF_USER_GRID_ID} />
   }
 }

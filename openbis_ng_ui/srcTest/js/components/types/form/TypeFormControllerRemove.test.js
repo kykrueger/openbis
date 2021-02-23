@@ -41,7 +41,7 @@ async function testRemoveSectionConfirmed(usages) {
   common.facade.loadType.mockReturnValue(
     Promise.resolve(fixture.TEST_SAMPLE_TYPE_DTO)
   )
-  common.facade.loadUsages.mockReturnValue(
+  common.facade.loadPropertyUsages.mockReturnValue(
     Promise.resolve({
       [fixture.TEST_PROPERTY_TYPE_1_DTO.getCode()]: usages
     })
@@ -155,7 +155,7 @@ async function testRemoveSectionCancelled(usages) {
   common.facade.loadType.mockReturnValue(
     Promise.resolve(fixture.TEST_SAMPLE_TYPE_DTO)
   )
-  common.facade.loadUsages.mockReturnValue(
+  common.facade.loadPropertyUsages.mockReturnValue(
     Promise.resolve({
       [fixture.TEST_PROPERTY_TYPE_1_DTO.getCode()]: usages
     })
@@ -284,7 +284,7 @@ async function testRemovePropertyConfirmed(usages) {
   common.facade.loadType.mockReturnValue(
     Promise.resolve(fixture.TEST_SAMPLE_TYPE_DTO)
   )
-  common.facade.loadUsages.mockReturnValue(
+  common.facade.loadPropertyUsages.mockReturnValue(
     Promise.resolve({
       [fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()]: usages
     })
@@ -403,7 +403,7 @@ async function testRemovePropertyCancelled(usages) {
   common.facade.loadType.mockReturnValue(
     Promise.resolve(fixture.TEST_SAMPLE_TYPE_DTO)
   )
-  common.facade.loadUsages.mockReturnValue(
+  common.facade.loadPropertyUsages.mockReturnValue(
     Promise.resolve({
       [fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()]: usages
     })

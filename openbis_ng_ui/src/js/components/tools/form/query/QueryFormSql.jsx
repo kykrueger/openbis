@@ -4,6 +4,7 @@ import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import SourceCodeField from '@src/js/components/common/form/SourceCodeField.jsx'
 import QueryFormSelectionType from '@src/js/components/tools/form/query/QueryFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
@@ -63,13 +64,13 @@ class QueryFormSql extends React.PureComponent {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'QueryFormQuery.render')
+    logger.log(logger.DEBUG, 'QueryFormSql.render')
 
     const { query } = this.props
 
     return (
       <Container>
-        <Header>SQL</Header>
+        <Header>{messages.get(messages.SQL)}</Header>
         {this.renderSql(query)}
       </Container>
     )
@@ -88,8 +89,9 @@ class QueryFormSql extends React.PureComponent {
         <SourceCodeField
           reference={this.references.sql}
           language='sql'
-          label='SQL'
+          label={messages.get(messages.SQL)}
           name='sql'
+          description={messages.get(messages.QUERY_HINT)}
           mandatory={true}
           error={error}
           disabled={!enabled}

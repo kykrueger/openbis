@@ -74,7 +74,7 @@ async function testRemoveTerm() {
     },
     parameters: {
       vocabulary: {
-        title: 'Vocabulary',
+        title: 'Vocabulary Type',
         code: {
           label: 'Code',
           value: fixture.TEST_VOCABULARY_DTO.getCode(),
@@ -88,7 +88,7 @@ async function testRemoveTerm() {
           mode: 'edit'
         },
         urlTemplate: {
-          label: 'URL template',
+          label: 'URL Template',
           value: fixture.TEST_VOCABULARY_DTO.getUrlTemplate(),
           enabled: true,
           mode: 'edit'
@@ -110,7 +110,7 @@ async function testRemoveTerm() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

@@ -100,7 +100,7 @@ public class SearchProjectTest extends AbstractTest
         criteria.withCodes().thatIn(Arrays.asList("TEST-PROJECT", "TESTPROJ"));
         testSearch(TEST_USER, criteria, "/TESTGROUP/TESTPROJ", "/TEST-SPACE/TEST-PROJECT");
     }
-    
+
     @Test
     public void testSearchWithCodeThatContains()
     {

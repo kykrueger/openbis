@@ -14,20 +14,27 @@ describe(QueryFormComponentTest.SUITE, () => {
 })
 
 async function testChange() {
-  const { sampleQuery } = QueryFormTestData
+  const { sampleQuery, testDatabase, anotherDatabase } = QueryFormTestData
+
+  common.facade.loadQueryDatabases.mockReturnValue(
+    Promise.resolve([testDatabase, anotherDatabase])
+  )
 
   const form = await common.mountExisting(sampleQuery)
 
   form.getButtons().getEdit().click()
   await form.update()
 
-  form.getSql().getSql().change('select * from sometable;')
+  form
+    .getSql()
+    .getSql()
+    .change('select * from sometable where param = ${param}')
   await form.update()
 
   form.getParameters().getDescription().change('updated description')
   await form.update()
 
-  form.getParameters().getDatabase().change('updated database')
+  form.getParameters().getDatabase().change(testDatabase.getName())
   await form.update()
 
   form.getParameters().getQueryType().change(openbis.QueryType.GENERIC)
@@ -36,12 +43,15 @@ async function testChange() {
   form.getParameters().getPublicFlag().change(!sampleQuery.isPublic())
   await form.update()
 
+  form.getExecuteParameters().getParameters()[0].change('some execution value')
+  await form.update()
+
   form.expectJSON({
     sql: {
       title: 'SQL',
       sql: {
         label: 'SQL',
-        value: 'select * from sometable;',
+        value: 'select * from sometable where param = ${param}',
         enabled: true,
         mode: 'edit'
       }
@@ -62,7 +72,7 @@ async function testChange() {
       },
       database: {
         label: 'Database',
-        value: 'updated database',
+        value: testDatabase.getName(),
         enabled: true,
         mode: 'edit'
       },
@@ -80,6 +90,20 @@ async function testChange() {
         mode: 'edit'
       }
     },
+    executeParameters: {
+      title: 'Parameters',
+      parameters: [
+        {
+          label: 'param',
+          value: 'some execution value',
+          mode: 'edit'
+        }
+      ]
+    },
+    executeResults: {
+      title: null,
+      grid: null
+    },
     buttons: {
       save: {
         enabled: true
@@ -89,7 +113,7 @@ async function testChange() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

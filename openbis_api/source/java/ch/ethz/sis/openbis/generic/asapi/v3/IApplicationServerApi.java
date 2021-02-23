@@ -111,6 +111,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.search.OperationExecut
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.update.OperationExecutionUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.delete.PersonDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
@@ -146,13 +147,17 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignme
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.QueryDatabase;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.QueryCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.delete.QueryDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.QueryExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.SqlExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryDatabaseFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryDatabaseId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryTechId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QueryDatabaseSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QuerySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update.QueryUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.Rights;
@@ -249,8 +254,8 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
  * V3 application server API. Detailed documentation on how to use the API together code examples in both Java and Javascript can be found at "openBIS
  * V3 API" openBIS WIKI page.
  * <p>
- * The required access rights of the methods are the default ones. They can be configured with a capability-role map.
- * For more details see "Installation and Administrator Guide of the openBIS Server" openBIS WIKI page.
+ * The required access rights of the methods are the default ones. They can be configured with a capability-role map. For more details see
+ * "Installation and Administrator Guide of the openBIS Server" openBIS WIKI page.
  * 
  * @author pkupczyk
  */
@@ -777,8 +782,8 @@ public interface IApplicationServerApi extends IRpcService
     public void updateQueries(String sessionToken, List<QueryUpdate> queryUpdates);
 
     /**
-     * Gets authorization rights for the provided {@link IObjectId} ids. A result map contains an entry for a given id 
-     * only if an object for that id has been found and that object can be accessed by the user.
+     * Gets authorization rights for the provided {@link IObjectId} ids. A result map contains an entry for a given id only if an object for that id
+     * has been found and that object can be accessed by the user.
      * 
      * @throws UserFailureException in case of any problems
      */
@@ -1129,6 +1134,22 @@ public interface IApplicationServerApi extends IRpcService
      * @throws UserFailureException in case of any problems
      */
     public Map<IQueryId, Query> getQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryFetchOptions fetchOptions);
+
+    /**
+     * Gets query databases for the provided {@code IQueryDatabaseId} ids. A result map contains an entry for a given id only if a query database for
+     * that id has been found and that query database can be accessed by the user.
+     * <p>
+     * By default the returned query databases contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code QueryDatabaseFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: depends on a query database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
+    public Map<IQueryDatabaseId, QueryDatabase> getQueryDatabases(String sessionToken, List<? extends IQueryDatabaseId> queryDatabaseIds,
+            QueryDatabaseFetchOptions fetchOptions);
 
     /**
      * Searches for spaces basing on the provided {@code SpaceSearchCriteria}.
@@ -1620,6 +1641,21 @@ public interface IApplicationServerApi extends IRpcService
     public SearchResult<Query> searchQueries(String sessionToken, QuerySearchCriteria searchCriteria, QueryFetchOptions fetchOptions);
 
     /**
+     * Searches for query databases basing on the provided {@code QueryDatabaseSearchCriteria}.
+     * <p>
+     * By default the returned query databases contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code QueryDatabaseFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: depends on a query database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
+    public SearchResult<QueryDatabase> searchQueryDatabases(String sessionToken, QueryDatabaseSearchCriteria searchCriteria,
+            QueryDatabaseFetchOptions fetchOptions);
+
+    /**
      * Permanently deletes spaces with the provided {@code ISpaceId} ids. Additional deletion options (e.g. deletion reason) can be set via
      * {@code SpaceDeletionOptions}.
      * <p>
@@ -1870,6 +1906,17 @@ public interface IApplicationServerApi extends IRpcService
      * @throws UserFailureException in case of any problems
      */
     public void deleteQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryDeletionOptions deletionOptions);
+
+    /**
+     * Permanently deletes persons with the provided {@code IPersonId} ids. Additional deletion options (e.g. deletion reason) can be set via
+     * {@code PersonDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     *
+     * @throws UserFailureException in case of any problems
+     */
+    public void deletePersons(String sessionToken, List<? extends IPersonId> personIds, PersonDeletionOptions deletionOptions);
 
     /**
      * Searches for deletions basing on the provided {@code DeletionSearchCriteria}.

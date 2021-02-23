@@ -244,8 +244,9 @@ CREATE FUNCTION data_all_tsvector_document_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    NEW.tsvector_document := setweight(('/' || escape_tsvector_string(NEW.code) || ':1')::tsvector, 'A') ||
-            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
+    NEW.tsvector_document := (escape_tsvector_string(NEW.data_set_kind) || ':1')::tsvector ||
+        (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+        ('/' || escape_tsvector_string(NEW.code) || ':1')::tsvector;
     RETURN NEW;
 END
 $$;
@@ -379,11 +380,10 @@ DECLARE proj_code VARCHAR;
         space_code VARCHAR;
 BEGIN
     SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
-            INNER JOIN spaces s ON p.space_id = s.id WHERE p.id = NEW.proj_id;
-    NEW.tsvector_document := setweight((escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
-            setweight((escape_tsvector_string('/' || space_code || '/' || proj_code || '/' || NEW.code)
-                    || ':1')::tsvector, 'A') ||
-            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
+        INNER JOIN spaces s ON p.space_id = s.id WHERE p.id = NEW.proj_id;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string('/' || space_code || '/' || proj_code || '/' || NEW.code) || ':1')::tsvector;
     RETURN NEW;
 END
 $$;
@@ -438,9 +438,8 @@ CREATE FUNCTION materials_tsvector_document_trigger() RETURNS trigger
 DECLARE material_type_code VARCHAR;
 BEGIN
     SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
-    NEW.tsvector_document := setweight((escape_tsvector_string(
-            NEW.code || ' (' || material_type_code || ')') || ':1')::tsvector, 'A') ||
-            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
+    NEW.tsvector_document := (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code || ' (' || material_type_code || ')') || ':1')::tsvector;
     RETURN NEW;
 END
 $$;
@@ -544,10 +543,10 @@ DECLARE cvt RECORD;
 BEGIN
     IF NEW.cvte_id IS NOT NULL THEN
         SELECT code, label INTO STRICT cvt FROM controlled_vocabulary_terms WHERE id = NEW.cvte_id;
-        NEW.tsvector_document := setweight(to_tsvector('english', escape_tsvector_string(cvt.code)), 'C') ||
-                setweight(to_tsvector('english', escape_tsvector_string(coalesce(cvt.label, ''))), 'C');
+        NEW.tsvector_document := to_tsvector('english', LOWER(cvt.code)) ||
+                                 to_tsvector('english', coalesce(LOWER(cvt.label), ''));
     ELSE
-        NEW.tsvector_document := setweight(to_tsvector('english', escape_tsvector_string(coalesce(NEW.value, ''))), 'D');
+        NEW.tsvector_document := to_tsvector('english', coalesce(LOWER(NEW.value), ''));
     END IF;
     RETURN NEW;
 END
@@ -905,32 +904,34 @@ CREATE FUNCTION samples_all_tsvector_document_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 DECLARE proj_code VARCHAR;
-        space_code VARCHAR;
-        container_code VARCHAR;
-        identifier VARCHAR := '/';
+    space_code VARCHAR;
+    container_code VARCHAR;
+    identifier VARCHAR := '/';
 BEGIN
-    IF TG_OP != 'DELETE' AND (TG_OP = 'INSERT' OR
-            (NEW.space_id IS DISTINCT FROM OLD.space_id OR NEW.proj_id IS DISTINCT FROM OLD.proj_id OR
-            NEW.samp_id_part_of IS DISTINCT FROM OLD.samp_id_part_of)) THEN
+    IF NEW.space_id IS NOT NULL THEN
+        SELECT code INTO STRICT space_code FROM spaces WHERE id = NEW.space_id;
+        identifier := identifier || space_code || '/';
+    END IF;
+    IF NEW.proj_id IS NOT NULL THEN
         IF NEW.space_id IS NOT NULL THEN
-            SELECT code INTO STRICT space_code FROM spaces WHERE id = NEW.space_id;
+            SELECT code INTO STRICT proj_code FROM projects WHERE id = NEW.proj_id;
+        ELSE
+            SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
+                INNER JOIN spaces s ON p.space_id = s.id WHERE id = NEW.proj_id;
             identifier := identifier || space_code || '/';
         END IF;
-        IF NEW.proj_id IS NOT NULL THEN
-            SELECT code INTO STRICT proj_code FROM projects WHERE id = NEW.proj_id;
-            identifier := identifier || proj_code || '/';
-        END IF;
-        IF NEW.samp_id_part_of IS NOT NULL THEN
-            SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
-            identifier := identifier || container_code || ':' || NEW.code;
-        ELSE
-            identifier := identifier || NEW.code;
-        END IF;
-        NEW.sample_identifier := identifier;
-        NEW.tsvector_document := setweight((escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
-                setweight((escape_tsvector_string(identifier) || ':1')::tsvector, 'A') ||
-                setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
+        identifier := identifier || proj_code || '/';
     END IF;
+    IF NEW.samp_id_part_of IS NOT NULL THEN
+        SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
+        identifier := identifier || container_code || ':' || NEW.code;
+    ELSE
+        identifier := identifier || NEW.code;
+    END IF;
+    NEW.sample_identifier := identifier;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string(identifier) || ':1')::tsvector;
     RETURN NEW;
 END
 $$;
@@ -1485,6 +1486,31 @@ CREATE TABLE events (
     exac_id tech_id,
     CONSTRAINT evnt_et_enum_ck CHECK (((entity_type)::text = ANY (ARRAY[('ATTACHMENT'::character varying)::text, ('DATASET'::character varying)::text, ('EXPERIMENT'::character varying)::text, ('SPACE'::character varying)::text, ('MATERIAL'::character varying)::text, ('PROJECT'::character varying)::text, ('PROPERTY_TYPE'::character varying)::text, ('SAMPLE'::character varying)::text, ('VOCABULARY'::character varying)::text, ('AUTHORIZATION_GROUP'::character varying)::text, ('METAPROJECT'::character varying)::text])))
 );
+CREATE TABLE events_search (
+    id tech_id NOT NULL,
+    event_type event_type NOT NULL,
+    entity_type text_value NOT NULL,
+    entity_space text_value,
+    entity_space_perm_id text_value,
+    entity_project text_value,
+    entity_project_perm_id text_value,
+    entity_registerer text_value,
+    entity_registration_timestamp time_stamp,
+    identifier text_value NOT NULL,
+    description text_value,
+    reason text_value,
+    content text_value,
+    exac_id tech_id,
+    pers_id_registerer tech_id NOT NULL,
+    registration_timestamp time_stamp NOT NULL,
+    CONSTRAINT events_search_entity_type_ck CHECK (((entity_type)::text = ANY (ARRAY['ATTACHMENT'::text, 'DATASET'::text, 'EXPERIMENT'::text, 'SPACE'::text, 'MATERIAL'::text, 'PROJECT'::text, 'PROPERTY_TYPE'::text, 'SAMPLE'::text, 'VOCABULARY'::text, 'AUTHORIZATION_GROUP'::text, 'METAPROJECT'::text])))
+);
+CREATE SEQUENCE events_search_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 CREATE SEQUENCE experiment_code_seq
     START WITH 1
     INCREMENT BY 1
@@ -2411,6 +2437,7 @@ SELECT pg_catalog.setval('dstpt_id_seq', 10, true);
 SELECT pg_catalog.setval('entity_operations_log_id_seq', 10, false);
 SELECT pg_catalog.setval('etpt_id_seq', 11, true);
 SELECT pg_catalog.setval('event_id_seq', 1, false);
+SELECT pg_catalog.setval('events_search_id_seq', 1, false);
 SELECT pg_catalog.setval('experiment_code_seq', 7, true);
 SELECT pg_catalog.setval('experiment_id_seq', 25, true);
 SELECT pg_catalog.setval('experiment_property_id_seq', 23, true);

@@ -75,7 +75,7 @@ export default class GridController {
         if (renderedValue === null || renderedValue === undefined) {
           return ''
         } else if (_.isNumber(renderedValue) || _.isBoolean(renderedValue)) {
-          return new String(renderedValue)
+          return String(renderedValue)
         } else {
           return renderedValue
         }
@@ -83,8 +83,11 @@ export default class GridController {
       matches: (row, filter) => {
         function defaultMatches(value, filter) {
           if (filter) {
-            return value
-              ? value.trim().toUpperCase().includes(filter.trim().toUpperCase())
+            return value !== null && value !== undefined
+              ? String(value)
+                  .trim()
+                  .toUpperCase()
+                  .includes(filter.trim().toUpperCase())
               : false
           } else {
             return true
@@ -109,6 +112,7 @@ export default class GridController {
         const defaultCompare = compare
         const value1 = config.getValue({ row: row1, column })
         const value2 = config.getValue({ row: row2, column })
+        const { sortDirection } = this.context.getState()
 
         if (config.compareValue) {
           return config.compareValue({
@@ -117,6 +121,7 @@ export default class GridController {
             row1,
             row2,
             column,
+            sortDirection,
             defaultCompare
           })
         } else {
@@ -146,7 +151,7 @@ export default class GridController {
     const props = this.context.getProps()
     const state = this.context.getState()
 
-    if (!props.session) {
+    if (!props.session || !props.id) {
       return Promise.resolve()
     }
 
@@ -193,7 +198,7 @@ export default class GridController {
     const props = this.context.getProps()
     const state = this.context.getState()
 
-    if (!props.session) {
+    if (!props.session || !props.id) {
       return Promise.resolve()
     }
 

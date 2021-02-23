@@ -31,13 +31,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.LongDateFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NormalDateFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ShortDateFormat;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -407,9 +401,9 @@ public class SearchCriteriaTranslator
             case 1:
             {
                 final ISearchCriteria criterion = criteria.iterator().next();
-                return criterion instanceof AbstractEntitySearchCriteria<?> &&
-                        ((AbstractEntitySearchCriteria<?>) criterion).getCriteria().isEmpty() &&
-                        !(criterion instanceof SampleContainerSearchCriteria);
+                return (criterion instanceof AbstractObjectSearchCriteria<?>) &&
+                        !(criterion instanceof SampleContainerSearchCriteria) &&
+                        ((AbstractCompositeSearchCriteria) criterion).getCriteria().isEmpty();
             }
 
             default:

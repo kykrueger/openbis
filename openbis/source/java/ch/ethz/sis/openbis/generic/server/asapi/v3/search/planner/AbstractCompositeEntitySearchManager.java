@@ -49,8 +49,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     protected abstract Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass();
 
     protected Set<Long> doSearchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final CRITERIA criteria, final SearchOperator searchOperator, final String idsColumnName,
-            final TableMapper tableMapper)
+            final CRITERIA criteria, final String idsColumnName, final TableMapper tableMapper)
     {
         final AbstractCompositeSearchCriteria emptyCriteria = createEmptyCriteria(false);
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass =
@@ -73,7 +72,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
                 getCriteria(criteria, parentsSearchCriteriaClass),
                 getCriteria(criteria, childrenSearchCriteriaClass),
                 Collections.emptyList(), getCriteria(criteria, emptyCriteria.getClass()),
-                (searchOperator == null) ? criteria.getOperator() : searchOperator, criteria.isNegated());
+                (searchOperator == null) ? criteria.getOperator() : searchOperator);
 
         return doSearchForIDs(userId, criteriaVo, idsColumnName, tableMapper, authorisationInformation);
     }
@@ -150,7 +149,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         if (!nestedCriteria.isEmpty())
         {
             nestedCriteriaIntermediateResults = nestedCriteria.stream().map(criteria ->
-                    doSearchForIDs(userId, authorisationInformation, (CRITERIA) criteria, criteria.getOperator(),
+                    doSearchForIDs(userId, authorisationInformation, (CRITERIA) criteria,
                             idsColumnName, tableMapper))
                     .collect(Collectors.toList());
         } else
@@ -180,7 +179,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
                 && childRelationshipsCriteria.isEmpty() && nestedCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.
-            results = getAllIds(userId, authorisationInformation, idsColumnName, tableMapper);
+            results = getAllIds(userId, authorisationInformation, idsColumnName, tableMapper, null);
         } else
         {
             // If we don't have results and criteria are not empty, there are no results.
@@ -207,7 +206,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         final List<Set<Long>> relatedIds = relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria ->
         {
             final Set<Long> foundParentIds = doSearchForIDs(userId, authorisationInformation,
-                    (CRITERIA) entitySearchCriteria, operator, ColumnNames.ID_COLUMN, tableMapper);
+                    (CRITERIA) entitySearchCriteria, ColumnNames.ID_COLUMN, tableMapper);
             return foundParentIds.isEmpty() ? Stream.empty() : Stream.of(foundParentIds);
         }).collect(Collectors.toList());
 

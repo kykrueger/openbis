@@ -75,7 +75,7 @@ async function doTestSelectProperty(scope, used) {
       })
     )
     messages.push({
-      text: 'This property is already assigned to 2 types.',
+      text: 'This property is already assigned to 2 type(s).',
       type: 'info'
     })
   }
@@ -119,7 +119,7 @@ async function doTestSelectProperty(scope, used) {
               value: openbis.DataType.VARCHAR
             },
             {
-              label: openbis.DataType.MULTILINE_VARCHAR + ' (converted)',
+              label: openbis.DataType.MULTILINE_VARCHAR + ' (Converted)',
               value: openbis.DataType.MULTILINE_VARCHAR
             }
           ]
@@ -137,7 +137,7 @@ async function doTestSelectProperty(scope, used) {
           mode: 'edit'
         },
         plugin: {
-          label: 'Dynamic Plugin',
+          label: 'Dynamic Property Plugin',
           value: plugin.getName(),
           enabled: true,
           mode: 'edit'

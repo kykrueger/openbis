@@ -7,6 +7,7 @@ import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -85,7 +86,7 @@ class UserFormParametersUser extends React.PureComponent {
 
     return (
       <Container>
-        <Header>User</Header>
+        {this.renderHeader(user)}
         {this.renderUserId(user)}
         {this.renderFirstName(user)}
         {this.renderLastName(user)}
@@ -94,6 +95,11 @@ class UserFormParametersUser extends React.PureComponent {
         {this.renderActive(user)}
       </Container>
     )
+  }
+
+  renderHeader(user) {
+    const message = user.original ? messages.USER : messages.NEW_USER
+    return <Header>{messages.get(message)}</Header>
   }
 
   renderUserId(user) {
@@ -108,7 +114,7 @@ class UserFormParametersUser extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.userId}
-          label='User Id'
+          label={messages.get(messages.USER_ID)}
           name='userId'
           mandatory={true}
           error={error}
@@ -135,7 +141,7 @@ class UserFormParametersUser extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.firstName}
-          label='First Name'
+          label={messages.get(messages.FIRST_NAME)}
           name='firstName'
           error={error}
           disabled={!enabled}
@@ -161,7 +167,7 @@ class UserFormParametersUser extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.lastName}
-          label='Last Name'
+          label={messages.get(messages.LAST_NAME)}
           name='lastName'
           error={error}
           disabled={!enabled}
@@ -187,7 +193,7 @@ class UserFormParametersUser extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.email}
-          label='Email'
+          label={messages.get(messages.EMAIL)}
           name='email'
           error={error}
           disabled={!enabled}
@@ -226,7 +232,7 @@ class UserFormParametersUser extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.space}
-          label='Home Space'
+          label={messages.get(messages.HOME_SPACE)}
           name='space'
           error={error}
           disabled={!enabled}
@@ -277,7 +283,7 @@ class UserFormParametersUser extends React.PureComponent {
       <div className={classes.field}>
         <CheckboxField
           reference={this.references.active}
-          label='Active'
+          label={messages.get(messages.ACTIVE)}
           name='active'
           error={error}
           disabled={!enabled}
@@ -291,11 +297,15 @@ class UserFormParametersUser extends React.PureComponent {
           open={activeChangeDialogOpen}
           onConfirm={onConfirm}
           onCancel={onCancel}
-          title={value ? 'Deactivate user' : 'Activate user'}
+          title={
+            value
+              ? messages.get(messages.DEACTIVATE_USER)
+              : messages.get(messages.ACTIVATE_USER)
+          }
           content={
             value
-              ? 'Are you sure you want to deactivate the user?'
-              : 'Are you sure you want to activate the user?'
+              ? messages.get(messages.CONFIRMATION_DEACTIVATE_USER)
+              : messages.get(messages.CONFIRMATION_ACTIVATE_USER)
           }
         />
       </div>

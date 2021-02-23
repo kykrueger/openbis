@@ -5,6 +5,10 @@ import PluginFormParameters from '@src/js/components/tools/form/plugin/PluginFor
 import PluginFormParametersWrapper from '@srcTest/js/components/tools/form/plugin/wrapper/PluginFormParametersWrapper.js'
 import PluginFormButtons from '@src/js/components/tools/form/plugin/PluginFormButtons.jsx'
 import PluginFormButtonsWrapper from '@srcTest/js/components/tools/form/plugin/wrapper/PluginFormButtonsWrapper.js'
+import PluginFormEvaluateParameters from '@src/js/components/tools/form/plugin/PluginFormEvaluateParameters.jsx'
+import PluginFormEvaluateParametersWrapper from '@srcTest/js/components/tools/form/plugin/wrapper/PluginFormEvaluateParametersWrapper.js'
+import PluginFormEvaluateResults from '@src/js/components/tools/form/plugin/PluginFormEvaluateResults.jsx'
+import PluginFormEvaluateResultsWrapper from '@srcTest/js/components/tools/form/plugin/wrapper/PluginFormEvaluateResultsWrapper.js'
 
 export default class PluginFormWrapper extends BaseWrapper {
   getScript() {
@@ -17,6 +21,18 @@ export default class PluginFormWrapper extends BaseWrapper {
     )
   }
 
+  getEvaluateParameters() {
+    return new PluginFormEvaluateParametersWrapper(
+      this.findComponent(PluginFormEvaluateParameters)
+    )
+  }
+
+  getEvaluateResults() {
+    return new PluginFormEvaluateResultsWrapper(
+      this.findComponent(PluginFormEvaluateResults)
+    )
+  }
+
   getButtons() {
     return new PluginFormButtonsWrapper(this.findComponent(PluginFormButtons))
   }
@@ -25,6 +41,8 @@ export default class PluginFormWrapper extends BaseWrapper {
     return {
       script: this.getScript().toJSON(),
       parameters: this.getParameters().toJSON(),
+      evaluateParameters: this.getEvaluateParameters().toJSON(),
+      evaluateResults: this.getEvaluateResults().toJSON(),
       buttons: this.getButtons().toJSON()
     }
   }

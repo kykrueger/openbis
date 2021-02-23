@@ -93,6 +93,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.internal.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.search.ISearchOperationExecutionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.update.IUpdateOperationExecutionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.ICreatePersonsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.IDeletePersonsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.IGetPersonsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.ISearchPersonsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.IUpdatePersonsOperationExecutor;
@@ -118,7 +119,9 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IDeleteQueries
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IExecuteQueryOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IExecuteSqlOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IGetQueriesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IGetQueryDatabasesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.ISearchQueriesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.ISearchQueryDatabasesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IUpdateQueriesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.rights.IGetRightsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.ICreateRoleAssignmentsOperationExecutor;
@@ -247,6 +250,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IDeleteQueriesOperationExecutor deleteQueriesExecutor;
+
+    @Autowired
+    private IDeletePersonsOperationExecutor deletePersonsExecutor;
 
     @Autowired
     private ICreateSpacesOperationExecutor createSpacesExecutor;
@@ -465,6 +471,9 @@ public class OperationsExecutor implements IOperationsExecutor
     private IGetQueriesOperationExecutor getQueriesExecutor;
 
     @Autowired
+    private IGetQueryDatabasesOperationExecutor getQueryDatabasesExecutor;
+
+    @Autowired
     private IGetServerInformationOperationExecutor getServerInformationExecutor;
 
     @Autowired
@@ -562,6 +571,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ISearchQueriesOperationExecutor searchQueriesExecutor;
+
+    @Autowired
+    private ISearchQueryDatabasesOperationExecutor searchQueryDatabasesExecutor;
 
     @Autowired
     private IExecuteCustomASServiceOperationExecutor executeCustomASServiceExecutor;
@@ -719,6 +731,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchPropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(searchPropertyAssignmentsExecutor.execute(context, operations));
         resultMap.putAll(searchQueriesExecutor.execute(context, operations));
+        resultMap.putAll(searchQueryDatabasesExecutor.execute(context, operations));
     }
 
     private void executeGets(List<? extends IOperation> operations,
@@ -747,6 +760,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(getOperationExecutionsExecutor.execute(context, operations));
         resultMap.putAll(getSemanticAnnotationsExecutor.execute(context, operations));
         resultMap.putAll(getQueriesExecutor.execute(context, operations));
+        resultMap.putAll(getQueryDatabasesExecutor.execute(context, operations));
         resultMap.putAll(getServerInformationExecutor.execute(context, operations));
     }
 
@@ -837,6 +851,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(deleteVocabularyTermsExecutor.execute(context, operations));
         resultMap.putAll(deleteVocabulariesExecutor.execute(context, operations));
         resultMap.putAll(deleteOperationExecutionsExecutor.execute(context, operations));
+        resultMap.putAll(deletePersonsExecutor.execute(context, operations));
     }
 
     protected void clearCurrentSession()

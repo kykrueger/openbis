@@ -150,13 +150,12 @@ public class OrderTranslator
             {
                 final String fullPropertyName = sortingCriteriaFieldName.substring(
                         EntityWithPropertiesSortOptions.PROPERTY.length());
-                final boolean internalProperty = TranslatorUtils.isPropertyInternal(fullPropertyName);
                 final String attributeTypesTableAlias = aliases.get(fullPropertyName.toLowerCase())
                         .get(TableNames.DATA_TYPES_TABLE).getMainTableAlias();
 
                 sqlBuilder.append(SP).append(AND).append(SP);
                 TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, attributeTypesTableAlias,
-                        internalProperty);
+                        TranslatorUtils.isPropertyInternal(fullPropertyName));
 
                 sqlBuilder.append(SP).append(AND).append(SP).append(attributeTypesTableAlias).append(PERIOD)
                         .append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);

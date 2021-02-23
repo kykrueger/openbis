@@ -66,9 +66,17 @@ var BarcodeUtil = new function() {
         }
     }
 
-    this.preGenerateBarcodes = function(views) {
+    this.preGenerateBarcodes = function(views, selectedBarcodes) {
         views.header.append($("<h2>").append("Barcode Generator"));
-	    var $generateBtn = FormUtil.getButtonWithText("Generate Barcodes", function() {}, "btn-primary");
+
+        var generateBarcodeText = null;
+        if(selectedBarcodes === undefined) {
+            generateBarcodeText = "Generate Custom Barcodes";
+        } else {
+            generateBarcodeText = "Update Custom Barcodes";
+        }
+
+	    var $generateBtn = FormUtil.getButtonWithText(generateBarcodeText, function() {}, "btn-primary");
         $generateBtn.css("margin-bottom", "14px");
 
         var $toolbar = $("<span>");
@@ -131,21 +139,22 @@ var BarcodeUtil = new function() {
         $toolbar.append($lineHeaders);
 
         var $lineOne = $("<div>");
-        $lineOne.append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($barcodeTypesDropdown))
-                .append($("<span>", { style:"width:10%; margin-left: 10px; display:inline-block;"}).append($numberDropdown))
-                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($layout))
-                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($width))
-                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($height))
-                .append($("<span>", { style:"margin-left: 10px; display:inline-block;"}).append($generateBtn))
-                .append($("<span>", { style:"margin-left: 10px; display:inline-block;"}).append($printButton));
+        $lineOne.append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($barcodeTypesDropdown));
+        if(selectedBarcodes === undefined) {
+            $lineOne.append($("<span>", { style:"width:10%; margin-left: 10px; display:inline-block;"}).append($numberDropdown));
+        }
+        $lineOne.append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($layout));
+        $lineOne.append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($width));
+        $lineOne.append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($height));
+        $lineOne.append($("<span>", { style:"margin-left: 10px; display:inline-block;"}).append($generateBtn));
+        $lineOne.append($("<span>", { style:"margin-left: 10px; display:inline-block;"}).append($printButton));
         $toolbar.append($lineOne);
-
-
 
         views.header.append($toolbar);
 
         var _this = this;
-        $generateBtn.click(function() {
+        var addBarcodes = function(barcodes) {
+            var format = null;
             var width  = $width.val();
             width = parseInt(width);
             var height = $height.val();
@@ -156,47 +165,59 @@ var BarcodeUtil = new function() {
             $layoutForPrinter = $('<div>', { 'id' : 'layout-for-printer' });
             views.content.append($layoutForPrinter);
 
-            var value = parseInt($numberDropdown.val());
-            mainController.serverFacade.createPermIdStrings(value, function(newPermIds) {
-                var format = null;
-                if(width && height) {
-                    format = {
-                        orientation: ((layout === 'split')?'l':'p'),
-                        unit: 'mm',
-                        format: [width, height * ((layout === 'split')?1:value) + ((layout === 'split')?0:2*value)],
-                        putOnlyUsedFonts:true
-                    };
-                    console.log(format);
-                    pdf = new jsPDF(format);
-                }
+            if(width && height) {
+                format = {
+                    orientation: ((layout === 'split')?'l':'p'),
+                    unit: 'mm',
+                    format: [width, height * ((layout === 'split')?1:value) + ((layout === 'split')?0:2*value)],
+                    putOnlyUsedFonts:true
+                };
 
-                for(var idx = 0; idx < value; idx++) {
-                    // HTML
-                    _this.addBarcode($layoutForPrinter, idx, $barcodeTypesDropdown.val(), newPermIds[idx], idx === 0, width, height, layout);
+                pdf = new jsPDF(format);
+            }
 
-                    // PDF
-                    var imgData = _this.generateBarcode($barcodeTypesDropdown.val(), newPermIds[idx], newPermIds[idx], null, width, height);
-                    if(pdf !== null) {
-                        if(layout === 'split') {
-                            if(idx > 0) {
-                                pdf.addPage(format.format, 'l');
-                            }
-                            pdf.addImage(imgData, 'png', 0, 0, width, height);
-                        } else {
-                            console.log("height: " + (height * idx + idx));
-                            pdf.addImage(imgData, 'png', 0, (height * idx + 2*idx), width, height);
+            for(var idx = 0; idx < barcodes.length; idx++) {
+                // HTML
+                _this.addBarcode($layoutForPrinter, idx, $barcodeTypesDropdown.val(), barcodes[idx], idx === 0, width, height, layout);
+
+                // PDF
+                var imgData = _this.generateBarcode($barcodeTypesDropdown.val(), barcodes[idx], barcodes[idx], null, width, height);
+                if(pdf !== null) {
+                    if(layout === 'split') {
+                        if(idx > 0) {
+                            pdf.addPage(format.format, 'l');
                         }
+                        pdf.addImage(imgData, 'png', 0, 0, width, height);
+                     } else {
+                        pdf.addImage(imgData, 'png', 0, (height * idx + 2*idx), width, height);
                     }
                 }
-            });
-        });
+            }
+        }
 
-        this.preloadLibrary();
+        if(selectedBarcodes === undefined) {
+            $generateBtn.click(function() {
+                var value = parseInt($numberDropdown.val());
+                mainController.serverFacade.createPermIdStrings(value, function(newPermIds) {
+                    addBarcodes(newPermIds);
+                });
+            });
+            this.preloadLibrary();
+        } else {
+            $generateBtn.click(function() {
+                addBarcodes(selectedBarcodes);
+            });
+            this.preloadLibrary(function() {
+                $generateBtn.click();
+            });
+        }
     }
 
-    this.preloadLibrary = function() {
-        this.generateBarcode("code128", "Barcode", "Text", function() {
-        });
+    this.preloadLibrary = function(doAfter) {
+        if(doAfter === undefined) {
+            doAfter = function() {};
+        }
+        this.generateBarcode("code128", "Barcode", "Text", doAfter);
     }
 
     this.addBarcode = function(content, idx, type, text, isFirst, width, height, layout) {
@@ -287,7 +308,7 @@ var BarcodeUtil = new function() {
         Util.blockUI($window, css);
     }
 
-    this.readBarcode = function(entity) {
+    this.readBarcode = function(entities) {
         var $window = $('<form>', {
             'action' : 'javascript:void(0);'
         });
@@ -295,33 +316,59 @@ var BarcodeUtil = new function() {
         var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Save Barcode' });
         $btnAccept.prop("disabled",false);
 
-        var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode', 'style' : 'min-width: 50%;' });
-        $barcodeReader.keyup(function() {
-            if($barcodeReader.val().length >= MIN_BARCODE_LENGTH ||
-               $barcodeReader.val().length === 0) {
-                $btnAccept.prop("disabled", false);
-            } else {
-                $btnAccept.prop("disabled", true);
+        var $barcodeReaders = [];
+        for(var eIdx = 0; eIdx < entities.length; eIdx++) {
+            var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode', 'style' : 'min-width: 50%;' });
+            $barcodeReaders.push($barcodeReader);
+            if(entities[eIdx].properties["$BARCODE"]) {
+                $barcodeReader.val(entities[eIdx].properties["$BARCODE"]);
             }
-        });
+        }
 
         $btnAccept.click(function(event) {
+            var errors = [];
+            for(var eIdx = 0; eIdx < entities.length; eIdx++) {
+                if($barcodeReaders[eIdx].val().length >= MIN_BARCODE_LENGTH ||
+                   $barcodeReaders[eIdx].val().length === 0) {
+                   // OK
+                } else {
+                    errors.push(entities[eIdx]);
+                }
+            }
+            if(errors.length > 0) {
+                Util.showUserError("Invalid Barcode found", function() {}, true);
+                return;
+            }
+
             Util.blockUINoMessage();
 
             var updateBarcode = function() {
                 require([ "as/dto/sample/update/SampleUpdate", "as/dto/sample/id/SamplePermId" ],
                     function(SampleUpdate, SamplePermId) {
-                        var sample = new SampleUpdate();
-                        sample.setSampleId(new SamplePermId(entity.permId));
-                        sample.setProperty("$BARCODE", $barcodeReader.val());
-                        mainController.openbisV3.updateSamples([ sample ]).done(function(result) {
+
+                        var sampleUpdates = [];
+                        for(var eIdx = 0; eIdx < entities.length; eIdx++) {
+                            var sampleUpdate = new SampleUpdate();
+                            sampleUpdate.setSampleId(new SamplePermId(entities[eIdx].permId));
+                            sampleUpdate.setProperty("$BARCODE", $barcodeReaders[eIdx].val());
+                            sampleUpdates.push(sampleUpdate);
+                        }
+
+                        mainController.openbisV3.updateSamples(sampleUpdates).done(function(result) {
                             Util.unblockUI();
-                            Util.showInfo("Barcode Updated", function() {
-                                mainController.changeView('showViewSamplePageFromPermId', entity.permId);
-                        }, true);
-                    }).fail(function(result) {
-                        Util.showFailedServerCallError(result);
-                    });
+                            var message = null;
+                            if(sampleUpdates.length === 1) {
+                                message = "Custom Barcode Updated";
+                            } else {
+                                message = sampleUpdates.length + " Custom Barcodes Updated";
+                            }
+
+                            Util.showInfo(message, function() {
+                                mainController.refreshView();
+                            }, true);
+                        }).fail(function(result) {
+                            Util.showFailedServerCallError(result);
+                        });
                 });
             }
 
@@ -342,7 +389,7 @@ var BarcodeUtil = new function() {
                     if(results.objects.length === 0) {
                         updateBarcode();
                     } else {
-                        Util.showError("Barcode already in use by " +  results.objects[0].identifier.identifier + " : It will not be assigned.");
+                        Util.showError("Custom Barcode already in use by " +  results.objects[0].identifier.identifier + " : It will not be assigned.");
                     }
                 });
             }
@@ -353,14 +400,26 @@ var BarcodeUtil = new function() {
             Util.unblockUI();
         });
 
-        $window.append($('<legend>').append("Update Barcode"));
+        $window.append($('<legend>').append("Update Custom Barcode"));
         $window.append($('<br>'));
         $window.append(FormUtil.getInfoText("A valid barcode need to have " + MIN_BARCODE_LENGTH + " or more characters."));
-        $window.append(FormUtil.getWarningText("An empty barcode will delete the current barcode."));
+        $window.append(FormUtil.getInfoText("If a custom barcode is not given the permId is always used as default barcode."));
+        $window.append(FormUtil.getWarningText("Empty the custom barcode to delete the current custom barcode."));
+
         $window.append($('<br>'));
-        $window.append($('<center>').append($barcodeReader));
+        for(var eIdx = 0; eIdx < entities.length; eIdx++) {
+            var $barcodeBlock = $("<div>");
+            $barcodeBlock.append($('<label>', { class : 'control-label' }).text(Util.getDisplayNameForEntity(entities[eIdx]) + ":"));
+            $barcodeBlock.append($('<br>'));
+            $barcodeBlock.append($barcodeReaders[eIdx]);
+            $barcodeBlock.append($('<br>'));
+            $window.append($barcodeBlock);
+        }
         $window.append($('<br>'));
-        $window.append($btnAccept).append('&nbsp;').append($btnCancel);
+        if(entities.length > 0) {
+            $window.append($btnAccept).append('&nbsp;');
+        }
+        $window.append($btnCancel);
 
         var css = {
             'text-align' : 'left',

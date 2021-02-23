@@ -48,7 +48,10 @@ async function testLoadNew(pluginType) {
       }
     },
     parameters: {
-      title: 'Plugin',
+      title:
+        pluginType === openbis.PluginType.DYNAMIC_PROPERTY
+          ? 'New Dynamic Property Plugin'
+          : 'New Entity Validation Plugin',
       name: {
         label: 'Name',
         value: null,
@@ -59,10 +62,10 @@ async function testLoadNew(pluginType) {
         label: 'Entity Kind',
         value: null,
         options: [
-          { value: 'MATERIAL' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' }
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'SAMPLE', label: 'OBJECT' },
+          { value: 'DATA_SET', label: 'DATA_SET' }
         ],
         enabled: true,
         mode: 'edit'
@@ -73,6 +76,31 @@ async function testLoadNew(pluginType) {
         enabled: true,
         mode: 'edit'
       }
+    },
+    evaluateParameters: {
+      title: 'Tester',
+      entityKind: {
+        label: 'Entity Kind',
+        value: null,
+        options: [
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'SAMPLE', label: 'OBJECT' },
+          { value: 'DATA_SET', label: 'DATA_SET' }
+        ],
+        enabled: true,
+        mode: 'edit'
+      },
+      entity: {
+        label: 'Entity',
+        value: null,
+        enabled: false,
+        mode: 'edit'
+      }
+    },
+    evaluateResults: {
+      title: null,
+      result: null
     },
     buttons: {
       save: {
@@ -98,7 +126,10 @@ async function testLoadExistingJython(plugin) {
       }
     },
     parameters: {
-      title: 'Plugin',
+      title:
+        plugin.getPluginType() === openbis.PluginType.DYNAMIC_PROPERTY
+          ? 'Dynamic Property Plugin'
+          : 'Entity Validation Plugin',
       name: {
         label: 'Name',
         value: plugin.getName(),
@@ -106,15 +137,12 @@ async function testLoadExistingJython(plugin) {
       },
       entityKind: {
         label: 'Entity Kind',
-        value:
-          plugin.getEntityKinds().length === 1
-            ? plugin.getEntityKinds()[0]
-            : null,
+        value: plugin.getEntityKinds()[0],
         options: [
-          { value: 'MATERIAL' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' }
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'SAMPLE', label: 'OBJECT' },
+          { value: 'DATA_SET', label: 'DATA_SET' }
         ],
         mode: 'view'
       },
@@ -123,6 +151,25 @@ async function testLoadExistingJython(plugin) {
         value: plugin.getDescription(),
         mode: 'view'
       }
+    },
+    evaluateParameters: {
+      title: 'Tester',
+      entityKind: {
+        label: 'Entity Kind',
+        value: plugin.getEntityKinds()[0],
+        enabled: false,
+        mode: 'edit'
+      },
+      entity: {
+        label: 'Entity',
+        value: null,
+        enabled: true,
+        mode: 'edit'
+      }
+    },
+    evaluateResults: {
+      title: null,
+      result: null
     },
     buttons: {
       edit: {
@@ -148,7 +195,10 @@ async function testLoadExistingJython(plugin) {
       }
     },
     parameters: {
-      title: 'Plugin',
+      title:
+        plugin.getPluginType() === openbis.PluginType.DYNAMIC_PROPERTY
+          ? 'Dynamic Property Plugin'
+          : 'Entity Validation Plugin',
       name: {
         label: 'Name',
         value: plugin.getName(),
@@ -157,15 +207,12 @@ async function testLoadExistingJython(plugin) {
       },
       entityKind: {
         label: 'Entity Kind',
-        value:
-          plugin.getEntityKinds().length === 1
-            ? plugin.getEntityKinds()[0]
-            : null,
+        value: plugin.getEntityKinds()[0],
         options: [
-          { value: 'MATERIAL' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' }
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'SAMPLE', label: 'OBJECT' },
+          { value: 'DATA_SET', label: 'DATA_SET' }
         ],
         enabled: false,
         mode: 'edit'
@@ -176,6 +223,25 @@ async function testLoadExistingJython(plugin) {
         enabled: true,
         mode: 'edit'
       }
+    },
+    evaluateParameters: {
+      title: 'Tester',
+      entityKind: {
+        label: 'Entity Kind',
+        value: plugin.getEntityKinds()[0],
+        enabled: false,
+        mode: 'edit'
+      },
+      entity: {
+        label: 'Entity',
+        value: null,
+        enabled: true,
+        mode: 'edit'
+      }
+    },
+    evaluateResults: {
+      title: null,
+      result: null
     },
     buttons: {
       save: {
@@ -196,7 +262,10 @@ async function testLoadExistingPredeployed(plugin) {
   form.expectJSON({
     script: null,
     parameters: {
-      title: 'Plugin',
+      title:
+        plugin.getPluginType() === openbis.PluginType.DYNAMIC_PROPERTY
+          ? 'Dynamic Property Plugin'
+          : 'Entity Validation Plugin',
       messages: [
         {
           text: 'The plugin is disabled.',
@@ -220,10 +289,10 @@ async function testLoadExistingPredeployed(plugin) {
             ? plugin.getEntityKinds()[0]
             : null,
         options: [
-          { value: 'MATERIAL' },
-          { value: 'EXPERIMENT' },
-          { value: 'SAMPLE' },
-          { value: 'DATA_SET' }
+          { value: 'MATERIAL', label: 'MATERIAL' },
+          { value: 'EXPERIMENT', label: 'COLLECTION' },
+          { value: 'SAMPLE', label: 'OBJECT' },
+          { value: 'DATA_SET', label: 'DATA_SET' }
         ],
         mode: 'view'
       },

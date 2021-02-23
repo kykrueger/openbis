@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Button from '@src/js/components/common/form/Button.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import Dialog from '@src/js/components/common/dialog/Dialog.jsx'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -33,7 +34,7 @@ class ConfirmationDialog extends React.Component {
       <Dialog
         open={open}
         onClose={this.handleClose}
-        title={title || 'Confirmation'}
+        title={title || messages.get(messages.CONFIRMATION)}
         content={<Message type={this.getMessageType()}>{content}</Message>}
         actions={this.renderButtons()}
       />
@@ -46,14 +47,14 @@ class ConfirmationDialog extends React.Component {
       <div>
         <Button
           name='confirm'
-          label='Confirm'
+          label={messages.get(messages.CONFIRM)}
           type={this.getButtonType()}
           styles={{ root: classes.button }}
           onClick={onConfirm}
         />
         <Button
           name='cancel'
-          label='Cancel'
+          label={messages.get(messages.CANCEL)}
           styles={{ root: classes.button }}
           onClick={onCancel}
         />

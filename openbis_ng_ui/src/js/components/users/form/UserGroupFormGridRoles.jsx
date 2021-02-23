@@ -7,7 +7,7 @@ class UserGroupFormGridRoles extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'UserGroupFormGridRoles.render')
 
-    return <RolesGrid {...this.props} id={ids.USER_GROUP_ROLES_GRID_ID} />
+    return <RolesGrid {...this.props} id={ids.ROLES_OF_GROUP_GRID_ID} />
   }
 }
 

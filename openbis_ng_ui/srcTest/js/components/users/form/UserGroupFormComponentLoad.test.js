@@ -26,7 +26,7 @@ async function testLoadNew() {
     },
     parameters: {
       group: {
-        title: 'Group',
+        title: 'New Group',
         code: {
           label: 'Code',
           value: null,
@@ -186,8 +186,8 @@ async function testLoadExisting() {
       {
         values: {
           level: instanceObserverAssignment.getRoleLevel(),
-          space: '(all)',
-          project: '(all)',
+          space: '(All)',
+          project: '(All)',
           role: instanceObserverAssignment.getRole()
         },
         selected: false
@@ -196,7 +196,7 @@ async function testLoadExisting() {
         values: {
           level: testSpacePowerUserAssignment.getRoleLevel(),
           space: testSpacePowerUserAssignment.space.code,
-          project: '(all)',
+          project: '(All)',
           role: testSpacePowerUserAssignment.getRole()
         },
         selected: false

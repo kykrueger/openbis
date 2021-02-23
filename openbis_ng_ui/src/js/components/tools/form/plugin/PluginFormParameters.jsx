@@ -6,7 +6,9 @@ import Message from '@src/js/components/common/form/Message.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
+import EntityKind from '@src/js/components/common/dto/EntityKind.js'
 import openbis from '@src/js/services/openbis.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -78,7 +80,7 @@ class PluginFormParameters extends React.PureComponent {
 
     return (
       <Container>
-        <Header>Plugin</Header>
+        {this.renderHeader(plugin)}
         {this.renderMessageDisabled(plugin)}
         {this.renderMessagePredeployed(plugin)}
         {this.renderName(plugin)}
@@ -88,13 +90,31 @@ class PluginFormParameters extends React.PureComponent {
     )
   }
 
+  renderHeader(plugin) {
+    let message = null
+
+    if (plugin.pluginType === openbis.PluginType.DYNAMIC_PROPERTY) {
+      message = plugin.original
+        ? messages.DYNAMIC_PROPERTY_PLUGIN
+        : messages.NEW_DYNAMIC_PROPERTY_PLUGIN
+    } else if (plugin.pluginType === openbis.PluginType.ENTITY_VALIDATION) {
+      message = plugin.original
+        ? messages.ENTITY_VALIDATION_PLUGIN
+        : messages.NEW_ENTITY_VALIDATION_PLUGIN
+    }
+
+    return <Header>{messages.get(message)}</Header>
+  }
+
   renderMessageDisabled(plugin) {
     const { classes } = this.props
 
     if (!plugin.available.value) {
       return (
         <div className={classes.field}>
-          <Message type='warning'>The plugin is disabled.</Message>
+          <Message type='warning'>
+            {messages.get(messages.PLUGIN_IS_DISABLED)}
+          </Message>
         </div>
       )
     } else {
@@ -109,9 +129,7 @@ class PluginFormParameters extends React.PureComponent {
       return (
         <div className={classes.field}>
           <Message type='info'>
-            This is a predeployed Java plugin. Its parameters and logic are
-            defined in the plugin Java class and therefore cannot be changed
-            from the UI.
+            {messages.get(messages.PLUGIN_IS_PREDEPLOYED)}
           </Message>
         </div>
       )
@@ -132,7 +150,7 @@ class PluginFormParameters extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.name}
-          label='Name'
+          label={messages.get(messages.NAME)}
           name='name'
           mandatory={true}
           error={error}
@@ -158,7 +176,7 @@ class PluginFormParameters extends React.PureComponent {
 
     const options = openbis.EntityKind.values.map(entityKind => {
       return {
-        label: entityKind,
+        label: new EntityKind(entityKind).getLabel(),
         value: entityKind
       }
     })
@@ -167,14 +185,14 @@ class PluginFormParameters extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.entityKind}
-          label='Entity Kind'
+          label={messages.get(messages.ENTITY_KIND)}
           name='entityKind'
           error={error}
           disabled={!enabled}
           value={value}
           options={options}
           emptyOption={{
-            label: '(all)',
+            label: '(' + messages.get(messages.ALL) + ')',
             selectable: true
           }}
           mode={mode}
@@ -198,7 +216,7 @@ class PluginFormParameters extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.description}
-          label='Description'
+          label={messages.get(messages.DESCRIPTION)}
           name='description'
           error={error}
           disabled={!enabled}

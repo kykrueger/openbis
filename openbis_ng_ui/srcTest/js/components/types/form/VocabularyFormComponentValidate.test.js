@@ -54,7 +54,7 @@ async function testValidateTerm() {
     },
     buttons: {
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }
@@ -99,7 +99,7 @@ async function testValidateTerm() {
     },
     buttons: {
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }
@@ -149,7 +149,7 @@ async function testValidateVocabulary() {
     },
     parameters: {
       vocabulary: {
-        title: 'Vocabulary',
+        title: 'New Vocabulary Type',
         code: {
           value: null,
           error: 'Code cannot be empty',
@@ -159,7 +159,7 @@ async function testValidateVocabulary() {
     },
     buttons: {
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

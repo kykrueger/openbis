@@ -4,6 +4,7 @@ import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import SourceCodeField from '@src/js/components/common/form/SourceCodeField.jsx'
 import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
@@ -69,7 +70,7 @@ class PluginFormScript extends React.PureComponent {
 
     return (
       <Container>
-        <Header>Script</Header>
+        <Header>{messages.get(messages.SCRIPT)}</Header>
         {this.renderScript(plugin)}
       </Container>
     )
@@ -88,7 +89,7 @@ class PluginFormScript extends React.PureComponent {
         <SourceCodeField
           reference={this.references.script}
           language='python'
-          label='Script'
+          label={messages.get(messages.SCRIPT)}
           name='script'
           mandatory={true}
           error={error}

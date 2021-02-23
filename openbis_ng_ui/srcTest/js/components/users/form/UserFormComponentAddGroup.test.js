@@ -54,8 +54,8 @@ async function testAddGroup() {
           values: {
             inheritedFrom: instanceObserverGroup.getCode(),
             level: instanceObserverGroupAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverGroupAssignment.getRole()
           },
           selected: false
@@ -65,7 +65,7 @@ async function testAddGroup() {
             inheritedFrom: testSpacePowerUserGroup.getCode(),
             level: testSpacePowerUserGroupAssignment.getRoleLevel(),
             space: testSpacePowerUserGroupAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserGroupAssignment.getRole()
           },
           selected: false
@@ -100,8 +100,8 @@ async function testAddGroup() {
           values: {
             inheritedFrom: instanceObserverGroup.getCode(),
             level: instanceObserverGroupAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverGroupAssignment.getRole()
           },
           selected: false
@@ -111,7 +111,7 @@ async function testAddGroup() {
             inheritedFrom: testSpacePowerUserGroup.getCode(),
             level: testSpacePowerUserGroupAssignment.getRoleLevel(),
             space: testSpacePowerUserGroupAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserGroupAssignment.getRole()
           },
           selected: false
@@ -147,7 +147,7 @@ async function testAddGroup() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }
@@ -180,8 +180,8 @@ async function testAddGroup() {
           values: {
             inheritedFrom: instanceObserverGroup.getCode(),
             level: instanceObserverGroupAssignment.getRoleLevel(),
-            space: '(all)',
-            project: '(all)',
+            space: '(All)',
+            project: '(All)',
             role: instanceObserverGroupAssignment.getRole()
           },
           selected: false
@@ -201,7 +201,7 @@ async function testAddGroup() {
             inheritedFrom: testSpacePowerUserGroup.getCode(),
             level: testSpacePowerUserGroupAssignment.getRoleLevel(),
             space: testSpacePowerUserGroupAssignment.space.code,
-            project: '(all)',
+            project: '(All)',
             role: testSpacePowerUserGroupAssignment.getRole()
           },
           selected: false
@@ -237,7 +237,7 @@ async function testAddGroup() {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

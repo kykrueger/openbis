@@ -1,5 +1,6 @@
 import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
 import QueryFormSelectionType from '@src/js/components/tools/form/query/QueryFormSelectionType.js'
+import messages from '@src/js/common/messages.js'
 
 export default class QueryFormControllerValidate extends PageControllerValidate {
   validate(validator) {
@@ -26,10 +27,18 @@ export default class QueryFormControllerValidate extends PageControllerValidate 
   }
 
   _validateQuery(validator, query) {
-    validator.validateNotEmpty(query, 'name', 'Name')
-    validator.validateNotEmpty(query, 'databaseId', 'Database')
-    validator.validateNotEmpty(query, 'queryType', 'Query Type')
-    validator.validateNotEmpty(query, 'sql', 'SQL')
+    validator.validateNotEmpty(query, 'name', messages.get(messages.NAME))
+    validator.validateNotEmpty(
+      query,
+      'databaseId',
+      messages.get(messages.DATABASE)
+    )
+    validator.validateNotEmpty(
+      query,
+      'queryType',
+      messages.get(messages.QUERY_TYPE)
+    )
+    validator.validateNotEmpty(query, 'sql', messages.get(messages.SQL))
     return validator.withErrors(query)
   }
 }

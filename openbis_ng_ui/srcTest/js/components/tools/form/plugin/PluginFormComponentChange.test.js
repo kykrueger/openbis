@@ -1,5 +1,6 @@
 import PluginFormComponentTest from '@srcTest/js/components/tools/form/plugin/PluginFormComponentTest.js'
 import PluginFormTestData from '@srcTest/js/components/tools/form/plugin/PluginFormTestData.js'
+import openbis from '@srcTest/js/services/openbis.js'
 
 let common = null
 
@@ -42,7 +43,10 @@ async function testChange(plugin) {
       }
     },
     parameters: {
-      title: 'Plugin',
+      title:
+        plugin.getPluginType() === openbis.PluginType.DYNAMIC_PROPERTY
+          ? 'Dynamic Property Plugin'
+          : 'Entity Validation Plugin',
       name: {
         label: 'Name',
         value: plugin.getName(),
@@ -80,7 +84,7 @@ async function testChange(plugin) {
       },
       edit: null,
       message: {
-        text: 'You have unsaved changes.',
+        text: 'You have unsaved changes',
         type: 'warning'
       }
     }

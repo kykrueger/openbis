@@ -1,5 +1,7 @@
 const PLUGIN = 'plugin'
+const EVALUATE_PARAMETER = 'evaluateParameter'
 
 export default {
-  PLUGIN
+  PLUGIN,
+  EVALUATE_PARAMETER
 }

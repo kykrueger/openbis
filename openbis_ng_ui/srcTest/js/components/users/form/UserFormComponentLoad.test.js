@@ -26,7 +26,7 @@ async function testLoadNew() {
     },
     parameters: {
       user: {
-        title: 'User',
+        title: 'New User',
         userId: {
           label: 'User Id',
           value: null,
@@ -176,8 +176,8 @@ async function testLoadExisting() {
         values: {
           inheritedFrom: instanceObserverGroup.getCode(),
           level: instanceObserverGroupAssignment.getRoleLevel(),
-          space: '(all)',
-          project: '(all)',
+          space: '(All)',
+          project: '(All)',
           role: instanceObserverGroupAssignment.getRole()
         },
         selected: false
@@ -197,7 +197,7 @@ async function testLoadExisting() {
           inheritedFrom: testSpacePowerUserGroup.getCode(),
           level: testSpacePowerUserGroupAssignment.getRoleLevel(),
           space: testSpacePowerUserGroupAssignment.space.code,
-          project: '(all)',
+          project: '(All)',
           role: testSpacePowerUserGroupAssignment.getRole()
         },
         selected: false
@@ -207,7 +207,7 @@ async function testLoadExisting() {
           inheritedFrom: null,
           level: mySpaceAdminAssignment.getRoleLevel(),
           space: mySpaceAdminAssignment.space.code,
-          project: '(all)',
+          project: '(All)',
           role: mySpaceAdminAssignment.getRole()
         },
         selected: false

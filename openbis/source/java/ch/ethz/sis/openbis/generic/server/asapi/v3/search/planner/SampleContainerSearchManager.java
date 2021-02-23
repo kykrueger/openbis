@@ -70,4 +70,14 @@ public class SampleContainerSearchManager extends AbstractLocalSearchManager<Sam
         return getAuthProvider().getAuthorisedSamples(ids, authorisationInformation);
     }
 
+    @Override
+    protected Set<Long> getAllIds(final Long userId, final AuthorisationInformation authorisationInformation,
+            final String idsColumnName, final TableMapper tableMapper,
+            final AbstractCompositeSearchCriteria containerCriterion)
+    {
+        // Container criterion should not return all results
+        return getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(
+                userId, containerCriterion, tableMapper, idsColumnName, authorisationInformation);
+    }
+
 }
