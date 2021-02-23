@@ -3053,12 +3053,9 @@ public class SearchSampleTest extends AbstractSampleTest
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        final SampleSearchCriteria criteria = new SampleSearchCriteria().withOrOperator();
-        criteria.withProperty("$NAME").thatContains("P1-A2");
-
-        final SampleSearchCriteria codeSubcriteria = criteria.withSubcriteria().withAndOperator();
-        codeSubcriteria.withCode().thatContains("P1-A2");
-        codeSubcriteria.withSubcriteria().negate().withCode().thatEquals("CP1-A2");
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+        criteria.withCode().thatContains("P1-A2");
+        criteria.withSubcriteria().negate().withCode().thatEquals("CP1-A2");
 
         final SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withType();

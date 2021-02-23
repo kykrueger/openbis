@@ -1607,8 +1607,8 @@ public class SearchExperimentTest extends AbstractExperimentTest
     public void testSearchWithNegation()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
-        criteria.withProperty("DESCRIPTION").thatContains("esc");
-        criteria.withSubcriteria().negate().withProperty("DESCRIPTION").thatContains("esc1");
+        criteria.withStringProperty("DESCRIPTION").thatContains("esc");
+        criteria.withSubcriteria().negate().withStringProperty("DESCRIPTION").thatContains("esc1");
 
         testSearch(TEST_USER, criteria, "/CISD/NOE/EXP-TEST-2");
     }

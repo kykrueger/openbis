@@ -72,7 +72,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
                 getCriteria(criteria, parentsSearchCriteriaClass),
                 getCriteria(criteria, childrenSearchCriteriaClass),
                 Collections.emptyList(), getCriteria(criteria, emptyCriteria.getClass()),
-                (searchOperator == null) ? criteria.getOperator() : searchOperator);
+                criteria.getOperator(), criteria.isNegated());
 
         return doSearchForIDs(userId, criteriaVo, idsColumnName, tableMapper, authorisationInformation);
     }
