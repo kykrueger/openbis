@@ -1425,7 +1425,7 @@ class Openbis:
             
 
     def new_person(self, userId, space=None):
-        """ creates an openBIS person
+        """ creates an openBIS person or returns the existing person
         """
         try:
             person = self.get_person(userId=userId)
@@ -1433,15 +1433,16 @@ class Openbis:
         except Exception:
             return Person(self, userId=userId, space=space) 
 
-        raise ValueError(
-            "There already exists a user with userId={}".format(userId)
-        )
-
 
     def new_group(self, code, description=None, userIds=None):
-        """ creates an openBIS person
+        """ creates an openBIS group or returns an existing one.
         """
-        return Group(self, code=code, description=description, userIds=userIds)
+        try:
+            group = self.get_group(code=code)
+            group.description = description
+            return group
+        except Exception:
+            return Group(self, code=code, description=description, userIds=userIds)
 
 
     def get_group(self, code, only_data=False):
