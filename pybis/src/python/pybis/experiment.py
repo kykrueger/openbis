@@ -122,10 +122,13 @@ class Experiment(
     add_objects = add_samples # Alias
 
     def del_samples(self, samples):
+        # TODO: implement this method using transactions
+
+        raise ValueError("not implemented yet")
         if not isinstance(samples, list):
             samples = [samples]
 
-        
+        objects = [] 
         for sample in samples:
             if isinstance(sample, str):
                 obj = self.openbis.get_sample(sample)
@@ -133,7 +136,6 @@ class Experiment(
             else:
                 # we assume we got an object
                 objects.append(obj)
-        
         self.samples = objects
 
     del_objects = del_samples # Alias

@@ -815,7 +815,6 @@ class AttrHolder():
         if not isinstance(userIds, list):
             userIds = [userIds]
         for userId in userIds:
-            person = self.openbis.get_person(userId=user, only_data=True)
             self.__dict__['_userIds'].append({
                 "permId": userId,
                 "@type": "as.dto.person.id.PersonPermId"
