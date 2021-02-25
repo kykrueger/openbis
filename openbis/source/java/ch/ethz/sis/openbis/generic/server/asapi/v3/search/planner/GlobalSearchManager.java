@@ -142,7 +142,9 @@ public class GlobalSearchManager implements IGlobalSearchManager
     public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records, final boolean withMatches)
     {
         return records.stream().map(stringObjectMap -> mapRecordToMatchingEntity(stringObjectMap, withMatches))
-                .collect(Collectors.toMap(MatchingEntity::getPermId, Function.identity(),
+                .collect(Collectors.toMap(
+                        matchingEntity -> matchingEntity.getEntityKind() + "-" + matchingEntity.getId(),
+                        Function.identity(),
                         (existingMatchingEntity, newMatchingEntity) ->
                                 mergeMatchingEntities(existingMatchingEntity, newMatchingEntity, withMatches),
                         LinkedHashMap::new
