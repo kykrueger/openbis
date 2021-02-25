@@ -1613,6 +1613,16 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, criteria, "/CISD/NOE/EXP-TEST-2");
     }
 
+    @Test(enabled = false)
+    public void testSearchWithStringPropertyNegation()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
+        criteria.withStringProperty("COMMENT").thatEndsWith("stuff");
+        criteria.withSubcriteria().negate().withStringProperty("COMMENT").thatContains("advanced");
+
+        testSearch(TEST_USER, criteria, "/CISD/CP-TEST-2");
+    }
+
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
             final double realValue)
     {
