@@ -1295,7 +1295,7 @@ public class GlobalSearchCriteriaTranslator
         args.add(toTsQueryText(stringValue));
     }
 
-    private static String toTsQueryText(final AbstractStringValue stringValue)
+    public static String toTsQueryText(final AbstractStringValue stringValue)
     {
         return toTsQueryText(stringValue.getValue(), stringValue.getClass());
     }

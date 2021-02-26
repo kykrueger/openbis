@@ -18,25 +18,24 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search;
 
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
-@JsonObject("as.dto.common.search.StrictlyStringPropertySearchCriteria")
-public class StrictlyStringPropertySearchCriteria extends StringFieldSearchCriteria
+@JsonObject("as.dto.common.search.StringMatchesValue")
+public class StringMatchesValue extends AbstractStringValue
 {
-
     private static final long serialVersionUID = 1L;
 
-    StrictlyStringPropertySearchCriteria()
+    private StringMatchesValue()
     {
-        super(null, SearchFieldType.PROPERTY);
+        super(null);
     }
 
-    StrictlyStringPropertySearchCriteria(final String fieldName)
+    public StringMatchesValue(final String value)
     {
-        super(fieldName, SearchFieldType.PROPERTY);
+        super(value);
     }
 
-    public void thatMatchesText(final String text)
+    @Override
+    public String toString()
     {
-        setFieldValue(new StringMatchesValue(text));
+        return "matches '" + getValue() + "'";
     }
-
 }
