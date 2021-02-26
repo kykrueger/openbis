@@ -39,7 +39,8 @@ public class TextAttributeSearchCriteria extends AbstractSearchCriteria
     @Override
     public String toString()
     {
-        return "with any text attribute " + (getFieldValue() == null ? "" : getFieldValue().toString());
+        return "with any text attribute '" +
+                (getFieldValue() == null ? "" : getFieldValue().toString()) + "'";
     }
 
 }
