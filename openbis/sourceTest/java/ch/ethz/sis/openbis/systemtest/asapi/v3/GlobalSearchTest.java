@@ -125,10 +125,10 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithOneContainsOneWord()
+    public void testSearchWithOneMatchesOneWord()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
-        criteria.withText().thatContains("stuff");
+        criteria.withText().thatMatchesText("stuff");
 
         final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withMatch();
@@ -138,10 +138,31 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithOneContainsMultipleWords()
+    public void testSearchWithOneContainsOneWord()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
-        criteria.withText().thatContains("simple stuff");
+        criteria.withText().thatContains("stuff");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+
+        List<GlobalSearchObject> objects = result.getObjects();
+        assertEquals(objects.size(), 3);
+
+        final Set<String> permIds = objects.stream().map(object -> object.getObjectPermId().toString())
+                .collect(Collectors.toSet());
+
+        assertTrue(permIds.contains("200902091219327-1025"));
+        assertTrue(permIds.contains("200902091250077-1026"));
+        assertTrue(permIds.contains("200902091225616-1027"));
+    }
+
+    @Test
+    public void testSearchWithOneMatchesMultipleWords()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatMatchesText("simple stuff");
 
         final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withMatch();

@@ -16,11 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsExactlyValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -45,6 +41,11 @@ public class GlobalSearchTextCriteria extends AbstractFieldSearchCriteria<Abstra
     public void thatContainsExactly(String string)
     {
         setFieldValue(new StringContainsExactlyValue(string));
+    }
+
+    public void thatMatchesText(final String text)
+    {
+        setFieldValue(new StringMatchesValue(text));
     }
 
 }
