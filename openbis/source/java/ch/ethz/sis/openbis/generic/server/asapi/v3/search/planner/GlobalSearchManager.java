@@ -114,19 +114,19 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 if (fieldValue instanceof StringContainsExactlyValue)
                 {
                     final String stringValue = fieldValue.getValue();
-                    sampleSearchCriterion.withAnyField().thatContains(stringValue);
-                    experimentSearchCriterion.withAnyField().thatContains(stringValue);
-                    dataSetSearchCriterion.withAnyField().thatContains(stringValue);
-                    materialSearchCriterion.withAnyField().thatContains(stringValue);
+                    sampleSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
+                    experimentSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
+                    dataSetSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
+                    materialSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
                 } else
                 {
                     final String[] stringValues = fieldValue.getValue().split("\\s");
                     for (final String stringValue : stringValues)
                     {
-                        sampleSearchCriterion.withAnyField().thatContains(stringValue);
-                        experimentSearchCriterion.withAnyField().thatContains(stringValue);
-                        dataSetSearchCriterion.withAnyField().thatContains(stringValue);
-                        materialSearchCriterion.withAnyField().thatContains(stringValue);
+                        sampleSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
+                        experimentSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
+                        dataSetSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
+                        materialSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
                     }
                 }
             }
