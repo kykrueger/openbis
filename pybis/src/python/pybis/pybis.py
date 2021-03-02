@@ -430,12 +430,16 @@ def _subcriteria_for_properties(prop, value, entity):
     search_types = {
         'sample': {
             'parent'    : "as.dto.sample.search.SampleParentsSearchCriteria",
+            'parents'   : "as.dto.sample.search.SampleParentsSearchCriteria",
             'child'     : "as.dto.sample.search.SampleChildrenSearchCriteria",
+            'children'  : "as.dto.sample.search.SampleChildrenSearchCriteria",
             'container' : "as.dto.sample.search.SampleContainerSearchCriteria",
         },
         'dataset': {
             'parent'    : "as.dto.dataset.search.DataSetParentsSearchCriteria",
+            'parents'   : "as.dto.dataset.search.DataSetParentsSearchCriteria",
             'child'     : "as.dto.dataset.search.DataSetChildrenSearchCriteria",
+            'children'  : "as.dto.dataset.search.DataSetChildrenSearchCriteria",
             'container' : "as.dto.dataset.search.DataSetContainerSearchCriteria",
         }
     }
@@ -515,7 +519,7 @@ def _subcriteria_for_properties(prop, value, entity):
 
 
     # searching for parent/child/container identifier
-    if any(relation == prop.lower() for relation in ['parent','child','container']):
+    if any(relation == prop.lower() for relation in ['parent','child','container','parents','children','containers']):
         relation=prop.lower()
         if is_identifier(value):
             identifier_search_type = "as.dto.common.search.IdentifierSearchCriteria"
@@ -1922,6 +1926,7 @@ class Openbis:
         withChildren -- the list of children's permIds in a column 'children'
         attrs        -- list of all desired attributes. Examples:
                         space, project, experiment: just return their identifier
+                        parents, children, components: return a list of their identifiers
                         space.code, project.code, experiment.code
                         registrator.email, registrator.firstName
                         type.generatedCodePrefix
