@@ -430,12 +430,16 @@ def _subcriteria_for_properties(prop, value, entity):
     search_types = {
         'sample': {
             'parent'    : "as.dto.sample.search.SampleParentsSearchCriteria",
+            'parents'   : "as.dto.sample.search.SampleParentsSearchCriteria",
             'child'     : "as.dto.sample.search.SampleChildrenSearchCriteria",
+            'children'  : "as.dto.sample.search.SampleChildrenSearchCriteria",
             'container' : "as.dto.sample.search.SampleContainerSearchCriteria",
         },
         'dataset': {
             'parent'    : "as.dto.dataset.search.DataSetParentsSearchCriteria",
+            'parents'   : "as.dto.dataset.search.DataSetParentsSearchCriteria",
             'child'     : "as.dto.dataset.search.DataSetChildrenSearchCriteria",
+            'children'  : "as.dto.dataset.search.DataSetChildrenSearchCriteria",
             'container' : "as.dto.dataset.search.DataSetContainerSearchCriteria",
         }
     }
@@ -510,12 +514,14 @@ def _subcriteria_for_properties(prop, value, entity):
                     eq_type = "as.dto.common.search.StringLessThanValue"
                 elif comp_operator == '<=':
                     eq_type = "as.dto.common.search.StringLessThanOrEqualToValue"
+                #elif comp_operator == '=':
+                #    eq_type = "as.dto.common.search.StringEqualToValue"
                 else:
                     eq_type = "as.dto.common.search.StringEqualToValue"
 
 
     # searching for parent/child/container identifier
-    if any(relation == prop.lower() for relation in ['parent','child','container']):
+    if any(relation == prop.lower() for relation in ['parent','child','container','parents','children','containers']):
         relation=prop.lower()
         if is_identifier(value):
             identifier_search_type = "as.dto.common.search.IdentifierSearchCriteria"
@@ -571,9 +577,13 @@ def _subcriteria_for_properties(prop, value, entity):
             }
 
     # searching for properties
+    if prop.startswith('_'):
+        fieldName = '$'+prop[1:]
+    else:
+        fieldName = prop
     return {
         "@type": str_type,
-        "fieldName": prop.upper(),
+        "fieldName": fieldName.upper(),
         "fieldType": fieldType,
         "fieldValue": {
             "value": value,
@@ -827,8 +837,8 @@ class Openbis:
         if self.is_token_valid(self.token):
             pass
         else:
-            self._delete_saved_token()
-            print("Session is no longer valid. Please log in again.")
+            token_path = self._delete_saved_token()
+            if token_path and VERBOSE: print("Session is no longer valid. Please log in again.")
 
     def _get_username(self):
         if self.token:
@@ -1013,6 +1023,7 @@ class Openbis:
         if self.token_path:
             try:
                 os.remove(self.token_path)
+                return self.token_path
             except FileNotFoundError:
                 return None
 
@@ -1044,8 +1055,8 @@ class Openbis:
         if resp.ok:
             resp = resp.json()
             if 'error' in resp:
-                print(full_url)
-                print(json.dumps(request))
+                #print(full_url)
+                #print(json.dumps(request))
                 raise ValueError(resp['error']['message'])
             elif 'result' in resp:
                 return resp['result']
@@ -1897,6 +1908,7 @@ class Openbis:
         space=None, project=None, experiment=None, collection=None, type=None,
         start_with=None, count=None,
         withParents=None, withChildren=None, tags=None, attrs=None, props=None,
+        where=None,
         **properties
     ):
         """Returns a DataFrame of all samples for a given space/project/experiment (or any combination)
@@ -1909,6 +1921,7 @@ class Openbis:
         experiment   -- experiment code or object
         collection   -- same as above
         tags         -- only return samples with the specified tags
+        where        -- key-value pairs of property values to search for
 
         Paging
         ------
@@ -1921,6 +1934,7 @@ class Openbis:
         withChildren -- the list of children's permIds in a column 'children'
         attrs        -- list of all desired attributes. Examples:
                         space, project, experiment: just return their identifier
+                        parents, children, components: return a list of their identifiers
                         space.code, project.code, experiment.code
                         registrator.email, registrator.firstName
                         type.generatedCodePrefix
@@ -1940,7 +1954,6 @@ class Openbis:
 
         if space:
             sub_criteria.append(_subcriteria_for(space, 'space'))
-
         if project:
             sub_criteria.append(_subcriteria_for(project, 'project'))
         if experiment:
@@ -1950,6 +1963,12 @@ class Openbis:
             sub_criteria.append(_subcriteria_for(withParents, 'sample', 'Parents'))
         if withChildren:
             sub_criteria.append(_subcriteria_for(withChildren, 'sample', 'Children'))
+
+        if where:
+            if properties is None:
+                properties = where
+            else:
+                properties = {**where, **properties}
 
         if properties is not None:
             for prop in properties:
@@ -2042,7 +2061,7 @@ class Openbis:
     def get_experiments(
         self, code=None, permId=None, type=None, space=None, project=None,
         start_with=None, count=None,
-        tags=None, is_finished=None, attrs=None, props=None, **properties
+        tags=None, is_finished=None, attrs=None, props=None, where=None, **properties
     ):
         """Returns a DataFrame of all samples for a given space/project (or any combination)
 
@@ -2052,6 +2071,7 @@ class Openbis:
         project      -- a project code or a project object
         tags         -- only experiments with the specified tags
         type         -- a experimentType code
+        where        -- key-value pairs of property values to search for
 
         Paging:
         -------
@@ -2097,6 +2117,11 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if is_finished is not None:
             sub_criteria.append(_subcriteria_for_is_finished(is_finished))
+        if where:
+            if properties is None:
+                properties = where
+            else:
+                properties = {**where, **properties}
         if properties is not None:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop], entity='experiment'))
@@ -2202,6 +2227,7 @@ class Openbis:
         start_with=None, count=None, kind=None,
         status=None, sample=None, experiment=None, collection=None, project=None,
         tags=None, attrs=None, props=None, 
+        where=None,
         **properties
     ):
         """Returns a DataFrame of all dataSets for a given project/experiment/sample (or any combination)
@@ -2214,6 +2240,7 @@ class Openbis:
         collection   -- same as experiment
         tags         -- only return dataSets with the specified tags
         type         -- a dataSetType code
+        where        -- key-value pairs of property values to search for
 
         Paging
         ------
@@ -2266,6 +2293,13 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if status:
             sub_criteria.append(_subcriteria_for_status(status))
+
+        if where:
+            if properties is None:
+                properties = where
+            else:
+                properties = {**where, **properties}
+
         if properties is not None:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop], entity='dataset'))

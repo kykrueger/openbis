@@ -50,6 +50,16 @@ class PropertyHolder():
                 props[code] = value
         return props
 
+    def __call__(self, prop, val=None):
+        """Yet another way to set/get the values to a property:
+        sample.props('$name', 'new value')
+        sample.props('$name')  # returns 'new value'
+        """
+        if val is None:
+            return getattr(self, prop)
+        else:
+            setattr(self, prop, val)
+
     def __getitem__(self, key):
         """For properties that contain either a dot or a dash or any other non-valid method character,
         a user can use a key-lookup instead, e.g. sample.props['my-weird.property-name']
