@@ -32,4 +32,9 @@ public class AnyPropertySearchCriteria extends StringFieldSearchCriteria
         super("any", SearchFieldType.ANY_PROPERTY);
     }
 
+    public void thatMatchesText(final String text)
+    {
+        setFieldValue(new StringMatchesValue(text));
+    }
+
 }

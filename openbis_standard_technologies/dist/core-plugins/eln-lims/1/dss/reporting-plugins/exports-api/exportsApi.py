@@ -72,7 +72,6 @@ from ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download import DataS
 from ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download import DataSetFileDownloadReader
 
 #JSON
-from ch.ethz.sis.openbis.generic.server.sharedapi.v3.json import GenericObjectMapper;
 from com.fasterxml.jackson.databind import SerializationFeature
 
 #Session Workspace
@@ -267,7 +266,7 @@ def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath, de
     v3 = ServiceProvider.getV3ApplicationService();
     v3d = ServiceProvider.getApplicationContext().getBean(V3_DSS_BEAN);
     objectCache = {};
-    objectMapper = GenericObjectMapper();
+    objectMapper = ServiceProvider.getObjectMapperV3()
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
     # To avoid empty directories on the zip file, it makes the first found entity the base directory
     baseDirToCut = None;

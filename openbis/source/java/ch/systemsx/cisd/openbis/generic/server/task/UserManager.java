@@ -410,13 +410,19 @@ public class UserManager
 
     private boolean isKnownUser(Set<String> knownUsers, Person person)
     {
-        if (knownUsers.contains(person.getUserId()))
+        String userId = person.getUserId();
+        if (knownUsers.contains(userId))
         {
             return true;
         }
         try
         {
-            authenticationService.getPrincipal(person.getUserId());
+            UserInfo userInfo = userInfosByUserId.get(userId);
+            if (userInfo != null)
+            {
+                userId = userInfo.principal.getUserId();
+            }
+            authenticationService.getPrincipal(userId);
             return true;
         } catch (IllegalArgumentException e)
         {

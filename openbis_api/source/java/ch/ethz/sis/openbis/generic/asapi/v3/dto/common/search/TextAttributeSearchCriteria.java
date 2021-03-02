@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 ETH Zuerich, CISD
+ * Copyright 2016 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,25 +18,29 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search;
 
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
-@JsonObject("as.dto.common.search.StrictlyStringPropertySearchCriteria")
-public class StrictlyStringPropertySearchCriteria extends StringFieldSearchCriteria
+@JsonObject("as.dto.common.search.TextAttributeSearchCriteria")
+public class TextAttributeSearchCriteria extends AbstractSearchCriteria
 {
 
     private static final long serialVersionUID = 1L;
 
-    StrictlyStringPropertySearchCriteria()
-    {
-        super(null, SearchFieldType.PROPERTY);
-    }
-
-    StrictlyStringPropertySearchCriteria(final String fieldName)
-    {
-        super(fieldName, SearchFieldType.PROPERTY);
-    }
+    private AbstractStringValue fieldValue;
 
     public void thatMatchesText(final String text)
     {
-        setFieldValue(new StringMatchesValue(text));
+        fieldValue = new StringMatchesValue(text);
+    }
+
+    public AbstractStringValue getFieldValue()
+    {
+        return fieldValue;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "with any text attribute '" +
+                (getFieldValue() == null ? "" : getFieldValue().toString()) + "'";
     }
 
 }
