@@ -514,6 +514,8 @@ def _subcriteria_for_properties(prop, value, entity):
                     eq_type = "as.dto.common.search.StringLessThanValue"
                 elif comp_operator == '<=':
                     eq_type = "as.dto.common.search.StringLessThanOrEqualToValue"
+                #elif comp_operator == '=':
+                #    eq_type = "as.dto.common.search.StringEqualToValue"
                 else:
                     eq_type = "as.dto.common.search.StringEqualToValue"
 
@@ -575,9 +577,13 @@ def _subcriteria_for_properties(prop, value, entity):
             }
 
     # searching for properties
+    if prop.startswith('_'):
+        fieldName = '$'+prop[1:]
+    else:
+        fieldName = prop
     return {
         "@type": str_type,
-        "fieldName": prop.upper(),
+        "fieldName": fieldName.upper(),
         "fieldType": fieldType,
         "fieldValue": {
             "value": value,
@@ -1049,8 +1055,8 @@ class Openbis:
         if resp.ok:
             resp = resp.json()
             if 'error' in resp:
-                print(full_url)
-                print(json.dumps(request))
+                #print(full_url)
+                #print(json.dumps(request))
                 raise ValueError(resp['error']['message'])
             elif 'result' in resp:
                 return resp['result']
@@ -1902,6 +1908,7 @@ class Openbis:
         space=None, project=None, experiment=None, collection=None, type=None,
         start_with=None, count=None,
         withParents=None, withChildren=None, tags=None, attrs=None, props=None,
+        where=None,
         **properties
     ):
         """Returns a DataFrame of all samples for a given space/project/experiment (or any combination)
@@ -1914,6 +1921,7 @@ class Openbis:
         experiment   -- experiment code or object
         collection   -- same as above
         tags         -- only return samples with the specified tags
+        where        -- key-value pairs of property values to search for
 
         Paging
         ------
@@ -1946,7 +1954,6 @@ class Openbis:
 
         if space:
             sub_criteria.append(_subcriteria_for(space, 'space'))
-
         if project:
             sub_criteria.append(_subcriteria_for(project, 'project'))
         if experiment:
@@ -1956,6 +1963,12 @@ class Openbis:
             sub_criteria.append(_subcriteria_for(withParents, 'sample', 'Parents'))
         if withChildren:
             sub_criteria.append(_subcriteria_for(withChildren, 'sample', 'Children'))
+
+        if where:
+            if properties is None:
+                properties = where
+            else:
+                properties = {**where, **properties}
 
         if properties is not None:
             for prop in properties:
@@ -2048,7 +2061,7 @@ class Openbis:
     def get_experiments(
         self, code=None, permId=None, type=None, space=None, project=None,
         start_with=None, count=None,
-        tags=None, is_finished=None, attrs=None, props=None, **properties
+        tags=None, is_finished=None, attrs=None, props=None, where=None, **properties
     ):
         """Returns a DataFrame of all samples for a given space/project (or any combination)
 
@@ -2058,6 +2071,7 @@ class Openbis:
         project      -- a project code or a project object
         tags         -- only experiments with the specified tags
         type         -- a experimentType code
+        where        -- key-value pairs of property values to search for
 
         Paging:
         -------
@@ -2103,6 +2117,11 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if is_finished is not None:
             sub_criteria.append(_subcriteria_for_is_finished(is_finished))
+        if where:
+            if properties is None:
+                properties = where
+            else:
+                properties = {**where, **properties}
         if properties is not None:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop], entity='experiment'))
@@ -2208,6 +2227,7 @@ class Openbis:
         start_with=None, count=None, kind=None,
         status=None, sample=None, experiment=None, collection=None, project=None,
         tags=None, attrs=None, props=None, 
+        where=None,
         **properties
     ):
         """Returns a DataFrame of all dataSets for a given project/experiment/sample (or any combination)
@@ -2220,6 +2240,7 @@ class Openbis:
         collection   -- same as experiment
         tags         -- only return dataSets with the specified tags
         type         -- a dataSetType code
+        where        -- key-value pairs of property values to search for
 
         Paging
         ------
@@ -2272,6 +2293,13 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if status:
             sub_criteria.append(_subcriteria_for_status(status))
+
+        if where:
+            if properties is None:
+                properties = where
+            else:
+                properties = {**where, **properties}
+
         if properties is not None:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop], entity='dataset'))
