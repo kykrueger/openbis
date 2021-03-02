@@ -827,8 +827,8 @@ class Openbis:
         if self.is_token_valid(self.token):
             pass
         else:
-            self._delete_saved_token()
-            print("Session is no longer valid. Please log in again.")
+            token_path = self._delete_saved_token()
+            if token_path and VERBOSE: print("Session is no longer valid. Please log in again.")
 
     def _get_username(self):
         if self.token:
@@ -1013,6 +1013,7 @@ class Openbis:
         if self.token_path:
             try:
                 os.remove(self.token_path)
+                return self.token_path
             except FileNotFoundError:
                 return None
 
