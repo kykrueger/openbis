@@ -1,6 +1,9 @@
 ## Changes with pybis-1.18.3
 
 - prevent other users to read the saved token (chmod 600)
+- fixed various pylint issues
+- fixed «session no longer valid» message
+- fixed search issues
 
 ## Changes with pybis-1.18.2
 
