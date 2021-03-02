@@ -3,10 +3,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsExactlyValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringMatchesValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
@@ -14,6 +11,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearch
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchTextCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchWildCardsCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -111,22 +109,46 @@ public class GlobalSearchManager implements IGlobalSearchManager
             for (final GlobalSearchTextCriteria globalSearchTextCriterion : stringContainsGlobalSearchTextCriteria)
             {
                 final AbstractStringValue fieldValue = globalSearchTextCriterion.getFieldValue();
+                final StringFieldSearchCriteria sampleStringFieldSearchCriteria = sampleSearchCriterion.withAnyField();
+                final StringFieldSearchCriteria experimentStringFieldSearchCriteria =
+                        experimentSearchCriterion.withAnyField();
+                final StringFieldSearchCriteria dataSetStringFieldSearchCriteria =
+                        dataSetSearchCriterion.withAnyField();
+                final StringFieldSearchCriteria materialStringFieldSearchCriteria =
+                        materialSearchCriterion.withAnyField();
+
+                final boolean containsWildCards = criteria.getCriteria().stream()
+                        .anyMatch(criterion -> criterion instanceof GlobalSearchWildCardsCriteria);
+                if (containsWildCards)
+                {
+                    sampleStringFieldSearchCriteria.withWildcards();
+                    experimentStringFieldSearchCriteria.withWildcards();
+                    dataSetStringFieldSearchCriteria.withWildcards();
+                    materialStringFieldSearchCriteria.withWildcards();
+                } else
+                {
+                    sampleStringFieldSearchCriteria.withoutWildcards();
+                    experimentStringFieldSearchCriteria.withoutWildcards();
+                    dataSetStringFieldSearchCriteria.withoutWildcards();
+                    materialStringFieldSearchCriteria.withoutWildcards();
+                }
+
                 if (fieldValue instanceof StringContainsExactlyValue)
                 {
                     final String stringValue = fieldValue.getValue();
-                    sampleSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
-                    experimentSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
-                    dataSetSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
-                    materialSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
+                    sampleStringFieldSearchCriteria.thatContains(stringValue);
+                    experimentStringFieldSearchCriteria.thatContains(stringValue);
+                    dataSetStringFieldSearchCriteria.thatContains(stringValue);
+                    materialStringFieldSearchCriteria.thatContains(stringValue);
                 } else
                 {
                     final String[] stringValues = fieldValue.getValue().split("\\s");
                     for (final String stringValue : stringValues)
                     {
-                        sampleSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
-                        experimentSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
-                        dataSetSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
-                        materialSearchCriterion.withAnyField().withoutWildcards().thatContains(stringValue);
+                        sampleStringFieldSearchCriteria.thatContains(stringValue);
+                        experimentStringFieldSearchCriteria.thatContains(stringValue);
+                        dataSetStringFieldSearchCriteria.thatContains(stringValue);
+                        materialStringFieldSearchCriteria.thatContains(stringValue);
                     }
                 }
             }
