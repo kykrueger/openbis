@@ -26,9 +26,9 @@ public class TextAttributeSearchCriteria extends AbstractSearchCriteria
 
     private AbstractStringValue fieldValue;
 
-    public void thatMatchesText(final String text)
+    public void thatMatches(final String string)
     {
-        fieldValue = new StringMatchesValue(text);
+        fieldValue = new StringMatchesValue(string);
     }
 
     public AbstractStringValue getFieldValue()

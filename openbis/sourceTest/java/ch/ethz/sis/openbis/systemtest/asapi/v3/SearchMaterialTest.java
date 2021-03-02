@@ -1755,7 +1755,7 @@ public class SearchMaterialTest extends AbstractTest
     {
         final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
 
-        criteria.withTextAttribute().thatMatchesText(
+        criteria.withTextAttribute().thatMatches(
                 "virus1 virus2 bacterium-x bacterium-y bacterium1 bacterium2");
         criteria.withCode().thatEndsWith("2");
 
@@ -1768,7 +1768,7 @@ public class SearchMaterialTest extends AbstractTest
     {
         final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
 
-        criteria.withProperty("DESCRIPTION").thatMatchesText("virus gene inhibitor");
+        criteria.withProperty("DESCRIPTION").thatMatches("virus gene inhibitor");
         criteria.withCode().thatContains("N");
 
         testSearch(TEST_USER, criteria, new MaterialPermId("MYGENE1", "GENE"));
@@ -1779,7 +1779,7 @@ public class SearchMaterialTest extends AbstractTest
     {
         final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
 
-        criteria.withStringProperty("DESCRIPTION").thatMatchesText("virus gene inhibitor");
+        criteria.withStringProperty("DESCRIPTION").thatMatches("virus gene inhibitor");
         criteria.withCode().thatContains("N");
 
         testSearch(TEST_USER, criteria, new MaterialPermId("MYGENE1", "GENE"));
@@ -1790,7 +1790,7 @@ public class SearchMaterialTest extends AbstractTest
     {
         final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
 
-        criteria.withAnyProperty().thatMatchesText("virus gene inhibitor");
+        criteria.withAnyProperty().thatMatches("virus gene inhibitor");
         criteria.withCode().thatContains("i");
 
         testSearch(TEST_USER, criteria, new MaterialPermId("VIRUS1", "VIRUS"), new MaterialPermId("VIRUS2", "VIRUS"),
@@ -1802,7 +1802,7 @@ public class SearchMaterialTest extends AbstractTest
     {
         final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
 
-        criteria.withAnyStringProperty().thatMatchesText("virus gene inhibitor");
+        criteria.withAnyStringProperty().thatMatches("virus gene inhibitor");
         criteria.withCode().thatContains("i");
 
         testSearch(TEST_USER, criteria, new MaterialPermId("VIRUS1", "VIRUS"), new MaterialPermId("VIRUS2", "VIRUS"),
@@ -1814,7 +1814,7 @@ public class SearchMaterialTest extends AbstractTest
     {
         final MaterialSearchCriteria criteria = new MaterialSearchCriteria().withAndOperator();
 
-        criteria.withAnyField().thatMatchesText("virus gene inhibitor neutral");
+        criteria.withAnyField().thatMatches("virus gene inhibitor neutral");
         criteria.withCode().thatContains("r");
 
         testSearch(TEST_USER, criteria, new MaterialPermId("VIRUS1", "VIRUS"), new MaterialPermId("VIRUS2", "VIRUS"),

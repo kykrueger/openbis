@@ -43,9 +43,9 @@ public class GlobalSearchTextCriteria extends AbstractFieldSearchCriteria<Abstra
         setFieldValue(new StringContainsExactlyValue(string));
     }
 
-    public void thatMatchesText(final String text)
+    public void thatMatches(final String string)
     {
-        setFieldValue(new StringMatchesValue(text));
+        setFieldValue(new StringMatchesValue(string));
     }
 
 }

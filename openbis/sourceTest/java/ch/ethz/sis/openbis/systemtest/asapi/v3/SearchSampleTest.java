@@ -3210,7 +3210,7 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
 
-        criteria.withTextAttribute().thatMatchesText("cp-test-1 cp-test-2 cp-test-3 cp-test-4");
+        criteria.withTextAttribute().thatMatches("cp-test-1 cp-test-2 cp-test-3 cp-test-4");
         criteria.withPermId().thatContains("7-");
 
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1", "/CISD/CP-TEST-2", "/TEST-SPACE/CP-TEST-4");
@@ -3221,14 +3221,14 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final SampleSearchCriteria criteria1 = new SampleSearchCriteria().withAndOperator();
 
-        criteria1.withProperty("COMMENT").thatMatchesText("test");
+        criteria1.withProperty("COMMENT").thatMatches("test");
         criteria1.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria1, "/CISD/3VCP7");
 
         final SampleSearchCriteria criteria2 = new SampleSearchCriteria().withAndOperator();
 
-        criteria2.withProperty("DESCRIPTION").thatMatchesText("test");
+        criteria2.withProperty("DESCRIPTION").thatMatches("test");
         criteria2.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria2, "/CISD/CL1");
@@ -3239,14 +3239,14 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final SampleSearchCriteria criteria1 = new SampleSearchCriteria().withAndOperator();
 
-        criteria1.withStringProperty("COMMENT").thatMatchesText("test");
+        criteria1.withStringProperty("COMMENT").thatMatches("test");
         criteria1.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria1, "/CISD/3VCP7");
 
         final SampleSearchCriteria criteria2 = new SampleSearchCriteria().withAndOperator();
 
-        criteria2.withStringProperty("DESCRIPTION").thatMatchesText("test");
+        criteria2.withStringProperty("DESCRIPTION").thatMatches("test");
         criteria2.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria2, "/CISD/CL1");
@@ -3257,7 +3257,7 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
 
-        criteria.withAnyProperty().thatMatchesText("test");
+        criteria.withAnyProperty().thatMatches("test");
         criteria.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria, "/CISD/CL1", "/CISD/3VCP7");
@@ -3268,7 +3268,7 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
 
-        criteria.withAnyStringProperty().thatMatchesText("test");
+        criteria.withAnyStringProperty().thatMatches("test");
         criteria.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria, "/CISD/CL1", "/CISD/3VCP7");
@@ -3279,7 +3279,7 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
 
-        criteria.withAnyField().thatMatchesText("test cp-test-1 cp-test-2");
+        criteria.withAnyField().thatMatches("test cp-test-1 cp-test-2");
         criteria.withPermId().thatContains("19");
 
         testSearch(TEST_USER, criteria, "/CISD/CL1", "/TEST-SPACE/EV-TEST", "/CISD/CP-TEST-1");
