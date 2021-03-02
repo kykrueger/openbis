@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
@@ -270,6 +271,7 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithMultipleContainsExactlyOneWord()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withOperator(SearchOperator.OR);
         criteria.withText().thatContainsExactly("simple");
         criteria.withText().thatContainsExactly("stuff");
 
@@ -1024,9 +1026,16 @@ public class GlobalSearchTest extends AbstractTest
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withMatch();
 
-        GlobalSearchObject object = searchAndAssertOne("HSV1 (VIRUS)", fo);
+        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatMatches("HSV1 (VIRUS)");
 
-        assertMaterial(object, "HSV1", "VIRUS", "Identifier: HSV1 (VIRUS)");
+        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        assertFalse(result.getObjects().isEmpty());
+
+        GlobalSearchObject object = result.getObjects().get(0);
+
+        assertMaterial(object, "HSV1", "VIRUS",
+                "Identifier: HSV1 (VIRUS)\nProperty 'Description': Herpes Simplex Virus 1");
         assertExperimentNotFetched(object);
         assertSampleNotFetched(object);
         assertDataSetNotFetched(object);
@@ -1040,9 +1049,16 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMaterial();
         fo.withMatch();
 
-        GlobalSearchObject object = searchAndAssertOne("HSV1 (VIRUS)", fo);
+        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatMatches("HSV1 (VIRUS)");
 
-        assertMaterial(object, "HSV1", "VIRUS", "Identifier: HSV1 (VIRUS)");
+        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        assertFalse(result.getObjects().isEmpty());
+
+        GlobalSearchObject object = result.getObjects().get(0);
+
+        assertMaterial(object, "HSV1", "VIRUS",
+                "Identifier: HSV1 (VIRUS)\nProperty 'Description': Herpes Simplex Virus 1");
         assertEquals(object.getMaterial().getPermId().toString(), "HSV1 (VIRUS)");
         assertExperimentNotFetched(object);
         assertSampleNotFetched(object);
@@ -1056,9 +1072,16 @@ public class GlobalSearchTest extends AbstractTest
         fo.withExperiment();
         fo.withMatch();
 
-        GlobalSearchObject object = searchAndAssertOne("HSV1 (VIRUS)", fo);
+        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatMatches("HSV1 (VIRUS)");
 
-        assertMaterial(object, "HSV1", "VIRUS", "Identifier: HSV1 (VIRUS)");
+        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        assertFalse(result.getObjects().isEmpty());
+
+        GlobalSearchObject object = result.getObjects().get(0);
+
+        assertMaterial(object, "HSV1", "VIRUS",
+                "Identifier: HSV1 (VIRUS)\nProperty 'Description': Herpes Simplex Virus 1");
         assertNull(object.getExperiment());
         assertSampleNotFetched(object);
         assertDataSetNotFetched(object);
