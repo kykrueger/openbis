@@ -844,11 +844,20 @@ public class GlobalSearchTest extends AbstractTest
         criteria.withText().thatMatches("B1B3:B01");
 
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        assertEquals(result.getObjects().size(), 1);
+        assertEquals(result.getObjects().size(), 3);
 
-        final GlobalSearchObject object = result.getObjects().get(0);
+        result.getObjects().forEach(object -> assertEquals(object.getObjectKind(), GlobalSearchObjectKind.SAMPLE));
 
-        assertSample(object, "200811050924274-995", "/CISD/B1B3:B01", "Code: B1B3:B01");
+        final Set<String> objectPermIds = result.getObjects().stream()
+                .map(object -> object.getObjectPermId().toString())
+                .collect(Collectors.toSet());
+        assertEquals(objectPermIds, new HashSet<>(Arrays.asList("200811050924274-995", "200811050924274-996",
+                "200811050924274-994")));
+
+        final Set<String> objectIdentifiers = result.getObjects().stream()
+                .map(object -> object.getObjectIdentifier().toString())
+                .collect(Collectors.toSet());
+        assertEquals(objectIdentifiers, new HashSet<>(Arrays.asList("/CISD/B1B3:B01", "/CISD/B1B3:B03", "/CISD/B1B3")));
     }
 
     @Test(enabled = false)
