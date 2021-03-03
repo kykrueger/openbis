@@ -1,3 +1,7 @@
+## Changes with pybis-1.18.4
+
+- fixed bug in returning identifiers (thanks, Fabian!)
+
 ## Changes with pybis-1.18.3
 
 - prevent other users to read the saved token (chmod 600)
