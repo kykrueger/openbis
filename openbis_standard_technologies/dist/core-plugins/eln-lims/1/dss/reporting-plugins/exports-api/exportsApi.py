@@ -267,7 +267,6 @@ def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath, de
     v3d = ServiceProvider.getApplicationContext().getBean(V3_DSS_BEAN);
     objectCache = {};
     objectMapper = ServiceProvider.getObjectMapperV3()
-    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
     # To avoid empty directories on the zip file, it makes the first found entity the base directory
     baseDirToCut = None;
     fileMetadata = []
