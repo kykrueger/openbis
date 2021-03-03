@@ -102,11 +102,27 @@ public class ArchivingAggregationServiceTest extends AbstractFileSystemTestCase
         List<TableModelRow> rows = service.createAggregationReport(parameters, processingContext).getRows();
 
         // Then
-        assertEquals("[[OK, Operation Successful, "
-                + "{\"ds1\":{\"bundleId\":\"ds1\",\"bundleSize\":10000,\"numberOfDataSets\":1,\"size\":10000},"
-                + "\"ds2\":{\"bundleId\":\"ds2\",\"bundleSize\":10010,\"numberOfDataSets\":1,\"size\":10010},"
-                + "\"ds3\":{\"bundleId\":\"ds3\",\"bundleSize\":10020,\"numberOfDataSets\":1,\"size\":10020},"
-                + "\"total size\":30030}]]\n", renderRows(rows));
+        assertEquals("[[OK, Operation Successful, {\n" + 
+                "  \"ds1\" : {\n" + 
+                "    \"bundleId\" : \"ds1\",\n" + 
+                "    \"bundleSize\" : 10000,\n" + 
+                "    \"numberOfDataSets\" : 1,\n" + 
+                "    \"size\" : 10000\n" + 
+                "  },\n" + 
+                "  \"ds2\" : {\n" + 
+                "    \"bundleId\" : \"ds2\",\n" + 
+                "    \"bundleSize\" : 10010,\n" + 
+                "    \"numberOfDataSets\" : 1,\n" + 
+                "    \"size\" : 10010\n" + 
+                "  },\n" + 
+                "  \"ds3\" : {\n" + 
+                "    \"bundleId\" : \"ds3\",\n" + 
+                "    \"bundleSize\" : 10020,\n" + 
+                "    \"numberOfDataSets\" : 1,\n" + 
+                "    \"size\" : 10020\n" + 
+                "  },\n" + 
+                "  \"total size\" : 30030\n" + 
+                "}]]\n", renderRows(rows));
         assertEquals("[DS1, DS2, DS3]", actualDataSetsMatcher.recordedObject().toString());
         context.assertIsSatisfied();
     }
@@ -128,11 +144,27 @@ public class ArchivingAggregationServiceTest extends AbstractFileSystemTestCase
         List<TableModelRow> rows = service.createAggregationReport(parameters, processingContext).getRows();
 
         // Then
-        assertEquals("[[OK, Operation Successful, "
-                + "{\"ds1\":{\"bundleId\":\"ds1\",\"bundleSize\":30060,\"numberOfDataSets\":3,\"size\":10000},"
-                + "\"ds2\":{\"bundleId\":\"ds12\",\"bundleSize\":30110,\"numberOfDataSets\":3,\"size\":10020},"
-                + "\"ds3\":{\"bundleId\":\"ds11\",\"bundleSize\":20110,\"numberOfDataSets\":2,\"size\":10040},"
-                + "\"total size\":80280}]]\n", renderRows(rows));
+        assertEquals("[[OK, Operation Successful, {\n" + 
+                "  \"ds1\" : {\n" + 
+                "    \"bundleId\" : \"ds1\",\n" + 
+                "    \"bundleSize\" : 30060,\n" + 
+                "    \"numberOfDataSets\" : 3,\n" + 
+                "    \"size\" : 10000\n" + 
+                "  },\n" + 
+                "  \"ds2\" : {\n" + 
+                "    \"bundleId\" : \"ds12\",\n" + 
+                "    \"bundleSize\" : 30110,\n" + 
+                "    \"numberOfDataSets\" : 3,\n" + 
+                "    \"size\" : 10020\n" + 
+                "  },\n" + 
+                "  \"ds3\" : {\n" + 
+                "    \"bundleId\" : \"ds11\",\n" + 
+                "    \"bundleSize\" : 20110,\n" + 
+                "    \"numberOfDataSets\" : 2,\n" + 
+                "    \"size\" : 10040\n" + 
+                "  },\n" + 
+                "  \"total size\" : 80280\n" + 
+                "}]]\n", renderRows(rows));
         assertEquals("[DS1, DS10, DS11, DS12, DS2, DS3, DS4, DS9]", actualDataSetsMatcher.recordedObject().toString());
         context.assertIsSatisfied();
     }
