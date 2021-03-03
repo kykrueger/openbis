@@ -1537,6 +1537,19 @@ public class GlobalSearchTest extends AbstractTest
         assertSample(objects.get(1), null, "/CISD/" + sampleCode, "Property 'label': " + propertyTypeValue);
     }
 
+    @Test(expectedExceptions = RuntimeException.class,
+            expectedExceptionsMessageRegExp = "Cannot combine matches and contains criteria in global search.*")
+    public void testCriteriaMixing()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatMatches("stuff");
+        criteria.withText().thatContains("stuff");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        search(TEST_USER, criteria, fo);
+    }
+
     private ObjectPermId createSample(final String sessionToken, final PropertyTypePermId propertyTypeId,
             final String value, final String code)
     {

@@ -71,18 +71,9 @@ public class GlobalSearchManager implements IGlobalSearchManager
             return createEmptyResult(onlyTotalCount);
         }
 
-        // String matches
-
         final boolean hasStringMatches = criteria.getCriteria().stream().anyMatch(
                 criterion -> criterion instanceof GlobalSearchTextCriteria &&
                 ((GlobalSearchTextCriteria) criterion).getFieldValue() instanceof StringMatchesValue);
-
-        final List<Map<String, Object>> stringMatchesCriteriaIntermediateResults = hasStringMatches
-                ? searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, criteria, idsColumnName,
-                        authorisationInformation, objectKinds, fetchOptions, onlyTotalCount)
-                : createEmptyResult(onlyTotalCount);
-
-        // String contains
 
         final List<GlobalSearchTextCriteria> stringContainsGlobalSearchTextCriteria = criteria.getCriteria().stream()
                 .filter(criterion -> criterion instanceof GlobalSearchTextCriteria &&
@@ -93,9 +84,19 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
         final boolean hasStringContains = !stringContainsGlobalSearchTextCriteria.isEmpty();
 
-        final List<Map<String, Object>> stringContainsCriteriaIntermediateResults;
-        if (hasStringContains)
+        if (hasStringMatches && hasStringContains)
         {
+            throw new IllegalArgumentException("Cannot combine matches and contains criteria in global search.");
+        }
+
+        if (hasStringMatches)
+        {
+            // String matches
+            return searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, criteria, idsColumnName,
+                    authorisationInformation, objectKinds, fetchOptions, onlyTotalCount);
+        } else
+        {
+            // String contains
             final SampleSearchCriteria sampleSearchCriterion = new SampleSearchCriteria();
             final ExperimentSearchCriteria experimentSearchCriterion = new ExperimentSearchCriteria();
             final DataSetSearchCriteria dataSetSearchCriterion = new DataSetSearchCriteria();
@@ -164,33 +165,25 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             final int stringContainsIntermediateResultsCount = sampleIds.size() + experimentIds.size() +
                     dataSetIds.size() + materialIds.size();
-            final int allResultsCount = stringMatchesCriteriaIntermediateResults.size() +
-                    stringContainsIntermediateResultsCount;
-            stringContainsCriteriaIntermediateResults = new ArrayList<>(stringContainsIntermediateResultsCount);
+            final List<Map<String, Object>> stringContainsCriteriaIntermediateResults =
+                    new ArrayList<>(stringContainsIntermediateResultsCount);
 
             final List<Map<String, Object>> sampleIntermediateResults = convertIdsToObjectKind(sampleIds,
-                    GlobalSearchObjectKind.SAMPLE, allResultsCount);
+                    GlobalSearchObjectKind.SAMPLE, stringContainsIntermediateResultsCount);
             final List<Map<String, Object>> experimentIntermediateResults = convertIdsToObjectKind(experimentIds,
-                    GlobalSearchObjectKind.EXPERIMENT, allResultsCount);
+                    GlobalSearchObjectKind.EXPERIMENT, stringContainsIntermediateResultsCount);
             final List<Map<String, Object>> dataSetIntermediateResults = convertIdsToObjectKind(dataSetIds,
-                    GlobalSearchObjectKind.DATA_SET, allResultsCount);
+                    GlobalSearchObjectKind.DATA_SET, stringContainsIntermediateResultsCount);
             final List<Map<String, Object>> materialIntermediateResults = convertIdsToObjectKind(materialIds,
-                    GlobalSearchObjectKind.MATERIAL, allResultsCount);
+                    GlobalSearchObjectKind.MATERIAL, stringContainsIntermediateResultsCount);
 
             stringContainsCriteriaIntermediateResults.addAll(sampleIntermediateResults);
             stringContainsCriteriaIntermediateResults.addAll(experimentIntermediateResults);
             stringContainsCriteriaIntermediateResults.addAll(dataSetIntermediateResults);
             stringContainsCriteriaIntermediateResults.addAll(materialIntermediateResults);
-        } else
-        {
-            stringContainsCriteriaIntermediateResults = createEmptyResult(onlyTotalCount);
+            return stringContainsCriteriaIntermediateResults.isEmpty() ? createEmptyResult(onlyTotalCount)
+                    : stringContainsCriteriaIntermediateResults;
         }
-
-        final List<Map<String, Object>> results = new ArrayList<>(stringMatchesCriteriaIntermediateResults.size() +
-                stringContainsCriteriaIntermediateResults.size());
-        results.addAll(stringMatchesCriteriaIntermediateResults);
-        results.addAll(stringContainsCriteriaIntermediateResults);
-        return results;
     }
 
     private List<Map<String, Object>> convertIdsToObjectKind(final Set<Long> ids,
