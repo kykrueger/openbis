@@ -187,9 +187,12 @@ def extract_identifiers(items):
     if not items:
         return []
     try:
-        identifiers = list(
-            data['identifier']['identifier'] if 'identifier' in data else data['permId']['permId'] for data in items
-        )
+        return [
+            data['identifier']['identifier'] 
+            if 'identifier' in data 
+            else data['permId']['permId'] 
+            for data in items
+        ]
     except TypeError:
         return []
 
