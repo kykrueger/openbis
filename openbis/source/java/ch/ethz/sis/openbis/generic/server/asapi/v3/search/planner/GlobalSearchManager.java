@@ -97,67 +97,51 @@ public class GlobalSearchManager implements IGlobalSearchManager
         } else
         {
             // String contains
-            final SampleSearchCriteria sampleSearchCriterion = new SampleSearchCriteria();
             final ExperimentSearchCriteria experimentSearchCriterion = new ExperimentSearchCriteria();
+            final SampleSearchCriteria sampleSearchCriterion = new SampleSearchCriteria();
             final DataSetSearchCriteria dataSetSearchCriterion = new DataSetSearchCriteria();
             final MaterialSearchCriteria materialSearchCriterion = new MaterialSearchCriteria();
 
-            sampleSearchCriterion.withOperator(criteria.getOperator());
             experimentSearchCriterion.withOperator(criteria.getOperator());
+            sampleSearchCriterion.withOperator(criteria.getOperator());
             dataSetSearchCriterion.withOperator(criteria.getOperator());
             materialSearchCriterion.withOperator(criteria.getOperator());
 
             for (final GlobalSearchTextCriteria globalSearchTextCriterion : stringContainsGlobalSearchTextCriteria)
             {
                 final AbstractStringValue fieldValue = globalSearchTextCriterion.getFieldValue();
-                final StringFieldSearchCriteria sampleStringFieldSearchCriteria = sampleSearchCriterion.withAnyField();
-                final StringFieldSearchCriteria experimentStringFieldSearchCriteria =
-                        experimentSearchCriterion.withAnyField();
-                final StringFieldSearchCriteria dataSetStringFieldSearchCriteria =
-                        dataSetSearchCriterion.withAnyField();
-                final StringFieldSearchCriteria materialStringFieldSearchCriteria =
-                        materialSearchCriterion.withAnyField();
-
+                final boolean containsExactly = fieldValue instanceof StringContainsExactlyValue;
                 final boolean containsWildCards = criteria.getCriteria().stream()
                         .anyMatch(criterion -> criterion instanceof GlobalSearchWildCardsCriteria);
-                if (containsWildCards)
-                {
-                    sampleStringFieldSearchCriteria.withWildcards();
-                    experimentStringFieldSearchCriteria.withWildcards();
-                    dataSetStringFieldSearchCriteria.withWildcards();
-                    materialStringFieldSearchCriteria.withWildcards();
-                } else
-                {
-                    sampleStringFieldSearchCriteria.withoutWildcards();
-                    experimentStringFieldSearchCriteria.withoutWildcards();
-                    dataSetStringFieldSearchCriteria.withoutWildcards();
-                    materialStringFieldSearchCriteria.withoutWildcards();
-                }
 
-                if (fieldValue instanceof StringContainsExactlyValue)
+                if (containsExactly)
                 {
                     final String stringValue = fieldValue.getValue();
-                    sampleStringFieldSearchCriteria.thatContains(stringValue);
-                    experimentStringFieldSearchCriteria.thatContains(stringValue);
-                    dataSetStringFieldSearchCriteria.thatContains(stringValue);
-                    materialStringFieldSearchCriteria.thatContains(stringValue);
+                    setValueToCriteria(containsWildCards, experimentSearchCriterion, sampleSearchCriterion,
+                            dataSetSearchCriterion, materialSearchCriterion, stringValue);
                 } else
                 {
                     final String[] stringValues = fieldValue.getValue().split("\\s");
+                    final ExperimentSearchCriteria experimentSearchSubcriteria =
+                            experimentSearchCriterion.withSubcriteria().withOrOperator();
+                    final SampleSearchCriteria sampleSearchSubcriteria =
+                            sampleSearchCriterion.withSubcriteria().withOrOperator();
+                    final DataSetSearchCriteria dataSetSearchSubcriteria =
+                            dataSetSearchCriterion.withSubcriteria().withOrOperator();
+                    final MaterialSearchCriteria materialSearchSubcriteria =
+                            materialSearchCriterion.withSubcriteria().withOrOperator();
                     for (final String stringValue : stringValues)
                     {
-                        sampleStringFieldSearchCriteria.thatContains(stringValue);
-                        experimentStringFieldSearchCriteria.thatContains(stringValue);
-                        dataSetStringFieldSearchCriteria.thatContains(stringValue);
-                        materialStringFieldSearchCriteria.thatContains(stringValue);
+                        setValueToCriteria(containsWildCards, experimentSearchSubcriteria, sampleSearchSubcriteria,
+                                dataSetSearchSubcriteria, materialSearchSubcriteria, stringValue);
                     }
                 }
             }
 
-            final Set<Long> sampleIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
-                    sampleSearchCriterion, TableMapper.SAMPLE, ID_COLUMN, authorisationInformation);
             final Set<Long> experimentIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
                     experimentSearchCriterion, TableMapper.EXPERIMENT, ID_COLUMN, authorisationInformation);
+            final Set<Long> sampleIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
+                    sampleSearchCriterion, TableMapper.SAMPLE, ID_COLUMN, authorisationInformation);
             final Set<Long> dataSetIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
                     dataSetSearchCriterion, TableMapper.DATA_SET, ID_COLUMN, authorisationInformation);
             final Set<Long> materialIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
@@ -168,19 +152,31 @@ public class GlobalSearchManager implements IGlobalSearchManager
             final List<Map<String, Object>> stringContainsCriteriaIntermediateResults =
                     new ArrayList<>(stringContainsIntermediateResultsCount);
 
-            final List<Map<String, Object>> sampleIntermediateResults = convertIdsToObjectKind(sampleIds,
-                    GlobalSearchObjectKind.SAMPLE, stringContainsIntermediateResultsCount);
             final List<Map<String, Object>> experimentIntermediateResults = convertIdsToObjectKind(experimentIds,
                     GlobalSearchObjectKind.EXPERIMENT, stringContainsIntermediateResultsCount);
+            final List<Map<String, Object>> sampleIntermediateResults = convertIdsToObjectKind(sampleIds,
+                    GlobalSearchObjectKind.SAMPLE, stringContainsIntermediateResultsCount);
             final List<Map<String, Object>> dataSetIntermediateResults = convertIdsToObjectKind(dataSetIds,
                     GlobalSearchObjectKind.DATA_SET, stringContainsIntermediateResultsCount);
             final List<Map<String, Object>> materialIntermediateResults = convertIdsToObjectKind(materialIds,
                     GlobalSearchObjectKind.MATERIAL, stringContainsIntermediateResultsCount);
 
-            stringContainsCriteriaIntermediateResults.addAll(sampleIntermediateResults);
-            stringContainsCriteriaIntermediateResults.addAll(experimentIntermediateResults);
-            stringContainsCriteriaIntermediateResults.addAll(dataSetIntermediateResults);
-            stringContainsCriteriaIntermediateResults.addAll(materialIntermediateResults);
+            if (fetchOptions.getSortBy() != null && fetchOptions.getSortBy().getSortings() != null
+                    && fetchOptions.getSortBy().getSortings().size() > 0
+                    && fetchOptions.getSortBy().getSortings().get(0).getField().equals(OBJECT_KIND)
+                    && !fetchOptions.getSortBy().getSortings().get(0).getOrder().isAsc())
+            {
+                stringContainsCriteriaIntermediateResults.addAll(materialIntermediateResults);
+                stringContainsCriteriaIntermediateResults.addAll(dataSetIntermediateResults);
+                stringContainsCriteriaIntermediateResults.addAll(sampleIntermediateResults);
+                stringContainsCriteriaIntermediateResults.addAll(experimentIntermediateResults);
+            } else
+            {
+                stringContainsCriteriaIntermediateResults.addAll(experimentIntermediateResults);
+                stringContainsCriteriaIntermediateResults.addAll(sampleIntermediateResults);
+                stringContainsCriteriaIntermediateResults.addAll(dataSetIntermediateResults);
+                stringContainsCriteriaIntermediateResults.addAll(materialIntermediateResults);
+            }
 
             if (stringContainsCriteriaIntermediateResults.isEmpty())
             {
@@ -204,6 +200,42 @@ public class GlobalSearchManager implements IGlobalSearchManager
                     return stringContainsCriteriaIntermediateResults;
                 }
             }
+        }
+    }
+
+    private void setValueToCriteria(final boolean containsWildCards,
+            final ExperimentSearchCriteria experimentSearchSubcriteria,
+            final SampleSearchCriteria sampleSearchSubcriteria, final DataSetSearchCriteria dataSetSearchSubcriteria,
+            final MaterialSearchCriteria materialSearchSubcriteria, final String stringValue)
+    {
+        final StringFieldSearchCriteria experimentStringFieldSearchCriteria =
+                experimentSearchSubcriteria.withAnyField();
+        final StringFieldSearchCriteria sampleStringFieldSearchCriteria =
+                sampleSearchSubcriteria.withAnyField();
+        final StringFieldSearchCriteria dataSetStringFieldSearchCriteria =
+                dataSetSearchSubcriteria.withAnyField();
+        final StringFieldSearchCriteria materialStringFieldSearchCriteria =
+                materialSearchSubcriteria.withAnyField();
+
+        setWildcardsToCriterion(experimentStringFieldSearchCriteria, containsWildCards);
+        setWildcardsToCriterion(sampleStringFieldSearchCriteria, containsWildCards);
+        setWildcardsToCriterion(dataSetStringFieldSearchCriteria, containsWildCards);
+        setWildcardsToCriterion(materialStringFieldSearchCriteria, containsWildCards);
+
+        experimentStringFieldSearchCriteria.thatContains(stringValue);
+        sampleStringFieldSearchCriteria.thatContains(stringValue);
+        dataSetStringFieldSearchCriteria.thatContains(stringValue);
+        materialStringFieldSearchCriteria.thatContains(stringValue);
+    }
+
+    private void setWildcardsToCriterion(final StringFieldSearchCriteria criterion, final boolean containsWildCards)
+    {
+        if (containsWildCards)
+        {
+            criterion.withWildcards();
+        } else
+        {
+            criterion.withoutWildcards();
         }
     }
 
