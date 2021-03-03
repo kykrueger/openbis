@@ -181,8 +181,29 @@ public class GlobalSearchManager implements IGlobalSearchManager
             stringContainsCriteriaIntermediateResults.addAll(experimentIntermediateResults);
             stringContainsCriteriaIntermediateResults.addAll(dataSetIntermediateResults);
             stringContainsCriteriaIntermediateResults.addAll(materialIntermediateResults);
-            return stringContainsCriteriaIntermediateResults.isEmpty() ? createEmptyResult(onlyTotalCount)
-                    : stringContainsCriteriaIntermediateResults;
+
+            if (stringContainsCriteriaIntermediateResults.isEmpty())
+            {
+                return createEmptyResult(onlyTotalCount);
+            } else
+            {
+                final Integer foFromRecord = fetchOptions.getFrom();
+                final Integer foRecordsCount = fetchOptions.getCount();
+                final boolean hasPaging = foFromRecord != null || foRecordsCount != null;
+                if (hasPaging)
+                {
+                    final int fromRecord = foFromRecord != null ? foFromRecord : 0;
+                    final int toRecord = foRecordsCount != null ? Math.min(fromRecord + foRecordsCount,
+                            stringContainsCriteriaIntermediateResults.size())
+                            : stringContainsCriteriaIntermediateResults.size();
+                    return fromRecord <= toRecord
+                            ? stringContainsCriteriaIntermediateResults.subList(fromRecord, toRecord)
+                            : Collections.emptyList();
+                } else
+                {
+                    return stringContainsCriteriaIntermediateResults;
+                }
+            }
         }
     }
 

@@ -715,6 +715,37 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
+    public void testSearchThatContainsExactlyWithPagingSameProperty()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withOperator(SearchOperator.OR);
+        criteria.withText().thatContainsExactly("simple");
+        criteria.withText().thatContainsExactly("stuff");
+
+        final SearchResult<GlobalSearchObject> fullResult = search(TEST_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.sortBy().objectIdentifier().asc();
+        fo.from(3).count(2);
+        fo.withMatch();
+
+        final SearchResult<GlobalSearchObject> pagedResult = search(TEST_USER, criteria, fo);
+        final List<GlobalSearchObject> pagedObjects = pagedResult.getObjects();
+
+        assertEquals(pagedResult.getTotalCount(), fullResult.getObjects().size());
+        assertEquals(pagedObjects.size(), 2);
+
+        for (int i = 0; i <= 1; i++)
+        {
+            assertEquals(pagedObjects.get(i).getObjectPermId().toString(),
+                    fullResult.getObjects().get(3 + i).getObjectPermId().toString());
+            assertEquals(pagedObjects.get(i).getObjectIdentifier().toString(),
+                    fullResult.getObjects().get(3 + i).getObjectIdentifier().toString());
+        }
+    }
+
+    @Test
     public void testSearchWithPagingDifferentProperties()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
