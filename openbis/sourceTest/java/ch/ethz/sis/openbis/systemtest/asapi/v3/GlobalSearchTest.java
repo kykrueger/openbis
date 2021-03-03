@@ -182,7 +182,7 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
-        assertSimpleOrStuff(result);
+        assertSimpleOrStuffForContains(result);
     }
 
     @Test
@@ -203,6 +203,7 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithMultipleContainsOneWord()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withOperator(SearchOperator.OR);
         criteria.withText().thatContains("simple");
         criteria.withText().thatContains("stuff");
 
@@ -210,7 +211,7 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
-        assertSimpleOrStuff(result);
+        assertSimpleOrStuffForContains(result);
     }
 
     @Test
@@ -251,7 +252,7 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
-        assertStuff(result);
+        assertStuffForContains(result);
     }
 
     @Test
@@ -264,7 +265,7 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
-        assertSimpleStuff(result);
+        assertSimpleStuffForContains(result);
     }
 
     @Test
@@ -279,7 +280,7 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
-        assertSimpleOrStuff(result);
+        assertSimpleOrStuffForContains(result);
     }
 
     @Test(enabled = false)
@@ -1767,6 +1768,23 @@ public class GlobalSearchTest extends AbstractTest
         assertSample(obj3, "200902091225616-1027", "/CISD/CP-TEST-3", "Property 'Comment': stuff like others");
     }
 
+    private void assertStuffForContains(SearchResult<GlobalSearchObject> result)
+    {
+        List<GlobalSearchObject> objects = result.getObjects();
+        assertEquals(objects.size(), 3);
+
+        objects.forEach(object -> assertEquals(object.getObjectKind(), GlobalSearchObjectKind.SAMPLE));
+
+        final Set<String> permIds = objects.stream().map(object -> object.getObjectPermId().toString())
+                .collect(Collectors.toSet());
+        assertEquals(permIds, new HashSet<>(Arrays.asList("200902091219327-1025", "200902091250077-1026",
+                "200902091225616-1027")));
+        final Set<String> identifiers = objects.stream().map(object -> object.getObjectIdentifier().toString())
+                .collect(Collectors.toSet());
+        assertEquals(identifiers, new HashSet<>(Arrays.asList("/CISD/CP-TEST-1", "/CISD/CP-TEST-2",
+                "/CISD/CP-TEST-3")));
+    }
+
     private void assertSimpleStuff(SearchResult<GlobalSearchObject> result)
     {
         List<GlobalSearchObject> objects = result.getObjects();
@@ -1774,6 +1792,19 @@ public class GlobalSearchTest extends AbstractTest
         Iterator<GlobalSearchObject> iter = objects.iterator();
 
         assertSample(iter.next(), "200902091250077-1026", "/CISD/CP-TEST-2", "Property 'Comment': extremely simple stuff");
+    }
+
+    private void assertSimpleStuffForContains(SearchResult<GlobalSearchObject> result)
+    {
+        List<GlobalSearchObject> objects = result.getObjects();
+        assertEquals(objects.size(), 1);
+        Iterator<GlobalSearchObject> iter = objects.iterator();
+
+        GlobalSearchObject object = iter.next();
+        assertNotNull(object);
+        assertEquals(object.getObjectKind(), GlobalSearchObjectKind.SAMPLE);
+        assertEquals(object.getObjectPermId(), new SamplePermId("200902091250077-1026"));
+        assertEquals(object.getObjectIdentifier(), new SampleIdentifier("/CISD/CP-TEST-2"));
     }
 
     private void assertSimpleOrStuff(final SearchResult<GlobalSearchObject> result)
@@ -1806,6 +1837,24 @@ public class GlobalSearchTest extends AbstractTest
                 "Property 'Description': A simple experiment");
         assertExperiment(searchObjects[6], "200811050952663-1030", "/CISD/NEMO/EXP11",
                 "Property 'Description': A simple experiment");
+    }
+
+    private void assertSimpleOrStuffForContains(final SearchResult<GlobalSearchObject> result)
+    {
+        final List<GlobalSearchObject> objects = result.getObjects();
+        assertEquals(objects.size(), 8);
+
+        final Set<String> objectPermIds = objects.stream().map(object -> object.getObjectPermId().toString())
+                .collect(Collectors.toSet());
+        assertEquals(objectPermIds, new HashSet<>(Arrays.asList("200902091219327-1025", "200902091250077-1026",
+                "200902091225616-1027", "201108050937246-1031", "200811050951882-1028", "200811050952663-1029",
+                "200811050952663-1030", "HSV1 (VIRUS)")));
+
+        final Set<String> objectIdentifiers = objects.stream().map(object -> object.getObjectIdentifier().toString())
+                .collect(Collectors.toSet());
+        assertEquals(objectIdentifiers, new HashSet<>(Arrays.asList("/CISD/CP-TEST-1", "/CISD/CP-TEST-2",
+                "/CISD/CP-TEST-3", "/CISD/DEFAULT/EXP-Y", "/CISD/NEMO/EXP1", "/CISD/NEMO/EXP10",
+                "/CISD/NEMO/EXP11", "HSV1 (VIRUS)")));
     }
 
     /**

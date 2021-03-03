@@ -161,7 +161,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
             final Set<Long> dataSetIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
                     dataSetSearchCriterion, TableMapper.DATA_SET, ID_COLUMN, authorisationInformation);
             final Set<Long> materialIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
-                    materialSearchCriterion, TableMapper.EXPERIMENT, ID_COLUMN, authorisationInformation);
+                    materialSearchCriterion, TableMapper.MATERIAL, ID_COLUMN, authorisationInformation);
 
             final int stringContainsIntermediateResultsCount = sampleIds.size() + experimentIds.size() +
                     dataSetIds.size() + materialIds.size();
