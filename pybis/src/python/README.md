@@ -538,7 +538,7 @@ exp.p.my_property = "some value"   # set the value of a property (value is check
 exp.p + TAB                        # in IPython or Jupyter: show list of available properties
 exp.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
 exp.p['my-weird.property-name']    # accessing properties containing a dash or a dot
-exp.p('$name')                     # another way to get a property valueto get a property value
+exp.p('$name')                     # another way to get a property value
 exp.p('$name', 'new name')         # another way to assign a value to a property
 
 exp.attrs.all()                    # returns all attributes as a dict
@@ -710,7 +710,7 @@ sample.del_tags('tag1')
 sample.p + TAB                        # in IPython or Jupyter: show list of available properties
 sample.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
 sample.p['my-weird.property-name']    # accessing properties containing a dash or a dot
-sample.p('$name')                     # another way to get a property valueto get a property value
+sample.p('$name')                     # another way to get a property value
 sample.p('$name', 'new name')         # another way to assign a value to a property
 
 sample.set_props({ ... })             # set properties by providing a dict
@@ -863,7 +863,7 @@ ds.p.my_property = "some value"   # set the value of a property
 ds.p + TAB                        # show list of available properties
 ds.p.my_property_ + TAB           # show datatype or controlled vocabulary
 ds.p['my-weird.property-name']    # accessing properties containing a dash or a dot
-ds.p('$name')                     # another way to get a property valueto get a property value
+ds.p('$name')                     # another way to get a property value
 ds.p('$name', 'new name')         # another way to assign a value to a property
 
 ds.attrs.all()                    # returns all attributes as a dict
