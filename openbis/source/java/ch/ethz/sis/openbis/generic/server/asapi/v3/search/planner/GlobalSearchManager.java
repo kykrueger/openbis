@@ -97,108 +97,133 @@ public class GlobalSearchManager implements IGlobalSearchManager
         } else
         {
             // String contains
-            final ExperimentSearchCriteria experimentSearchCriterion = new ExperimentSearchCriteria();
-            final SampleSearchCriteria sampleSearchCriterion = new SampleSearchCriteria();
-            final DataSetSearchCriteria dataSetSearchCriterion = new DataSetSearchCriteria();
-            final MaterialSearchCriteria materialSearchCriterion = new MaterialSearchCriteria();
+            return searchForIdsUsingContains(userId, criteria, stringContainsGlobalSearchTextCriteria,
+                    authorisationInformation, objectKinds, fetchOptions, onlyTotalCount);
+        }
+    }
 
-            experimentSearchCriterion.withOperator(criteria.getOperator());
-            sampleSearchCriterion.withOperator(criteria.getOperator());
-            dataSetSearchCriterion.withOperator(criteria.getOperator());
-            materialSearchCriterion.withOperator(criteria.getOperator());
+    private List<Map<String, Object>> searchForIdsUsingContains(final Long userId, final GlobalSearchCriteria criteria,
+            final List<GlobalSearchTextCriteria> stringContainsGlobalSearchTextCriteria,
+            final AuthorisationInformation authorisationInformation,
+            final Set<GlobalSearchObjectKind> objectKinds,
+            final GlobalSearchObjectFetchOptions fetchOptions, final boolean onlyTotalCount)
+    {
+        final boolean includeExperiments= objectKinds.contains(GlobalSearchObjectKind.EXPERIMENT);
+        final boolean includeSamples = objectKinds.contains(GlobalSearchObjectKind.SAMPLE);
+        final boolean includeDataSets = objectKinds.contains(GlobalSearchObjectKind.DATA_SET);
+        final boolean includeMaterials = objectKinds.contains(GlobalSearchObjectKind.MATERIAL);
 
-            for (final GlobalSearchTextCriteria globalSearchTextCriterion : stringContainsGlobalSearchTextCriteria)
+        final ExperimentSearchCriteria experimentSearchCriterion = new ExperimentSearchCriteria();
+        final SampleSearchCriteria sampleSearchCriterion = new SampleSearchCriteria();
+        final DataSetSearchCriteria dataSetSearchCriterion = new DataSetSearchCriteria();
+        final MaterialSearchCriteria materialSearchCriterion = new MaterialSearchCriteria();
+
+        experimentSearchCriterion.withOperator(criteria.getOperator());
+        sampleSearchCriterion.withOperator(criteria.getOperator());
+        dataSetSearchCriterion.withOperator(criteria.getOperator());
+        materialSearchCriterion.withOperator(criteria.getOperator());
+
+        for (final GlobalSearchTextCriteria globalSearchTextCriterion : stringContainsGlobalSearchTextCriteria)
+        {
+            final AbstractStringValue fieldValue = globalSearchTextCriterion.getFieldValue();
+            final boolean containsExactly = fieldValue instanceof StringContainsExactlyValue;
+            final boolean containsWildCards = criteria.getCriteria().stream()
+                    .anyMatch(criterion -> criterion instanceof GlobalSearchWildCardsCriteria);
+
+            if (containsExactly)
             {
-                final AbstractStringValue fieldValue = globalSearchTextCriterion.getFieldValue();
-                final boolean containsExactly = fieldValue instanceof StringContainsExactlyValue;
-                final boolean containsWildCards = criteria.getCriteria().stream()
-                        .anyMatch(criterion -> criterion instanceof GlobalSearchWildCardsCriteria);
-
-                if (containsExactly)
-                {
-                    final String stringValue = fieldValue.getValue();
-                    setValueToCriteria(containsWildCards, experimentSearchCriterion, sampleSearchCriterion,
-                            dataSetSearchCriterion, materialSearchCriterion, stringValue);
-                } else
-                {
-                    final String[] stringValues = fieldValue.getValue().split("\\s");
-                    final ExperimentSearchCriteria experimentSearchSubcriteria =
-                            experimentSearchCriterion.withSubcriteria().withOrOperator();
-                    final SampleSearchCriteria sampleSearchSubcriteria =
-                            sampleSearchCriterion.withSubcriteria().withOrOperator();
-                    final DataSetSearchCriteria dataSetSearchSubcriteria =
-                            dataSetSearchCriterion.withSubcriteria().withOrOperator();
-                    final MaterialSearchCriteria materialSearchSubcriteria =
-                            materialSearchCriterion.withSubcriteria().withOrOperator();
-                    for (final String stringValue : stringValues)
-                    {
-                        setValueToCriteria(containsWildCards, experimentSearchSubcriteria, sampleSearchSubcriteria,
-                                dataSetSearchSubcriteria, materialSearchSubcriteria, stringValue);
-                    }
-                }
-            }
-
-            final Set<Long> experimentIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
-                    experimentSearchCriterion, TableMapper.EXPERIMENT, ID_COLUMN, authorisationInformation);
-            final Set<Long> sampleIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
-                    sampleSearchCriterion, TableMapper.SAMPLE, ID_COLUMN, authorisationInformation);
-            final Set<Long> dataSetIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
-                    dataSetSearchCriterion, TableMapper.DATA_SET, ID_COLUMN, authorisationInformation);
-            final Set<Long> materialIds = searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
-                    materialSearchCriterion, TableMapper.MATERIAL, ID_COLUMN, authorisationInformation);
-
-            final int stringContainsIntermediateResultsCount = sampleIds.size() + experimentIds.size() +
-                    dataSetIds.size() + materialIds.size();
-            final List<Map<String, Object>> stringContainsCriteriaIntermediateResults =
-                    new ArrayList<>(stringContainsIntermediateResultsCount);
-
-            final List<Map<String, Object>> experimentIntermediateResults = convertIdsToObjectKind(experimentIds,
-                    GlobalSearchObjectKind.EXPERIMENT, stringContainsIntermediateResultsCount);
-            final List<Map<String, Object>> sampleIntermediateResults = convertIdsToObjectKind(sampleIds,
-                    GlobalSearchObjectKind.SAMPLE, stringContainsIntermediateResultsCount);
-            final List<Map<String, Object>> dataSetIntermediateResults = convertIdsToObjectKind(dataSetIds,
-                    GlobalSearchObjectKind.DATA_SET, stringContainsIntermediateResultsCount);
-            final List<Map<String, Object>> materialIntermediateResults = convertIdsToObjectKind(materialIds,
-                    GlobalSearchObjectKind.MATERIAL, stringContainsIntermediateResultsCount);
-
-            if (fetchOptions.getSortBy() != null && fetchOptions.getSortBy().getSortings() != null
-                    && fetchOptions.getSortBy().getSortings().size() > 0
-                    && fetchOptions.getSortBy().getSortings().get(0).getField().equals(OBJECT_KIND)
-                    && !fetchOptions.getSortBy().getSortings().get(0).getOrder().isAsc())
-            {
-                stringContainsCriteriaIntermediateResults.addAll(materialIntermediateResults);
-                stringContainsCriteriaIntermediateResults.addAll(dataSetIntermediateResults);
-                stringContainsCriteriaIntermediateResults.addAll(sampleIntermediateResults);
-                stringContainsCriteriaIntermediateResults.addAll(experimentIntermediateResults);
+                final String stringValue = fieldValue.getValue();
+                setValueToCriteria(containsWildCards, experimentSearchCriterion, sampleSearchCriterion,
+                        dataSetSearchCriterion, materialSearchCriterion, stringValue);
             } else
             {
-                stringContainsCriteriaIntermediateResults.addAll(experimentIntermediateResults);
-                stringContainsCriteriaIntermediateResults.addAll(sampleIntermediateResults);
-                stringContainsCriteriaIntermediateResults.addAll(dataSetIntermediateResults);
-                stringContainsCriteriaIntermediateResults.addAll(materialIntermediateResults);
+                final String[] stringValues = fieldValue.getValue().split("\\s");
+                final ExperimentSearchCriteria experimentSearchSubcriteria =
+                        experimentSearchCriterion.withSubcriteria().withOrOperator();
+                final SampleSearchCriteria sampleSearchSubcriteria =
+                        sampleSearchCriterion.withSubcriteria().withOrOperator();
+                final DataSetSearchCriteria dataSetSearchSubcriteria =
+                        dataSetSearchCriterion.withSubcriteria().withOrOperator();
+                final MaterialSearchCriteria materialSearchSubcriteria =
+                        materialSearchCriterion.withSubcriteria().withOrOperator();
+                for (final String stringValue : stringValues)
+                {
+                    setValueToCriteria(containsWildCards, experimentSearchSubcriteria, sampleSearchSubcriteria,
+                            dataSetSearchSubcriteria, materialSearchSubcriteria, stringValue);
+                }
             }
+        }
 
-            if (stringContainsCriteriaIntermediateResults.isEmpty())
+        final Set<Long> experimentIds = includeExperiments
+                ? searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, experimentSearchCriterion,
+                TableMapper.EXPERIMENT, ID_COLUMN, authorisationInformation)
+                : Collections.emptySet();
+        final Set<Long> sampleIds = includeSamples
+                ? searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, sampleSearchCriterion,
+                TableMapper.SAMPLE, ID_COLUMN, authorisationInformation)
+                : Collections.emptySet();
+        final Set<Long> dataSetIds = includeDataSets
+                ? searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, dataSetSearchCriterion,
+                TableMapper.DATA_SET, ID_COLUMN, authorisationInformation)
+                : Collections.emptySet();
+        final Set<Long> materialIds = includeMaterials
+                ? searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, materialSearchCriterion,
+                TableMapper.MATERIAL, ID_COLUMN, authorisationInformation)
+                : Collections.emptySet();
+
+        final int stringContainsIntermediateResultsCount = sampleIds.size() + experimentIds.size() +
+                dataSetIds.size() + materialIds.size();
+        final List<Map<String, Object>> stringContainsCriteriaIntermediateResults =
+                new ArrayList<>(stringContainsIntermediateResultsCount);
+
+        final List<Map<String, Object>> experimentIntermediateResults = includeExperiments
+                ? convertIdsToObjectKind(experimentIds, GlobalSearchObjectKind.EXPERIMENT,
+                stringContainsIntermediateResultsCount)
+                : Collections.emptyList();
+        final List<Map<String, Object>> sampleIntermediateResults = convertIdsToObjectKind(sampleIds,
+                GlobalSearchObjectKind.SAMPLE, stringContainsIntermediateResultsCount);
+        final List<Map<String, Object>> dataSetIntermediateResults = convertIdsToObjectKind(dataSetIds,
+                GlobalSearchObjectKind.DATA_SET, stringContainsIntermediateResultsCount);
+        final List<Map<String, Object>> materialIntermediateResults = convertIdsToObjectKind(materialIds,
+                GlobalSearchObjectKind.MATERIAL, stringContainsIntermediateResultsCount);
+
+        if (fetchOptions.getSortBy() != null && fetchOptions.getSortBy().getSortings() != null
+                && fetchOptions.getSortBy().getSortings().size() > 0
+                && fetchOptions.getSortBy().getSortings().get(0).getField().equals(OBJECT_KIND)
+                && !fetchOptions.getSortBy().getSortings().get(0).getOrder().isAsc())
+        {
+            stringContainsCriteriaIntermediateResults.addAll(materialIntermediateResults);
+            stringContainsCriteriaIntermediateResults.addAll(dataSetIntermediateResults);
+            stringContainsCriteriaIntermediateResults.addAll(sampleIntermediateResults);
+            stringContainsCriteriaIntermediateResults.addAll(experimentIntermediateResults);
+        } else
+        {
+            stringContainsCriteriaIntermediateResults.addAll(experimentIntermediateResults);
+            stringContainsCriteriaIntermediateResults.addAll(sampleIntermediateResults);
+            stringContainsCriteriaIntermediateResults.addAll(dataSetIntermediateResults);
+            stringContainsCriteriaIntermediateResults.addAll(materialIntermediateResults);
+        }
+
+        if (stringContainsCriteriaIntermediateResults.isEmpty())
+        {
+            return createEmptyResult(onlyTotalCount);
+        } else
+        {
+            final Integer foFromRecord = fetchOptions.getFrom();
+            final Integer foRecordsCount = fetchOptions.getCount();
+            final boolean hasPaging = foFromRecord != null || foRecordsCount != null;
+            if (hasPaging)
             {
-                return createEmptyResult(onlyTotalCount);
+                final int fromRecord = foFromRecord != null ? foFromRecord : 0;
+                final int toRecord = foRecordsCount != null ? Math.min(fromRecord + foRecordsCount,
+                        stringContainsCriteriaIntermediateResults.size())
+                        : stringContainsCriteriaIntermediateResults.size();
+                return fromRecord <= toRecord
+                        ? stringContainsCriteriaIntermediateResults.subList(fromRecord, toRecord)
+                        : Collections.emptyList();
             } else
             {
-                final Integer foFromRecord = fetchOptions.getFrom();
-                final Integer foRecordsCount = fetchOptions.getCount();
-                final boolean hasPaging = foFromRecord != null || foRecordsCount != null;
-                if (hasPaging)
-                {
-                    final int fromRecord = foFromRecord != null ? foFromRecord : 0;
-                    final int toRecord = foRecordsCount != null ? Math.min(fromRecord + foRecordsCount,
-                            stringContainsCriteriaIntermediateResults.size())
-                            : stringContainsCriteriaIntermediateResults.size();
-                    return fromRecord <= toRecord
-                            ? stringContainsCriteriaIntermediateResults.subList(fromRecord, toRecord)
-                            : Collections.emptyList();
-                } else
-                {
-                    return stringContainsCriteriaIntermediateResults;
-                }
+                return stringContainsCriteriaIntermediateResults;
             }
         }
     }
