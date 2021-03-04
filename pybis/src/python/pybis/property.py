@@ -50,20 +50,40 @@ class PropertyHolder():
                 props[code] = value
         return props
 
-    def __call__(self, prop, val=None):
-        """Yet another way to set/get the values to a property:
-        sample.props('$name', 'new value')
-        sample.props('$name')  # returns 'new value'
-        """
-        if val is None:
-            return getattr(self, prop)
+    def __call__(self, *args):
+        if len(args) == 0:
+            return self.all()
+        elif len(args) == 1:
+            return getattr(self, args[0])
+        elif len(args) == 2:
+            return setattr(self, args[0], args[1])
         else:
-            setattr(self, prop, val)
+            raise ValueError('called properties with more than 2 arguments')
+
+
+    def get(self, *args):
+        if len(args) == 0:
+            return self.all()
+        elif len(args) == 1 and not isinstance(args[0], list):
+            return getattr(self, args[0])
+        else:
+            if isinstance(args[0], list):
+                args = args[0]
+            return {arg: getattr(self, arg, None) for arg in args}
+
+
+    def set(self, *args):
+        if len(args) == 2:
+            setattr(self, args[0], args[1])
+        elif len(args) == 1 and isinstance(args[0], dict):
+            for key in args[0]:
+                setattr(self, key, args[0][key])
 
     def __getitem__(self, key):
         """For properties that contain either a dot or a dash or any other non-valid method character,
         a user can use a key-lookup instead, e.g. sample.props['my-weird.property-name']
         """
+
         return getattr(self, key)
 
     def __getattr__(self, name):
