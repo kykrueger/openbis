@@ -2460,5 +2460,5 @@ withWildcards
 withoutWildcards
 StringMatchesValue
 TextAttributeSearchCriteria
-thatMatchesText
+thatMatches
 withTextAttribute
