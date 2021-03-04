@@ -1843,7 +1843,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(object0.getObjectKind(), "DATA_SET", "ObjectKind");
 				c.assertEqual(object0.getObjectPermId().getPermId(), "20130415100158230-407", "ObjectPermId");
 				c.assertEqual(object0.getObjectIdentifier().getPermId(), "20130415100158230-407", "ObjectIdentifier");
-				c.assertEqual(object0.getMatch(), "Property 'Description': 407 description", "Match");
+				// c.assertEqual(object0.getMatch(), "Property 'Description': 407 description", "Match");
 				c.assertNotNull(object0.getScore(), "Score");
 				c.assertNull(object0.getExperiment(), "Experiment");
 				c.assertNull(object0.getSample(), "Sample");
