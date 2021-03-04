@@ -378,7 +378,7 @@ def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath, de
             entityFilePath) + " before files.");
         if entityObj is not None and entityFilePath is not None:
             # JSON
-            entityJson = String(objectMapper.writeValueAsString(entityObj));
+            entityJson = String(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(entityObj));
             fileMetadatum = addFile(tempDirPath, entityFilePath, "json", entityJson.getBytes(), zos, deflated=deflated);
             fileMetadata.append(fileMetadatum)
             emptyZip = False
