@@ -33,16 +33,32 @@ public class GlobalSearchTextCriteria extends AbstractFieldSearchCriteria<Abstra
         super("anything", SearchFieldType.ANY_FIELD);
     }
 
+    /**
+     * Set the value to this criterion which is interpreted as a 'contains' match of any of the words in the phrase.
+     * The result should contain any of the specified words.
+     *
+     * @param string the phrase to be matched.
+     */
     public void thatContains(String string)
     {
         setFieldValue(new StringContainsValue(string));
     }
 
+    /**
+     * Set the value to this criterion which is interpreted as a 'contains' match of the whole phrase phrase.
+     *
+     * @param string the phrase to be matched.
+     */
     public void thatContainsExactly(String string)
     {
         setFieldValue(new StringContainsExactlyValue(string));
     }
 
+    /**
+     * Set the value to this criterion which is interpreted as a lexical match.
+     *
+     * @param string the phrase to be matched.
+     */
     public void thatMatches(final String string)
     {
         setFieldValue(new StringMatchesValue(string));
