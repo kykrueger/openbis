@@ -16,8 +16,9 @@ def parse_jackson(input_json):
        Any further findings only carry this reference id.
        This function is used to dereference the output.
     """
-    interesting=['tags', 'registrator', 'modifier', 'owner', 'type', 'parents', 
-        'children', 'containers', 'container', 'properties', 'experiment', 'sample',
+    interesting=['tags', 'registrator', 'modifier', 'owner', 'type', 
+        'parents', 'children', 'containers', # 'container', 
+        'properties', 'experiment', 'sample',
         'project', 'space', 'propertyType', 'entityType', 'propertyType', 'propertyAssignment',
         'externalDms', 'roleAssignments', 'user', 'users', 'authorizationGroup', 'vocabulary',
         'validationPlugin', 'dataSetPermId', 'dataStore'
@@ -186,9 +187,15 @@ def extract_identifier(ident):
 def extract_identifiers(items):
     if not items:
         return []
-    return list(
-        data['identifier']['identifier'] if 'identifier' in data else data['permId']['permId'] for data in items
-    )
+    try:
+        return [
+            data['identifier']['identifier'] 
+            if 'identifier' in data 
+            else data['permId']['permId'] 
+            for data in items
+        ]
+    except TypeError:
+        return []
 
 def extract_nested_identifier(ident):
     if not isinstance(ident, dict):

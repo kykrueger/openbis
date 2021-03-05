@@ -538,6 +538,8 @@ exp.p.my_property = "some value"   # set the value of a property (value is check
 exp.p + TAB                        # in IPython or Jupyter: show list of available properties
 exp.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
 exp.p['my-weird.property-name']    # accessing properties containing a dash or a dot
+exp.p('$name')                     # another way to get a property value
+exp.p('$name', 'new name')         # another way to assign a value to a property
 
 exp.attrs.all()                    # returns all attributes as a dict
 exp.props.all()                    # returns all properties as a dict
@@ -708,6 +710,8 @@ sample.del_tags('tag1')
 sample.p + TAB                        # in IPython or Jupyter: show list of available properties
 sample.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
 sample.p['my-weird.property-name']    # accessing properties containing a dash or a dot
+sample.p('$name')                     # another way to get a property value
+sample.p('$name', 'new name')         # another way to assign a value to a property
 
 sample.set_props({ ... })             # set properties by providing a dict
 sample.p                              # same thing as .props
@@ -728,10 +732,10 @@ samples = o.get_samples(
     tags       =['*'],                # only sample with existing tags
     start_with = 0,                   # start_with and count
     count      = 10,                  # enable paging
-    NAME       = 'some name',         # properties are always uppercase 
-                                      # to distinguish them from attributes
-    **{ "SOME.WEIRD:PROP": "value"}   # property name contains a dot or a
-                                      # colon: cannot be passed as an argument
+    where = {
+        "$SOME.WEIRD-PROP": "hello"   # only receive samples where properties match
+    }
+    
     registrationDate = "2020-01-01",  # date format: YYYY-MM-DD
     modificationDate = "<2020-12-31", # use > or < to search for specified date and later / earlier
     attrs=[                           # show these attributes in the dataFrame
@@ -859,6 +863,8 @@ ds.p.my_property = "some value"   # set the value of a property
 ds.p + TAB                        # show list of available properties
 ds.p.my_property_ + TAB           # show datatype or controlled vocabulary
 ds.p['my-weird.property-name']    # accessing properties containing a dash or a dot
+ds.p('$name')                     # another way to get a property value
+ds.p('$name', 'new name')         # another way to assign a value to a property
 
 ds.attrs.all()                    # returns all attributes as a dict
 ds.props.all()                    # returns all properties as a dict
@@ -868,13 +874,10 @@ ds.props.all()                    # returns all properties as a dict
 
 * The result of a search is always list, even when no items are found
 * The `.df` attribute returns the Pandas dataFrame of the results
-* properties must be in UPPERCASE to distinguish them from attributes
 
 ```
 datasets = o.get_datasets(
     type  ='MY_DATASET_TYPE',
-    NAME  = 'some name',              # properties are always uppercase 
-                                      # to distinguish them from attributes
     **{ "SOME.WEIRD:PROP": "value"},  # property name contains a dot or a
                                       # colon: cannot be passed as an argument 
     start_with = 0,                   # start_with and count

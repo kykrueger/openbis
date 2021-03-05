@@ -86,10 +86,14 @@ class AttrHolder():
                 self.__dict__['_' + attr] = []
                 if data[attr] is not None:
                     for item in data[attr]:
-                        if 'identifier' in item:
-                            self.__dict__['_' + attr].append(item['identifier'])
-                        elif 'permId' in item:
-                            self.__dict__['_' + attr].append(item['permId'])
+                        try:
+                            if 'identifier' in item:
+                                self.__dict__['_' + attr].append(item['identifier'])
+                            elif 'permId' in item:
+                                self.__dict__['_' + attr].append(item['permId'])
+                        except Exception:
+                            # TODO: under certain circumstances, openBIS only delivers an integer
+                            pass
 
             elif attr in ["tags"]:
                 self.add_tags(data[attr])

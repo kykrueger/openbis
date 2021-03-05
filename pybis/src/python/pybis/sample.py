@@ -34,6 +34,19 @@ class Sample(
             for key in kwargs:
                 setattr(self, key, kwargs[key])
 
+            if 'experiment' in kwargs:
+                try:
+                    experiment = getattr(self, 'experiment')
+                    project = None
+                    if not 'project' in kwargs:
+                        project = experiment.project
+                        setattr(self.a, 'project', experiment.project)
+                    if not 'space' in kwargs:
+                        project = project or experiment.project
+                        setattr(self.a, 'space', project.space)
+                except Exception:
+                    pass
+
         if getattr(self, 'parents') is None:
             self.a.__dict__['_parents'] = []
         else:
