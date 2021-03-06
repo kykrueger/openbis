@@ -133,12 +133,6 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                                 useWildcards);
                         sqlBuilder.append(separator);
                     }
-                    if (tableMapper.hasModifier())
-                    {
-                        translateUserMatch(value, args, sqlBuilder, aliases, MODIFIER_JOIN_INFORMATION_KEY,
-                                useWildcards);
-                        sqlBuilder.append(separator);
-                    }
 
                     final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream()
                             .collect(
