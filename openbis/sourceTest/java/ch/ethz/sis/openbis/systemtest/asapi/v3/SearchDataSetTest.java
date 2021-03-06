@@ -347,6 +347,14 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingDataSetType()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withAnyField().thatEquals("UNKNOWN");
+        testSearch(TEST_USER, criteria, "DATASET-TO-DELETE");
+    }
+
+    @Test
     public void testSearchWithAnyFieldMatchingSampleProperty()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);

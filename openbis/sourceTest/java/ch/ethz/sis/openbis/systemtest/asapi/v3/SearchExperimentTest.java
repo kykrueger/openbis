@@ -842,6 +842,14 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingExperimentType()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withAnyField().thatEquals("COMPOUND_HCS");
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-1", "/CISD/NOE/EXP-TEST-2");
+    }
+
+    @Test
     public void testSearchWithAnyFieldMatchingIdentifier()
     {
         final ExperimentSearchCriteria criteria1 = new ExperimentSearchCriteria();

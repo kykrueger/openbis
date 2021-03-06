@@ -1329,6 +1329,14 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingSampleType()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withAnyField().thatEquals("DYNAMIC_PLATE");
+        testSearch(TEST_USER, criteria, "/CISD/DYNA-TEST-1");
+    }
+
+    @Test
     public void testSearchWithAnyProperty()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();

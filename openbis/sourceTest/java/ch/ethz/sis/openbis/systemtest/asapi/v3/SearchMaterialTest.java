@@ -371,6 +371,15 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingMaterialType()
+    {
+        final MaterialSearchCriteria criteria = new MaterialSearchCriteria();
+        criteria.withAnyField().thatEquals("SELF_REF");
+        testSearch(TEST_USER, criteria, new MaterialPermId("SRM_1A", "SELF_REF"),
+                new MaterialPermId("SRM_1", "SELF_REF"));
+    }
+
+    @Test
     public void testSearchWithTagWithIdSetToPermId()
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
