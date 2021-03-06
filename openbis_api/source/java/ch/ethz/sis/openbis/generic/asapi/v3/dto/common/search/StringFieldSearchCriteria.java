@@ -89,8 +89,6 @@ public abstract class StringFieldSearchCriteria extends AbstractFieldSearchCrite
         return useWildcards;
     }
 
-    // TODO: add thatMatches() method.
-
     @Override
     public String toString()
     {
