@@ -834,6 +834,14 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingRegistratorOrModifier()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withAnyField().thatEquals("etlserver");
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP11", "/CISD/NEMO/EXP-TEST-1", "/CISD/NEMO/EXP-TEST-2");
+    }
+
+    @Test
     public void testSearchWithAnyFieldMatchingIdentifier()
     {
         final ExperimentSearchCriteria criteria1 = new ExperimentSearchCriteria();

@@ -362,6 +362,15 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingRegistratorOrModifier()
+    {
+        final MaterialSearchCriteria criteria = new MaterialSearchCriteria();
+        criteria.withAnyField().thatEquals("etlserver");
+        testSearch(TEST_USER, criteria, new MaterialPermId("BACTERIUM1", "BACTERIUM"),
+                new MaterialPermId("BACTERIUM2", "BACTERIUM"));
+    }
+
+    @Test
     public void testSearchWithTagWithIdSetToPermId()
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();

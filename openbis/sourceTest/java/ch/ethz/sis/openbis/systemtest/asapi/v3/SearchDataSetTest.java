@@ -338,6 +338,15 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingRegistratorOrModifier()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withAnyField().thatEquals("etlserver");
+        testSearch(TEST_USER, criteria, "20081105092259900-1", "20081105092359990-2", "20110509092359990-11",
+                "20110509092359990-12");
+    }
+
+    @Test
     public void testSearchWithAnyFieldMatchingSampleProperty()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);

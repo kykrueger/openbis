@@ -1317,40 +1317,23 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingRegistratorOrModifier()
+    {
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withAnyField().thatEquals("etlserver");
+        testSearch(TEST_USER, criteria1, "/CISD/RP2-A1X", "/CISD/RP1-A2X", "/CISD/RP1-B1X");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withAnyField().thatEquals("test_role");
+        testSearch(TEST_USER, criteria2, "/CISD/CL1", "/CISD/CP-TEST-1", "/TEST-SPACE/FV-TEST");
+    }
+
+    @Test
     public void testSearchWithAnyProperty()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withAnyProperty().thatStartsWith("HUM");
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1");
-    }
-
-    @Test
-    public void testSearchWithAnyProperty2()
-    {
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withAnyProperty().thatEquals("very");
-
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        SampleFetchOptions fo = new SampleFetchOptions();
-        fo.withProperties();
-
-        List<Sample> samples = searchSamples(sessionToken, criteria, fo);
-
-        for (Sample sample : samples)
-        {
-            System.out.println("-----");
-            System.out.println(sample.getCode());
-            for (Entry<String, String> entry : sample.getProperties().entrySet())
-            {
-                System.out.println(entry.getKey() + ": " + entry.getValue());
-            }
-            System.out.println("-----");
-        }
-
-        System.out.println(samples);
-        v3api.logout(sessionToken);
-
     }
 
     @Test
