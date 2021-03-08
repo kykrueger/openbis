@@ -1996,15 +1996,11 @@ class Openbis:
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
-        options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'modifier', 'dataSets']
+        options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'modifier']
         if self.get_server_information().project_samples_enabled:
             options.append('project')
         for option in options:
             fetchopts[option] = fetch_option[option]
-
-        for key in ['parents','children','container','components']:
-            fetchopts[key] = {"@type": "as.dto.sample.fetchoptions.SampleFetchOptions"}
-
 
         if props is not None:
             fetchopts['properties'] = fetch_option['properties']
@@ -2308,7 +2304,7 @@ class Openbis:
         search_criteria['criteria'] = sub_criteria
         search_criteria['operator'] = 'AND'
 
-        fetchopts = get_fetchoptions('dataSet', including=['type','parents','children','containers','components'])
+        fetchopts = get_fetchoptions('dataSet', including=['type'])
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
