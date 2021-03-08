@@ -744,7 +744,8 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                				}
                		    }
                	    }
-               		return _this._getLinkOnClick(data.identifier, data, paginationInfo);
+               		return _this._getLinkOnClick(data.entityKind === 'DataSet' ? data.permId : data.identifier,
+						data, paginationInfo);
                 }
             }, {
 				label : 'Entity Type',
