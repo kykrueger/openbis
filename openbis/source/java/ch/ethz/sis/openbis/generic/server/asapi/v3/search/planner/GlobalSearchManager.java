@@ -87,13 +87,14 @@ public class GlobalSearchManager implements IGlobalSearchManager
         if (hasStringMatches && hasStringContains)
         {
             throw new IllegalArgumentException("Cannot combine matches and contains criteria in global search.");
-        }
-
-        if (hasStringMatches)
+        } else if (!hasStringMatches && !hasStringContains)
+        {
+            return createEmptyResult(onlyTotalCount);
+        } else if (hasStringMatches)
         {
             // String matches
-            return searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, criteria, idsColumnName,
-                    authorisationInformation, objectKinds, fetchOptions, onlyTotalCount);
+            return searchForIdsUsingMatches(userId, criteria, idsColumnName, authorisationInformation, objectKinds,
+                    fetchOptions, onlyTotalCount);
         } else
         {
             // String contains
@@ -102,10 +103,30 @@ public class GlobalSearchManager implements IGlobalSearchManager
         }
     }
 
+    private List<Map<String, Object>> searchForIdsUsingMatches(final Long userId, final GlobalSearchCriteria criteria,
+            final String idsColumnName, final AuthorisationInformation authorisationInformation,
+            final Set<GlobalSearchObjectKind> objectKinds, final GlobalSearchObjectFetchOptions fetchOptions,
+            final boolean onlyTotalCount)
+    {
+        // Removing blank criteria because they should not affect the result for the match criteria
+        final List<ISearchCriteria> filteredCriteria = criteria.getCriteria().stream()
+                .filter(criterion -> !(criterion instanceof GlobalSearchTextCriteria) ||
+                        !((GlobalSearchTextCriteria) criterion).getFieldValue().getValue().trim().isEmpty())
+                .collect(Collectors.toList());
+        if (filteredCriteria.isEmpty())
+        {
+            return createEmptyResult(onlyTotalCount);
+        } else
+        {
+            criteria.setCriteria(filteredCriteria);
+            return searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, criteria, idsColumnName,
+                    authorisationInformation, objectKinds, fetchOptions, onlyTotalCount);
+        }
+    }
+
     private List<Map<String, Object>> searchForIdsUsingContains(final Long userId, final GlobalSearchCriteria criteria,
             final List<GlobalSearchTextCriteria> stringContainsGlobalSearchTextCriteria,
-            final AuthorisationInformation authorisationInformation,
-            final Set<GlobalSearchObjectKind> objectKinds,
+            final AuthorisationInformation authorisationInformation, final Set<GlobalSearchObjectKind> objectKinds,
             final GlobalSearchObjectFetchOptions fetchOptions, final boolean onlyTotalCount)
     {
         final boolean includeExperiments= objectKinds.contains(GlobalSearchObjectKind.EXPERIMENT);

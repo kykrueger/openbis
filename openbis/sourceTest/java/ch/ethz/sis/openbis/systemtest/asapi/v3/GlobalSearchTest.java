@@ -68,6 +68,27 @@ public class GlobalSearchTest extends AbstractTest
     private static final String TERM = "RAT";
 
     @Test
+    public void testSearchWithNoCriteria()
+    {
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, new GlobalSearchCriteria(),
+                new GlobalSearchObjectFetchOptions());
+        assertEquals(result.getTotalCount(), 0);
+        assertTrue(result.getObjects().isEmpty());
+    }
+
+    @Test
+    public void testSearchWithMatchesEmptyCriteria()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatMatches("  ");
+
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
+        assertEquals(result.getTotalCount(), 0);
+        assertTrue(result.getObjects().isEmpty());
+    }
+
+    @Test
     public void testSearchWithAuthorized()
     {
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
@@ -189,8 +210,9 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithMultipleMatchesOneWord()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
-        criteria.withText().thatMatches("simple");
-        criteria.withText().thatMatches("stuff");
+        criteria.withText().thatMatches("simple   ");
+        criteria.withText().thatMatches(" stuff");
+        criteria.withText().thatMatches("  ");
 
         final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withMatch();
@@ -218,8 +240,8 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithMultipleMatchesMultipleWords()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
-        criteria.withText().thatMatches("simple stuff");
-        criteria.withText().thatMatches("stuff simple");
+        criteria.withText().thatMatches(" simple  stuff");
+        criteria.withText().thatMatches("stuff simple ");
 
         final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withMatch();
@@ -233,7 +255,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatMatches("simple stuff");
-        criteria.withText().thatMatches("stuff simple");
+        criteria.withText().thatMatches("stuff  simple");
 
         final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withMatch();
