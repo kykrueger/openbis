@@ -338,6 +338,23 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingRegistratorOrModifier()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withAnyField().thatEquals("etlserver");
+        testSearch(TEST_USER, criteria, "20081105092259900-1", "20081105092359990-2", "20110509092359990-11",
+                "20110509092359990-12");
+    }
+
+    @Test
+    public void testSearchWithAnyFieldMatchingDataSetType()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withAnyField().thatEquals("UNKNOWN");
+        testSearch(TEST_USER, criteria, "DATASET-TO-DELETE");
+    }
+
+    @Test
     public void testSearchWithAnyFieldMatchingSampleProperty()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1698,7 +1715,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     {
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
 
-        criteria.withTextAttribute().thatMatchesText(
+        criteria.withTextAttribute().thatMatches(
                 "component_1a component_1b component_2a component_2b container_1 container_2");
         criteria.withPermId().thatStartsWith("COMPONENT");
 
@@ -1710,7 +1727,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     {
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
 
-        criteria.withProperty("COMMENT").thatMatchesText("virtual female bacterium1");
+        criteria.withProperty("COMMENT").thatMatches("virtual female bacterium1");
         criteria.withPermId().thatEndsWith("1");
 
         testSearch(TEST_USER, criteria, "20110509092359990-11");
@@ -1721,7 +1738,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     {
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
 
-        criteria.withStringProperty("COMMENT").thatMatchesText("virtual female bacterium1");
+        criteria.withStringProperty("COMMENT").thatMatches("virtual female bacterium1");
         criteria.withPermId().thatEndsWith("1");
 
         testSearch(TEST_USER, criteria, "20110509092359990-11");
@@ -1732,7 +1749,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     {
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
 
-        criteria.withAnyProperty().thatMatchesText("virtual female bacterium1");
+        criteria.withAnyProperty().thatMatches("virtual female bacterium1");
         criteria.withPermId().thatEndsWith("1");
 
         testSearch(TEST_USER, criteria, "20110509092359990-11", "20081105092159111-1");
@@ -1743,7 +1760,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     {
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
 
-        criteria.withAnyStringProperty().thatMatchesText("virtual female bacterium1");
+        criteria.withAnyStringProperty().thatMatches("virtual female bacterium1");
         criteria.withPermId().thatEndsWith("1");
 
         testSearch(TEST_USER, criteria, "20110509092359990-11");
@@ -1754,7 +1771,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     {
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
 
-        criteria.withAnyField().thatMatchesText("virtual female bacterium1 20081105092259900-1 20081105092259900-2");
+        criteria.withAnyField().thatMatches("virtual female bacterium1 20081105092259900-1 20081105092259900-2");
         criteria.withPermId().thatEndsWith("1");
 
         testSearch(TEST_USER, criteria, "20110509092359990-11", "20081105092159111-1", "20081105092259900-1");

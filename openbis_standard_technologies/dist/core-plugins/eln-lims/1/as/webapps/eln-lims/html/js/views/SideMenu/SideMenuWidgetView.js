@@ -704,7 +704,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                         }
                                     }
                     
-                                    if(profile.showDatasets) {
+                                    if(profile.mainMenu.showDatasets) {
                                         if(experimentDatasets.length > 50) {
                                                 Util.showInfo("More than 50 Datasets, please use the dataset viewer on the experiment to navigate them.");
                                         } else {
@@ -831,7 +831,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                             
                             var datasets = searchResult.objects;
 
-                            if(profile.showDatasets) {
+                            if(profile.mainMenu.showDatasets) {
                                 if(datasets.length > 50) {
                                     Util.showInfo("More than 50 Datasets, please use the dataset viewer on the sample to navigate them.");
                                 } else {

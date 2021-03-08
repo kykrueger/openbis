@@ -9,7 +9,7 @@ function(require, stjs, AbstractSearchCriteria) {
             constructor.serialVersionUID = 1;
             prototype.fieldValue;
 
-            prototype.thatMatchesText = function(text) {
+            prototype.thatMatches = function(text) {
                 var StringMatchesValue = require("as/dto/common/search/StringMatchesValue");
                 this.setFieldValue(new StringMatchesValue(text));
             };

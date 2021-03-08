@@ -115,15 +115,15 @@ public class TranslatorUtils
         } else if (valueClass == StringStartsWithValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
-            args.add((useWildcards ? toPSQLWildcards(finalValue) : finalValue) + PERCENT);
+            args.add((useWildcards ? toPSQLWildcards(finalValue) : escapePSQLWildcards(finalValue)) + PERCENT);
         } else if (valueClass == StringEndsWithValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
-            args.add(PERCENT + (useWildcards ? toPSQLWildcards(finalValue) : finalValue));
+            args.add(PERCENT + (useWildcards ? toPSQLWildcards(finalValue) : escapePSQLWildcards(finalValue)));
         } else if (valueClass == StringContainsValue.class || valueClass == StringContainsExactlyValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
-            args.add(PERCENT + (useWildcards ? toPSQLWildcards(finalValue) : finalValue) + PERCENT);
+            args.add(PERCENT + (useWildcards ? toPSQLWildcards(finalValue) : escapePSQLWildcards(finalValue)) + PERCENT);
         } else if (valueClass == AnyStringValue.class)
         {
             sqlBuilder.append(IS_NOT_NULL);
@@ -190,6 +190,42 @@ public class TranslatorUtils
                         sb.append(ch);
                         break;
                     }
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Escapes already existing '%', '_' and '\' characters with '\'.
+     *
+     * @param str string to be converted.
+     * @return string that corresponds to the PSQL standard.
+     */
+    private static String escapePSQLWildcards(final String str)
+    {
+        final StringBuilder sb = new StringBuilder();
+        final char[] chars = str.toCharArray();
+        for (final char ch : chars)
+        {
+            switch (ch)
+            {
+                case UNDERSCORE:
+                    // Fall through.
+                case PERCENT:
+                {
+                    sb.append(BACKSLASH).append(ch);
+                    break;
+                }
+                case BACKSLASH:
+                {
+                    break;
+                }
+                default:
+                {
+                    sb.append(ch);
+                    break;
                 }
             }
         }

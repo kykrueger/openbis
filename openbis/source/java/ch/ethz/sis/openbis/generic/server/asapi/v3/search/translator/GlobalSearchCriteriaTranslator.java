@@ -4,6 +4,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsExactlyValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringMatchesValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
@@ -412,7 +413,8 @@ public class GlobalSearchCriteriaTranslator
             final TranslationContext translationContext, final ISearchCriteria criterion)
     {
         final Set<GlobalSearchObjectKind> objectKinds = translationContext.getObjectKinds();
-        if (criterion instanceof GlobalSearchTextCriteria && objectKinds != null && !objectKinds.isEmpty())
+        if (criterion instanceof GlobalSearchTextCriteria && objectKinds != null && !objectKinds.isEmpty() &&
+                ((GlobalSearchTextCriteria) criterion).getFieldValue() instanceof StringMatchesValue)
         {
             final GlobalSearchTextCriteria globalSearchTextCriterion = (GlobalSearchTextCriteria) criterion;
             final boolean containsSample = objectKinds.contains(GlobalSearchObjectKind.SAMPLE);
@@ -533,12 +535,15 @@ public class GlobalSearchCriteriaTranslator
         buildDetailsFrom(sqlBuilder, tableMapper, true);
         buildDetailsWhere(sqlBuilder, translationContext, globalSearchTextCriterion, resultIds, tableMapper, true);
 
-        sqlBuilder.append(UNION_ALL).append(NL);
+        if (globalSearchTextCriterion.getFieldValue() instanceof StringMatchesValue)
+        {
+            sqlBuilder.append(UNION_ALL).append(NL);
 
-        // Properties
-        buildDetailsSelect(sqlBuilder, translationContext, globalSearchTextCriterion, tableMapper, false);
-        buildDetailsFrom(sqlBuilder, tableMapper, false);
-        buildDetailsWhere(sqlBuilder, translationContext, globalSearchTextCriterion, resultIds, tableMapper, false);
+            // Properties
+            buildDetailsSelect(sqlBuilder, translationContext, globalSearchTextCriterion, tableMapper, false);
+            buildDetailsFrom(sqlBuilder, tableMapper, false);
+            buildDetailsWhere(sqlBuilder, translationContext, globalSearchTextCriterion, resultIds, tableMapper, false);
+        }
     }
 
     private static void buildShortSelect(final StringBuilder sqlBuilder, final TranslationContext translationContext,
@@ -874,7 +879,7 @@ public class GlobalSearchCriteriaTranslator
     private static void buildTsHeadline(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
             final List<Object> args, final String field, final String alias, final boolean useHeadline)
     {
-        if (useHeadline)
+        if (useHeadline && stringValue instanceof StringMatchesValue)
         {
             sqlBuilder.append(TS_HEADLINE).append(LP).append(field).append(COMMA).append(SP);
             buildTsQueryPart(sqlBuilder, stringValue, args);
@@ -952,7 +957,8 @@ public class GlobalSearchCriteriaTranslator
         if (tableMapper == SAMPLE)
         {
             final StringBuilder thenValueBuilder = new StringBuilder();
-            final String[] modifiedCriterionValues = StringContainsExactlyValue.class.isAssignableFrom(stringValueClass)
+            final String[] modifiedCriterionValues =
+                    StringContainsExactlyValue.class.isAssignableFrom(stringValueClass)
                     ? criterionValues
                     : Arrays.stream(criterionValues).flatMap(value ->
                     {
@@ -960,23 +966,23 @@ public class GlobalSearchCriteriaTranslator
                         return splitValues.length > 1 ? Stream.of(value, splitValues[0], splitValues[1])
                                 : Stream.of(value);
                     }).collect(Collectors.toList()).toArray(new String[0]);
-            buildCaseWhenIn(thenValueBuilder, args, modifiedCriterionValues, new String[]{mainTableCode}, mainTableCode,
-                    NULL);
+            buildCaseWhenIn(thenValueBuilder, args, modifiedCriterionValues, new String[] { mainTableCode },
+                    mainTableCode, NULL);
 
             final StringBuilder elseValueBuilder = new StringBuilder();
 
-            final String[] conditionValues = {createSubstrCall('/', null), mainTableCode, createSubstrCall('/', ':')};
+            final String[] conditionValues = { createSubstrCall('/', null), mainTableCode, createSubstrCall('/', ':') };
             buildCaseWhen(elseValueBuilder, new String[] {
-                    makeInCondition(conditionValues[0], args, modifiedCriterionValues),
-                    makeInCondition(conditionValues[1], args, modifiedCriterionValues),
-                    makeInCondition(conditionValues[2], args, modifiedCriterionValues)},
+                            makeInCondition(conditionValues[0], args, modifiedCriterionValues),
+                            makeInCondition(conditionValues[1], args, modifiedCriterionValues),
+                            makeInCondition(conditionValues[2], args, modifiedCriterionValues) },
                     conditionValues, NULL);
 
-            buildCaseWhen(sqlBuilder, new String[] {MAIN_TABLE_ALIAS + PERIOD + PART_OF_SAMPLE_COLUMN + SP + IS + SP
-                    + NULL}, new String[] {thenValueBuilder.toString()}, elseValueBuilder.toString());
+            buildCaseWhen(sqlBuilder, new String[] { MAIN_TABLE_ALIAS + PERIOD + PART_OF_SAMPLE_COLUMN + SP + IS + SP
+                    + NULL }, new String[] { thenValueBuilder.toString() }, elseValueBuilder.toString());
         } else
         {
-            buildCaseWhenIn(sqlBuilder, args, criterionValues, new String[]{mainTableCode}, mainTableCode, NULL);
+            buildCaseWhenIn(sqlBuilder, args, criterionValues, new String[] { mainTableCode }, mainTableCode, NULL);
         }
 
         sqlBuilder.append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
@@ -1238,16 +1244,20 @@ public class GlobalSearchCriteriaTranslator
                 .append(ID_COLUMN).append(SP).append(IN).append(SP).append(SELECT_UNNEST);
         args.add(resultIds.toArray(new Long[0]));
 
-        sqlBuilder.append(SP).append(AND).append(SP).append(LP);
-
-        if (forAttributes)
+        final AbstractStringValue fieldValue = criterion.getFieldValue();
+        if (fieldValue instanceof StringMatchesValue)
         {
-            buildAttributesMatchCondition(sqlBuilder, criterion, args);
-        } else
-        {
-            buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), tableMapper, args);
+            sqlBuilder.append(SP).append(AND).append(SP).append(LP);
+            if (forAttributes)
+            {
+                buildAttributesMatchCondition(sqlBuilder, criterion, args);
+            } else
+            {
+                buildTsVectorMatch(sqlBuilder, fieldValue, tableMapper, args);
+            }
+            sqlBuilder.append(RP);
         }
-        sqlBuilder.append(RP).append(NL);
+        sqlBuilder.append(NL);
     }
 
     private static String getPermId(final TableMapper tableMapper)

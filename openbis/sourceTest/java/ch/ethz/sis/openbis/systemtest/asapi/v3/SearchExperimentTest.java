@@ -834,6 +834,22 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingRegistratorOrModifier()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withAnyField().thatEquals("etlserver");
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP11", "/CISD/NEMO/EXP-TEST-1", "/CISD/NEMO/EXP-TEST-2");
+    }
+
+    @Test
+    public void testSearchWithAnyFieldMatchingExperimentType()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withAnyField().thatEquals("COMPOUND_HCS");
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-1", "/CISD/NOE/EXP-TEST-2");
+    }
+
+    @Test
     public void testSearchWithAnyFieldMatchingIdentifier()
     {
         final ExperimentSearchCriteria criteria1 = new ExperimentSearchCriteria();
@@ -1609,7 +1625,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
 
-        criteria.withTextAttribute().thatMatchesText("exp-test-1 exp-test-2 experiment-to-delete");
+        criteria.withTextAttribute().thatMatches("exp-test-1 exp-test-2 experiment-to-delete");
         criteria.withPermId().thatContains("8-");
 
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-2", "/TEST-SPACE/NOE/EXP-TEST-2",
@@ -1620,7 +1636,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     public void testSearchWithPermIdWithPropertyFullTextSearch()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withOrOperator();
-        criteria.withProperty("DESCRIPTION").thatMatchesText("desc1");
+        criteria.withProperty("DESCRIPTION").thatMatches("desc1");
         criteria.withCode().thatEquals("EXP1");
 
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-1", "/CISD/NEMO/EXP1");
@@ -1630,7 +1646,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     public void testSearchWithPermIdWithStringPropertyFullTextSearch()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withOrOperator();
-        criteria.withStringProperty("DESCRIPTION").thatMatchesText("desc1");
+        criteria.withStringProperty("DESCRIPTION").thatMatches("desc1");
         criteria.withCode().thatEquals("EXP1");
 
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-1", "/CISD/NEMO/EXP1");
@@ -1640,7 +1656,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     public void testSearchWithPermIdWithAnyPropertyFullTextSearch()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
-        criteria.withAnyProperty().thatMatchesText("experiment");
+        criteria.withAnyProperty().thatMatches("experiment");
         criteria.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE",
@@ -1651,7 +1667,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     public void testSearchWithPermIdWithAnyStringPropertyFullTextSearch()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
-        criteria.withAnyStringProperty().thatMatchesText("experiment");
+        criteria.withAnyStringProperty().thatMatches("experiment");
         criteria.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE",
@@ -1662,7 +1678,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     public void testSearchWithPermIdWithAnyFieldFullTextSearch()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
-        criteria.withAnyField().thatMatchesText("experiment exp-x exp-y exp-wells");
+        criteria.withAnyField().thatMatches("experiment exp-x exp-y exp-wells");
         criteria.withPermId().thatStartsWith("2008");
 
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE",

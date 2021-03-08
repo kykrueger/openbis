@@ -31,7 +31,6 @@ import java.util.*;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.*;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.toTsQueryText;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendTsVectorMatch;
@@ -46,6 +45,8 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
     private static final String REGISTRATOR_JOIN_INFORMATION_KEY = "registrator";
 
     private static final String MODIFIER_JOIN_INFORMATION_KEY = "modifier";
+
+    private static final String ENTITY_TYPE_JOIN_INFORMATION_KEY = "entity_type";
 
     private static final Map<Class<? extends IDateFormat>, String> TRUNCATION_INTERVAL_BY_DATE_FORMAT =
             new HashMap<>(3);
@@ -90,6 +91,16 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
             result.put(MODIFIER_JOIN_INFORMATION_KEY, registratorJoinInformation);
         }
 
+        final JoinInformation typeJoinInformation = new JoinInformation();
+        typeJoinInformation.setJoinType(JoinType.LEFT);
+        typeJoinInformation.setMainTable(tableMapper.getEntitiesTable());
+        typeJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
+        typeJoinInformation.setMainTableIdField(tableMapper.getEntitiesTableEntityTypeIdField());
+        typeJoinInformation.setSubTable(tableMapper.getEntityTypesTable());
+        typeJoinInformation.setSubTableAlias(aliasFactory.createAlias());
+        typeJoinInformation.setSubTableIdField(ID_COLUMN);
+        result.put(ENTITY_TYPE_JOIN_INFORMATION_KEY, typeJoinInformation);
+
         return result;
     }
 
@@ -122,13 +133,19 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                             UNIQUE_PREFIX);
                     sqlBuilder.append(separator);
 
+                    translateEntityTypeMatch(value, args, sqlBuilder, aliases, useWildcards);
+                    sqlBuilder.append(separator);
+
+                    if (tableMapper.hasRegistrator())
+                    {
+                        translateUserMatch(value, args, sqlBuilder, aliases, REGISTRATOR_JOIN_INFORMATION_KEY,
+                                useWildcards);
+                        sqlBuilder.append(separator);
+                    }
                     if (tableMapper.hasModifier())
                     {
-                        sqlBuilder.append(aliases.get(MODIFIER_JOIN_INFORMATION_KEY).getSubTableAlias()).append(PERIOD)
-                                .append(USER_COLUMN).append(SP);
-                        TranslatorUtils.appendStringComparatorOp(value.getClass(),
-                                TranslatorUtils.stripQuotationMarks(value.getValue()), useWildcards,
-                                sqlBuilder, args);
+                        translateUserMatch(value, args, sqlBuilder, aliases, MODIFIER_JOIN_INFORMATION_KEY,
+                                useWildcards);
                         sqlBuilder.append(separator);
                     }
 
@@ -219,6 +236,28 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
             }
         }
+    }
+
+    private void translateUserMatch(final AbstractStringValue value, final List<Object> args, final StringBuilder sqlBuilder,
+            final Map<String, JoinInformation> aliases,
+            final String personJoinInformationKey, final boolean useWildcards)
+    {
+        sqlBuilder.append(aliases.get(personJoinInformationKey).getSubTableAlias())
+                .append(PERIOD).append(USER_COLUMN).append(SP);
+        TranslatorUtils.appendStringComparatorOp(value.getClass(),
+                TranslatorUtils.stripQuotationMarks(value.getValue()), useWildcards,
+                sqlBuilder, args);
+    }
+
+    private void translateEntityTypeMatch(final AbstractStringValue value, final List<Object> args,
+            final StringBuilder sqlBuilder,
+            final Map<String, JoinInformation> aliases, final boolean useWildcards)
+    {
+        sqlBuilder.append(aliases.get(ENTITY_TYPE_JOIN_INFORMATION_KEY).getSubTableAlias())
+                .append(PERIOD).append(CODE_COLUMN).append(SP);
+        TranslatorUtils.appendStringComparatorOp(value.getClass(),
+                TranslatorUtils.stripQuotationMarks(value.getValue()), useWildcards,
+                sqlBuilder, args);
     }
 
     private static Set<PSQLTypes> findCompatibleSqlTypesForValue(final String value)

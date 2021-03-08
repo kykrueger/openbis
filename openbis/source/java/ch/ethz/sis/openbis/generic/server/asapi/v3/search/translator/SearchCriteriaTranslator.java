@@ -190,9 +190,17 @@ public class SearchCriteriaTranslator
         {
             if (subqueryManager != null)
             {
-                final String column = (criterion instanceof EntityTypeSearchCriteria)
-                        ? tableMapper.getEntityTypesAttributeTypesTableEntityTypeIdField()
-                        : CriteriaMapper.getCriteriaToInColumnMap().get(criterion.getClass());
+                final String column;
+                if (parentCriterion.getClass() == criterion.getClass())
+                {
+                    column = ID_COLUMN;
+                } else if (criterion instanceof EntityTypeSearchCriteria)
+                {
+                    column = tableMapper.getEntityTypesAttributeTypesTableEntityTypeIdField();
+                } else
+                {
+                    column = CriteriaMapper.getCriteriaToInColumnMap().get(criterion.getClass());
+                }
 
                 if (tableMapper != null)
                 {
