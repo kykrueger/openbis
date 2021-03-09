@@ -805,7 +805,8 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                     render : function(data, grid) {
                         var indexFound = null;
                         for(var idx = 0; idx < grid.lastReceivedData.objects.length; idx++) {
-                            if(grid.lastReceivedData.objects[idx].permId === data.permId) {
+							var receivedObject = grid.lastReceivedData.objects[idx];
+							if(receivedObject.permId === data.permId && receivedObject.entityKind === data.entityKind) {
                                 indexFound = idx + (grid.lastUsedOptions.pageIndex * grid.lastUsedOptions.pageSize);
                         		break;
                             }
