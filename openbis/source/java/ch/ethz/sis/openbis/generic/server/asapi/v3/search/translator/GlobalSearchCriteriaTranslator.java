@@ -1,10 +1,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsExactlyValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringMatchesValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
@@ -139,12 +136,13 @@ public class GlobalSearchCriteriaTranslator
     public static SelectQuery translateToShortQuery(final TranslationContext translationContext,
             final boolean onlyTotalCount)
     {
-        if (translationContext.getCriteria() == null)
+        final Collection<ISearchCriteria> subcriteria = translationContext.getCriteria();
+        if (subcriteria == null)
         {
             throw new IllegalArgumentException("Null criteria provided.");
         }
 
-        final boolean withWildcards = translationContext.getCriteria().stream()
+        final boolean withWildcards = subcriteria.stream()
                 .anyMatch((criterion) -> criterion instanceof GlobalSearchWildCardsCriteria);
         if (withWildcards)
         {
@@ -152,15 +150,17 @@ public class GlobalSearchCriteriaTranslator
         }
 
         final StringBuilder sqlBuilder = new StringBuilder(LP);
-        final Spliterator<ISearchCriteria> spliterator = translationContext.getCriteria().stream()
+        final Spliterator<ISearchCriteria> spliterator = subcriteria.stream()
                 .filter((criterion) -> !(criterion instanceof GlobalSearchWildCardsCriteria)
                         && !(criterion instanceof GlobalSearchObjectKindCriteria)).spliterator();
+
+        final String setOperator = translationContext.getOperator() == SearchOperator.OR ? UNION_ALL : INTERSECT;
 
         if (spliterator.tryAdvance((criterion) -> translateShortCriterion(sqlBuilder, translationContext, criterion)))
         {
             StreamSupport.stream(spliterator, false).forEach((criterion) ->
             {
-                sqlBuilder.append(RP).append(NL).append(UNION_ALL).append(NL).append(LP).append(NL);
+                sqlBuilder.append(RP).append(NL).append(setOperator).append(NL).append(LP).append(NL);
                 translateShortCriterion(sqlBuilder, translationContext, criterion);
             });
         }
@@ -399,6 +399,9 @@ public class GlobalSearchCriteriaTranslator
         {
             StreamSupport.stream(spliterator, false).forEach((criterion) ->
             {
+                // The operator uses union all always because when the query uses the AND logical operator
+                // then (unlike in the initial query) here the 'value_headline'
+                // values are computed and they will be the (only) column that differs thus producing empty result.
                 sqlBuilder.append(RP).append(NL).append(UNION_ALL).append(NL).append(LP).append(NL);
                 translateDetailsCriterion(sqlBuilder, translationContext, criterion, idSetByObjectKindMap);
             });

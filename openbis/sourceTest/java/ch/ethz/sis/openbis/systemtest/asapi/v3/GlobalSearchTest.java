@@ -210,6 +210,7 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithMultipleMatchesOneWord()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withOperator(SearchOperator.OR);
         criteria.withText().thatMatches("simple   ");
         criteria.withText().thatMatches(" stuff");
         criteria.withText().thatMatches("  ");
@@ -305,7 +306,7 @@ public class GlobalSearchTest extends AbstractTest
         assertSimpleOrStuffForContains(result);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testSearchWithMultipleContainsExactlyMultipleWords()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
@@ -316,7 +317,41 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
+        List<GlobalSearchObject> objects = result.getObjects();
+        assertEquals(objects.size(), 1);
+        Iterator<GlobalSearchObject> iter = objects.iterator();
+
+        assertSample(iter.next(), "200902091250077-1026", "/CISD/CP-TEST-2", "", false);
+    }
+
+    @Test
+    public void testSearchWithMatchWithAndOperator()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withOperator(SearchOperator.AND);
+        criteria.withText().thatMatches("simple");
+        criteria.withText().thatMatches("stuff");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+
         assertSimpleStuff(result);
+    }
+
+    @Test
+    public void testSearchWithMatchWithOrOperator()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withOperator(SearchOperator.OR);
+        criteria.withText().thatMatches("simple");
+        criteria.withText().thatMatches("stuff");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+
+        assertSimpleOrStuff(result);
     }
 
     @Test
@@ -1258,6 +1293,7 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithProjectAuthorization(ProjectAuthorizationUser user)
     {
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withOperator(SearchOperator.OR);
         criteria.withText().thatMatches("/CISD/DEFAULT/EXP-REUSE");
         criteria.withText().thatMatches("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST");
 
@@ -1882,6 +1918,7 @@ public class GlobalSearchTest extends AbstractTest
     private void assertSimpleStuff(SearchResult<GlobalSearchObject> result)
     {
         List<GlobalSearchObject> objects = result.getObjects();
+        assertEquals(result.getTotalCount(), 1);
         assertEquals(objects.size(), 1);
         Iterator<GlobalSearchObject> iter = objects.iterator();
 
