@@ -149,6 +149,10 @@ public class SQLLexemes
 
     public static final String UNION_ALL = "UNION ALL";
 
+    public static final String ASC = "ASC";
+
+    public static final String DESC = "DESC";
+
     public static final String NL = "\n";
 
     public static final String COMMA = ",";

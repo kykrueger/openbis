@@ -230,6 +230,11 @@ public class GlobalSearchCriteriaTranslator
                     addOrderByField(sqlBuilder, sorting);
                 });
             }
+
+            // These extra order by statements are added to prevent the results from changing when ordering by
+            // rank for example and the ranks coincide and changing the limit. This may be a bug in Postgres 11.
+            sqlBuilder.append(COMMA).append(SP).append(ID_COLUMN).append(SP).append(DESC);
+            sqlBuilder.append(COMMA).append(SP).append(OBJECT_KIND_ORDINAL_ALIAS).append(SP).append(ASC);
             sqlBuilder.append(NL);
         }
     }
