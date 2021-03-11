@@ -158,7 +158,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
                         dataSetSearchCriterion, materialSearchCriterion, stringValue);
             } else
             {
-                final String[] stringValues = fieldValue.getValue().split("\\s");
+                final String[] stringValues = fieldValue.getValue().split("\\s+");
                 final ExperimentSearchCriteria experimentSearchSubcriteria =
                         experimentSearchCriterion.withSubcriteria().withOrOperator();
                 final SampleSearchCriteria sampleSearchSubcriteria =
