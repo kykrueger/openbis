@@ -626,7 +626,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 { DataType.REAL, "12.345", "startsWith 12. and endsWith 45", true },
                 { DataType.REAL, "12.345", "startsWith 12. or endsWith 45", true },
                 { DataType.REAL, "12.345", "contains .34", true },
-                { DataType.REAL, "12.345", "contains 9876", false },
+                { DataType.REAL, "12.345", "contains 98763", false },
 
                 { DataType.DATE, formattedDate, "== 2020-02-15", true },
                 { DataType.DATE, formattedDate, "== 2020-02-14", false },

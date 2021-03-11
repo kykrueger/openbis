@@ -1002,10 +1002,23 @@ public class GlobalSearchTest extends AbstractTest
         criteria.withText().thatMatches("B1B3");
 
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        assertTrue(result.getObjects().size() >= 2);
+        assertTrue(result.getTotalCount() >= 2);
 
-        assertSample(result.getObjects().get(0), "200811050924274-994", "/CISD/B1B3", "Code: B1B3", true);
-        assertSample(result.getObjects().get(1), "200811050924274-995", "/CISD/B1B3:B01", "Code: B1B3", true);
+        final List<GlobalSearchObject> resultObjects = result.getObjects();
+        assertTrue(resultObjects.size() >= 2);
+
+        final Set<String> permIds = resultObjects.stream().map(object -> object.getObjectPermId().toString())
+                .collect(Collectors.toSet());
+        assertTrue(permIds.containsAll(Arrays.asList("200811050924274-994", "200811050924274-995",
+                "200811050924274-996")));
+
+        final Set<String> identifiers = resultObjects.stream().map(object -> object.getObjectIdentifier().toString())
+                .collect(Collectors.toSet());
+        assertTrue(identifiers.containsAll(Arrays.asList("/CISD/B1B3", "/CISD/B1B3:B01", "/CISD/B1B3:B03")));
+
+        final Set<String> matches = resultObjects.stream().map(GlobalSearchObject::getMatch)
+                .collect(Collectors.toSet());
+        assertEquals(matches, Collections.singleton("Code: B1B3"));
     }
 
     @Test
