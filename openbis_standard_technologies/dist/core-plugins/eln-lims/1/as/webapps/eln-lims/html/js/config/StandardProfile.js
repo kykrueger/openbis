@@ -100,7 +100,9 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 								if(!quantity) {
 									quantity = 0;
 								}
-								quantity += parseInt(requestProductAnnotations["ANNOTATION.REQUEST.QUANTITY_OF_ITEMS"]);
+								if (requestProductAnnotations) {
+                                    quantity += parseInt(requestProductAnnotations["ANNOTATION.REQUEST.QUANTITY_OF_ITEMS"]);
+								}
 								if(!quantity) {
 									Util.showUserError("Product " + requestProduct.code + " from request " +  request.code + " does not have a quantity, FIX IT!.");
 									return;
