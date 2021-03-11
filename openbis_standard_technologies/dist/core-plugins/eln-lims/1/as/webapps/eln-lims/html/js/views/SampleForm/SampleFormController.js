@@ -257,7 +257,12 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                         }
                     }
                 }
-			}
+            } else if (sample.sampleTypeCode === "ORDER") {
+                if (!sample.properties["$ORDERING.ORDER_STATUS"]) {
+                    Util.showUserError("Order status is undefined.");
+                    return;
+                }
+            }
 			
 			//
 			//Identification Info
