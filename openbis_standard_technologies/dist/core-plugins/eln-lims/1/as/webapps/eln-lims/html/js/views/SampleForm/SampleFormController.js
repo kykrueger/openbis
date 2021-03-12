@@ -258,8 +258,8 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                     }
                 }
             } else if (sample.sampleTypeCode === "ORDER") {
-                if (!sample.properties["$ORDERING.ORDER_STATUS"] || sample.properties["$ORDERING.ORDER_STATUS"] == "NOT_YET_ORDERED") {
-                    Util.showUserError("Order status is either undefined or 'Not yet ordered'.");
+                if (!sample.properties["$ORDERING.ORDER_STATUS"]) {
+                    Util.showUserError("Order status is undefined.");
                     return;
                 }
             }

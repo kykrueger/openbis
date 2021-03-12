@@ -433,6 +433,14 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 						var searchSamples = { entityKind : "SAMPLE", logicalOperator : "OR", rules : { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : orderSample.permId } } };
 						mainController.serverFacade.searchForSamplesAdvanced(searchSamples, { only : true, withProperties : true, withAncestors : true, withAncestorsProperties : true }, function(result) {
 							var order = mainController.serverFacade.getV3SamplesAsV1(result.objects)[0];
+							var orderV3 = result.objects[0]
+
+                            // We force V1 annotations on the ordering system to be backwards compatible, just in case is openBIS 20.X
+                            for(var pIdx = 0; pIdx < order.parents.length; pIdx++) {
+                                var pIdxAnnotationState = FormUtil.getAnnotationsFromSample(orderV3.parents[pIdx], null);
+                                order.parents[pIdx].properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(pIdxAnnotationState);
+                            }
+
 							showOrderSummary(order);
 						});
 					}
