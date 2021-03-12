@@ -65,7 +65,7 @@ function AdvancedSearchController(mainController, forceSearch) {
 		if (numberOfRules === numberOfGeneralRules && criteria.entityKind !== 'ALL') {
 			var warning1 = "This search query is too broad. This might take a long time and might lead to a very large number of search results. \n Do you want to submit the query anyway?";
 			Util.showWarning(warning1, trueSearch);
-		} if (criteria.entityKind === 'ALL_PARTIAL') {
+		} else if (criteria.entityKind === 'ALL_PARTIAL') {
 			if (numberOfWords > 3) {
 				var warning2 = "This search query contains too many words/rules. This might take a long time and might lead to long waiting time. \n Do you want to submit the query anyway?";
 				Util.showWarning(warning2, trueSearch);
