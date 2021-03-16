@@ -221,7 +221,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         return getSearchDAO().findParentIDs(tableMapper, childIdSet, relationshipType);
     }
 
-    protected class CompositeEntityCriteriaVo
+    protected static class CompositeEntityCriteriaVo
     {
         private final Collection<ISearchCriteria> mainCriteria;
         private final Collection<? extends ISearchCriteria> parentsCriteria;
