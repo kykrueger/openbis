@@ -45,15 +45,12 @@ function AdvancedSearchController(mainController, forceSearch) {
 		}
 		var numberOfGeneralRules = 0;
 		var numberOfRules = 0;
-		var numberOfWords = 0;
 
 		for(ruleKey in criteria.rules) {
 			var rule = criteria.rules[ruleKey];
 			numberOfRules++;
 			if(rule.value === null || rule.value === undefined || ("" + rule.value).trim() === "" || ("" + rule.value).trim() === "*") {
 				numberOfGeneralRules++;
-			} else {
-				numberOfWords += rule.value.trim().split(/\s+/).length;
 			}
 		}
 
@@ -63,15 +60,8 @@ function AdvancedSearchController(mainController, forceSearch) {
 		}
 
 		if (numberOfRules === numberOfGeneralRules && criteria.entityKind !== 'ALL') {
-			var warning1 = "This search query is too broad. This might take a long time and might lead to a very large number of search results. \n Do you want to submit the query anyway?";
-			Util.showWarning(warning1, trueSearch);
-		} else if (criteria.entityKind === 'ALL_PARTIAL') {
-			if (numberOfWords > 3) {
-				var warning2 = "This search query contains too many words/rules. This might take a long time and might lead to long waiting time. \n Do you want to submit the query anyway?";
-				Util.showWarning(warning2, trueSearch);
-			} else {
-				trueSearch();
-			}
+			var warning = "This search query is too broad. This might take a long time and might lead to a very large number of search results. \n Do you want to submit the query anyway?";
+			Util.showWarning(warning, trueSearch);
 		} else {
 			trueSearch();
 		}
