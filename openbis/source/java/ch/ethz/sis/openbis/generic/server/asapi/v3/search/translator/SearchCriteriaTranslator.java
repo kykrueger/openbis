@@ -116,58 +116,30 @@ public class SearchCriteriaTranslator
         final String entitiesTableName = tableMapper.getEntitiesTable();
         sqlBuilder.append(FROM).append(SP).append(entitiesTableName).append(SP).append(MAIN_TABLE_ALIAS);
 
-        // For the global search there should be only one join information map to improve performance
-        Map<String, JoinInformation> anyFieldJoinInformationMap = null;
-
         final AtomicInteger indexCounter = new AtomicInteger(1);
-        for (ISearchCriteria criterion : translationContext.getCriteria())
+        translationContext.getCriteria().forEach(criterion ->
         {
-            if (!(CriteriaMapper.getCriteriaToManagerMap().containsKey(criterion.getClass())
-                    || criterion instanceof EntityTypeSearchCriteria))
+            if (!(CriteriaMapper.getCriteriaToManagerMap().containsKey(criterion.getClass()) || criterion instanceof EntityTypeSearchCriteria))
             {
-                final IConditionTranslator conditionTranslator =
-                        CriteriaMapper.getCriteriaToConditionTranslatorMap().get(criterion.getClass());
+                final IConditionTranslator conditionTranslator = CriteriaMapper.getCriteriaToConditionTranslatorMap().get(criterion.getClass());
                 if (conditionTranslator != null)
                 {
                     @SuppressWarnings("unchecked")
-                    final Map<String, JoinInformation> joinInformationMap;
-                    final boolean addNewJoins;
-                    if (anyFieldJoinInformationMap == null)
-                    {
-                        addNewJoins = true;
-                        joinInformationMap = conditionTranslator.getJoinInformationMap(
-                                criterion, tableMapper, () -> getAlias(indexCounter));
-                        if (criterion instanceof AnyFieldSearchCriteria)
-                        {
-                            anyFieldJoinInformationMap = joinInformationMap;
-                        }
-                    } else if (criterion instanceof AnyFieldSearchCriteria)
-                    {
-                        addNewJoins = false;
-                        joinInformationMap = anyFieldJoinInformationMap;
-                    } else
-                    {
-                        addNewJoins = true;
-                        joinInformationMap = conditionTranslator.getJoinInformationMap(
-                                criterion, tableMapper, () -> getAlias(indexCounter));
-                    }
+                    final Map<String, JoinInformation> joinInformationMap = conditionTranslator.getJoinInformationMap(criterion,
+                            tableMapper, () -> getAlias(indexCounter));
 
                     if (joinInformationMap != null)
                     {
-                        if (addNewJoins)
-                        {
-                            joinInformationMap.values().forEach((joinInformation) ->
-                                    TranslatorUtils.appendJoin(sqlBuilder, joinInformation));
-                        }
+                        joinInformationMap.values().forEach((joinInformation) ->
+                                TranslatorUtils.appendJoin(sqlBuilder, joinInformation));
                         translationContext.getAliases().put(criterion, joinInformationMap);
                     }
                 } else
                 {
-                    throw new IllegalArgumentException(String.format("Unsupported criterion type: %s",
-                            criterion.getClass().getSimpleName()));
+                    throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
                 }
             }
-        }
+        });
         return sqlBuilder.toString();
     }
 
