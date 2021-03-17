@@ -22,7 +22,9 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.*;
@@ -98,7 +100,16 @@ public class GlobalSearchManager implements IGlobalSearchManager
         } else
         {
             // String contains
-            return searchForIdsUsingContains(userId, criteria, stringContainsGlobalSearchTextCriteria,
+            final List<AbstractStringValue> stringContainsExactlyValues = stringContainsGlobalSearchTextCriteria
+                    .stream().flatMap(criterion ->
+                    {
+                        final AbstractStringValue fieldValue = criterion.getFieldValue();
+                        return fieldValue instanceof StringContainsValue
+                                ? Arrays.stream(fieldValue.getValue().split("\\s+")).map(StringContainsExactlyValue::new)
+                                : Stream.of(fieldValue);
+                    }).collect(Collectors.toList());
+
+            return searchForIdsUsingContains(userId, criteria, stringContainsExactlyValues,
                     authorisationInformation, objectKinds, fetchOptions, onlyTotalCount);
         }
     }
@@ -125,7 +136,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
     }
 
     private List<Map<String, Object>> searchForIdsUsingContains(final Long userId, final GlobalSearchCriteria criteria,
-            final List<GlobalSearchTextCriteria> stringContainsGlobalSearchTextCriteria,
+            final Collection<AbstractStringValue> stringContainsExactlyValues,
             final AuthorisationInformation authorisationInformation, final Set<GlobalSearchObjectKind> objectKinds,
             final GlobalSearchObjectFetchOptions fetchOptions, final boolean onlyTotalCount)
     {
@@ -144,53 +155,28 @@ public class GlobalSearchManager implements IGlobalSearchManager
         dataSetSearchCriterion.withOperator(criteria.getOperator());
         materialSearchCriterion.withOperator(criteria.getOperator());
 
-        for (final GlobalSearchTextCriteria globalSearchTextCriterion : stringContainsGlobalSearchTextCriteria)
+        for (final AbstractStringValue fieldValue : stringContainsExactlyValues)
         {
-            final AbstractStringValue fieldValue = globalSearchTextCriterion.getFieldValue();
-            final boolean containsExactly = fieldValue instanceof StringContainsExactlyValue;
             final boolean containsWildCards = criteria.getCriteria().stream()
                     .anyMatch(criterion -> criterion instanceof GlobalSearchWildCardsCriteria);
-
-            if (containsExactly)
-            {
-                final String stringValue = fieldValue.getValue();
-                setValueToCriteria(containsWildCards, experimentSearchCriterion, sampleSearchCriterion,
-                        dataSetSearchCriterion, materialSearchCriterion, stringValue);
-            } else
-            {
-                final String[] stringValues = fieldValue.getValue().split("\\s+");
-                final ExperimentSearchCriteria experimentSearchSubcriteria =
-                        experimentSearchCriterion.withSubcriteria().withOrOperator();
-                final SampleSearchCriteria sampleSearchSubcriteria =
-                        sampleSearchCriterion.withSubcriteria().withOrOperator();
-                final DataSetSearchCriteria dataSetSearchSubcriteria =
-                        dataSetSearchCriterion.withSubcriteria().withOrOperator();
-                final MaterialSearchCriteria materialSearchSubcriteria =
-                        materialSearchCriterion.withSubcriteria().withOrOperator();
-                for (final String stringValue : stringValues)
-                {
-                    setValueToCriteria(containsWildCards, experimentSearchSubcriteria, sampleSearchSubcriteria,
-                            dataSetSearchSubcriteria, materialSearchSubcriteria, stringValue);
-                }
-            }
+            final String stringValue = fieldValue.getValue();
+            setValueToCriteria(containsWildCards, experimentSearchCriterion, sampleSearchCriterion,
+                    dataSetSearchCriterion, materialSearchCriterion, stringValue);
         }
 
-        final Set<Long> experimentIds = includeExperiments
-                ? searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, experimentSearchCriterion,
-                TableMapper.EXPERIMENT, ID_COLUMN, authorisationInformation)
-                : Collections.emptySet();
-        final Set<Long> sampleIds = includeSamples
-                ? searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, sampleSearchCriterion,
-                TableMapper.SAMPLE, ID_COLUMN, authorisationInformation)
-                : Collections.emptySet();
-        final Set<Long> dataSetIds = includeDataSets
-                ? searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, dataSetSearchCriterion,
-                TableMapper.DATA_SET, ID_COLUMN, authorisationInformation)
-                : Collections.emptySet();
-        final Set<Long> materialIds = includeMaterials
-                ? searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, materialSearchCriterion,
-                TableMapper.MATERIAL, ID_COLUMN, authorisationInformation)
-                : Collections.emptySet();
+        // Split criteria and combine the results
+        final Set<Long> experimentIds = queryDbForIds(includeExperiments, userId, authorisationInformation,
+                experimentSearchCriterion, TableMapper.EXPERIMENT, criteria.getOperator(),
+                (Supplier<? extends AbstractEntitySearchCriteria<?>>) ExperimentSearchCriteria::new);
+        final Set<Long> sampleIds = queryDbForIds(includeSamples, userId, authorisationInformation,
+                sampleSearchCriterion, TableMapper.SAMPLE, criteria.getOperator(),
+                (Supplier<? extends AbstractEntitySearchCriteria<?>>) SampleSearchCriteria::new);
+        final Set<Long> dataSetIds = queryDbForIds(includeDataSets, userId, authorisationInformation,
+                dataSetSearchCriterion, TableMapper.DATA_SET, criteria.getOperator(),
+                (Supplier<? extends AbstractEntitySearchCriteria<?>>) DataSetSearchCriteria::new);
+        final Set<Long> materialIds = queryDbForIds(includeMaterials, userId, authorisationInformation,
+                materialSearchCriterion, TableMapper.MATERIAL, criteria.getOperator(),
+                (Supplier<? extends AbstractEntitySearchCriteria<?>>) MaterialSearchCriteria::new);
 
         final int stringContainsIntermediateResultsCount = sampleIds.size() + experimentIds.size() +
                 dataSetIds.size() + materialIds.size();
@@ -247,6 +233,38 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 return stringContainsCriteriaIntermediateResults;
             }
         }
+    }
+
+    private Set<Long> queryDbForIds(final boolean includeEntities, final Long userId,
+            final AuthorisationInformation authorisationInformation,
+            final AbstractEntitySearchCriteria<?> criteriaToSplit, final TableMapper tableMapper,
+            final SearchOperator searchOperator, final Supplier<? extends AbstractEntitySearchCriteria<?>> supplier)
+    {
+        return includeEntities
+                ? criteriaToSplit.getCriteria().stream().map(subcriterion ->
+                {
+                    final AbstractEntitySearchCriteria<?> searchCriteria = supplier.get();
+                    searchCriteria.setCriteria(Collections.singletonList(subcriterion));
+                    return searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, searchCriteria,
+                            tableMapper, ID_COLUMN, authorisationInformation);
+                }).reduce((idsAccumulator, ids) ->
+                {
+                    switch (searchOperator)
+                    {
+                        case AND:
+                        {
+                            idsAccumulator.retainAll(ids);
+                            break;
+                        }
+                        case OR:
+                        {
+                            idsAccumulator.addAll(ids);
+                            break;
+                        }
+                    }
+                    return idsAccumulator;
+                }).orElse(Collections.emptySet())
+                : Collections.emptySet();
     }
 
     private void setValueToCriteria(final boolean containsWildCards,
