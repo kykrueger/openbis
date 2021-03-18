@@ -204,9 +204,8 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
             // No need to include this expensive full code column string extraction for the
             // 'contains' and  'ends with' queries, because the sample identifier value
             // ends with the full code.
-            if (valueClass != StringContainsValue.class
-                    && valueClass != StringContainsExactlyValue.class
-                    && valueClass != StringEndsWithValue.class)
+            if (tableMapper != TableMapper.SAMPLE || (valueClass != StringContainsValue.class
+                    && valueClass != StringContainsExactlyValue.class && valueClass != StringEndsWithValue.class))
             {
                 stringBuilder.append(AnyFieldSearchConditionTranslator.OR_SEPARATOR);
                 CodeSearchConditionTranslator.translateSearchByCodeCondition(stringBuilder,
