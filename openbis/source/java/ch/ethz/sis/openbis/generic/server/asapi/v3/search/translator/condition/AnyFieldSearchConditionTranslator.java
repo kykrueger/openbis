@@ -51,6 +51,8 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
     private static final Map<Class<? extends IDateFormat>, String> TRUNCATION_INTERVAL_BY_DATE_FORMAT =
             new HashMap<>(3);
 
+    private static final String OR_SEPARATOR = SP + OR + SP;
+
     static
     {
         TRUNCATION_INTERVAL_BY_DATE_FORMAT.put(SHORT_DATE_FORMAT.getClass(), "day");
@@ -118,95 +120,44 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 final boolean useWildcards = criterion.isUseWildcards();
                 final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue());
                 final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
-                final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
-                final String separator = SP + OR + SP;
-                final int separatorLength = separator.length();
+                final Class<? extends AbstractStringValue> valueClass = value.getClass();
+                final boolean equalsToComparison = (valueClass == StringEqualToValue.class);
+                final int separatorLength = OR_SEPARATOR.length();
 
                 sqlBuilder.append(LP);
 
                 AnyPropertySearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
-                sqlBuilder.append(separator);
+                sqlBuilder.append(OR_SEPARATOR);
 
-                if (value.getClass() != StringMatchesValue.class)
+                if (valueClass != StringMatchesValue.class)
                 {
                     IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases,
                             UNIQUE_PREFIX);
-                    sqlBuilder.append(separator);
+                    sqlBuilder.append(OR_SEPARATOR);
 
                     translateEntityTypeMatch(value, args, sqlBuilder, aliases, useWildcards);
-                    sqlBuilder.append(separator);
+                    sqlBuilder.append(OR_SEPARATOR);
 
                     if (tableMapper.hasRegistrator())
                     {
                         translateUserMatch(value, args, sqlBuilder, aliases, REGISTRATOR_JOIN_INFORMATION_KEY,
                                 useWildcards);
-                        sqlBuilder.append(separator);
+                        sqlBuilder.append(OR_SEPARATOR);
                     }
                     if (tableMapper.hasModifier())
                     {
                         translateUserMatch(value, args, sqlBuilder, aliases, MODIFIER_JOIN_INFORMATION_KEY,
                                 useWildcards);
-                        sqlBuilder.append(separator);
+                        sqlBuilder.append(OR_SEPARATOR);
                     }
 
                     final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream()
                             .collect(
                             StringBuilder::new,
                             (stringBuilder, fieldToSQLTypesEntry) ->
-                            {
-                                final String fieldName = fieldToSQLTypesEntry.getKey();
-                                final PSQLTypes fieldSQLType = fieldToSQLTypesEntry.getValue();
-                                final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
-
-                                if (CODE_COLUMN.equals(fieldName))
-                                {
-                                    stringBuilder.append(separator);
-                                    CodeSearchConditionTranslator.translateSearchByCodeCondition(stringBuilder,
-                                            tableMapper, value.getClass(), stringValue, useWildcards, args);
-                                } else
-                                {
-                                    if (equalsToComparison || fieldSQLType == TIMESTAMP_WITH_TZ)
-                                    {
-                                        if (includeColumn)
-                                        {
-                                            if (fieldSQLType == TIMESTAMP_WITH_TZ)
-                                            {
-                                                final Optional<Object[]> dateFormatWithResultOptional = DATE_FORMATS
-                                                        .stream().map(dateFormat ->
-
-                                                            {final Date formattedValue = formatValue(stringValue,
-                                                                    dateFormat);
-                                                            return (formattedValue == null) ? null
-                                                                    : new Object[]{TRUNCATION_INTERVAL_BY_DATE_FORMAT
-                                                                    .get(dateFormat.getClass()), formattedValue};
-                                                        }).filter(Objects::nonNull).findFirst();
-
-                                                dateFormatWithResultOptional.ifPresent(dateFormatWithResult ->
-                                                {
-                                                    stringBuilder.append(separator).append(DATE_TRUNC).append(LP);
-                                                    stringBuilder.append(SQ).append(dateFormatWithResult[0]).append(SQ)
-                                                            .append(COMMA).append(SP).append(alias)
-                                                            .append(PERIOD).append(fieldName);
-                                                    stringBuilder.append(RP).append(SP).append(EQ).append(SP).append(QU);
-                                                    args.add(dateFormatWithResult[1]);
-                                                });
-                                            } else
-                                            {
-                                                stringBuilder.append(separator).append(alias).append(PERIOD)
-                                                        .append(fieldName);
-                                                stringBuilder.append(SP).append(EQ).append(SP).append(QU)
-                                                        .append(DOUBLE_COLON).append(fieldSQLType.toString());
-                                                args.add(stringValue);
-                                            }
-                                        }
-                                    } else
-                                    {
-                                        stringBuilder.append(separator);
-                                        TranslatorUtils.translateStringComparison(alias, fieldName, value, useWildcards,
-                                                VARCHAR, stringBuilder, args);
-                                    }
-                                }
-                            },
+                                    translateField(tableMapper, args, alias, value, useWildcards, stringValue,
+                                            compatiblePSQLTypesForValue, valueClass, equalsToComparison,
+                                            stringBuilder, fieldToSQLTypesEntry),
                         StringBuilder::append);
 
                     if (resultSqlBuilder.length() > separatorLength)
@@ -238,8 +189,75 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
         }
     }
 
-    private void translateUserMatch(final AbstractStringValue value, final List<Object> args, final StringBuilder sqlBuilder,
-            final Map<String, JoinInformation> aliases,
+    private void translateField(final TableMapper tableMapper, final List<Object> args, final String alias,
+            final AbstractStringValue value, final boolean useWildcards, final String stringValue,
+            final Set<PSQLTypes> compatiblePSQLTypesForValue, final Class<? extends AbstractStringValue> valueClass,
+            final boolean equalsToComparison, final StringBuilder stringBuilder,
+            final Map.Entry<String, PSQLTypes> fieldToSQLTypesEntry)
+    {
+        final String fieldName = fieldToSQLTypesEntry.getKey();
+        final PSQLTypes fieldSQLType = fieldToSQLTypesEntry.getValue();
+        final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
+
+        if (CODE_COLUMN.equals(fieldName))
+        {
+            // No need to include this expensive full code column string extraction for the
+            // 'contains' and  'ends with' queries, because the sample identifier value
+            // ends with the full code.
+            if (valueClass != StringContainsValue.class
+                    && valueClass != StringContainsExactlyValue.class
+                    && valueClass != StringEndsWithValue.class)
+            {
+                stringBuilder.append(AnyFieldSearchConditionTranslator.OR_SEPARATOR);
+                CodeSearchConditionTranslator.translateSearchByCodeCondition(stringBuilder,
+                        tableMapper, value.getClass(), stringValue, useWildcards, args);
+            }
+        } else
+        {
+            if (equalsToComparison || fieldSQLType == TIMESTAMP_WITH_TZ)
+            {
+                if (includeColumn)
+                {
+                    if (fieldSQLType == TIMESTAMP_WITH_TZ)
+                    {
+                        final Optional<Object[]> dateFormatWithResultOptional = DATE_FORMATS
+                                .stream().map(dateFormat -> {
+                                    final Date formattedValue = formatValue(stringValue, dateFormat);
+                                    return (formattedValue == null) ? null
+                                            : new Object[]{TRUNCATION_INTERVAL_BY_DATE_FORMAT
+                                            .get(dateFormat.getClass()), formattedValue};
+                                }).filter(Objects::nonNull).findFirst();
+
+                        dateFormatWithResultOptional.ifPresent(dateFormatWithResult ->
+                        {
+                            stringBuilder.append(AnyFieldSearchConditionTranslator.OR_SEPARATOR).append(DATE_TRUNC)
+                                    .append(LP);
+                            stringBuilder.append(SQ).append(dateFormatWithResult[0]).append(SQ)
+                                    .append(COMMA).append(SP).append(alias)
+                                    .append(PERIOD).append(fieldName);
+                            stringBuilder.append(RP).append(SP).append(EQ).append(SP).append(QU);
+                            args.add(dateFormatWithResult[1]);
+                        });
+                    } else
+                    {
+                        stringBuilder.append(AnyFieldSearchConditionTranslator.OR_SEPARATOR).append(alias)
+                                .append(PERIOD).append(fieldName);
+                        stringBuilder.append(SP).append(EQ).append(SP).append(QU)
+                                .append(DOUBLE_COLON).append(fieldSQLType.toString());
+                        args.add(stringValue);
+                    }
+                }
+            } else
+            {
+                stringBuilder.append(AnyFieldSearchConditionTranslator.OR_SEPARATOR);
+                TranslatorUtils.translateStringComparison(alias, fieldName, value, useWildcards,
+                        VARCHAR, stringBuilder, args);
+            }
+        }
+    }
+
+    private void translateUserMatch(final AbstractStringValue value, final List<Object> args,
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final String personJoinInformationKey, final boolean useWildcards)
     {
         sqlBuilder.append(aliases.get(personJoinInformationKey).getSubTableAlias())
