@@ -92,7 +92,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria();
             containerCriterion.withOperator(finalSearchOperator);
             containerCriterion.setCriteria(mainCriteria);
-            mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsWithGlobalSearchMatchCriteria(userId,
                     containerCriterion, tableMapper, idsColumnName, authorisationInformation);
         } else
         {

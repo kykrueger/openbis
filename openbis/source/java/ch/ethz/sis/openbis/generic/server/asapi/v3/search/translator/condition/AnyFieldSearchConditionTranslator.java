@@ -21,7 +21,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
@@ -33,20 +32,11 @@ import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSe
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendTsVectorMatch;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
 
 public class AnyFieldSearchConditionTranslator implements IConditionTranslator<AnyFieldSearchCriteria>
 {
-
-    private static final String UNIQUE_PREFIX = AnyFieldSearchConditionTranslator.class.getName();
-
-    private static final String REGISTRATOR_JOIN_INFORMATION_KEY = "registrator";
-
-    private static final String MODIFIER_JOIN_INFORMATION_KEY = "modifier";
-
-    private static final String ENTITY_TYPE_JOIN_INFORMATION_KEY = "entity_type";
 
     private static final Map<Class<? extends IDateFormat>, String> TRUNCATION_INTERVAL_BY_DATE_FORMAT =
             new HashMap<>(3);
@@ -61,49 +51,10 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
     }
 
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper,
-            final IAliasFactory aliasFactory)
+    public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion,
+            final TableMapper tableMapper, final IAliasFactory aliasFactory)
     {
-        final Map<String, JoinInformation> result = TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory);
-        TranslatorUtils.appendIdentifierJoinInformationMap(result, tableMapper, aliasFactory, UNIQUE_PREFIX);
-
-        if (tableMapper.hasRegistrator())
-        {
-            final JoinInformation registratorJoinInformation = new JoinInformation();
-            registratorJoinInformation.setJoinType(JoinType.LEFT);
-            registratorJoinInformation.setMainTable(tableMapper.getEntitiesTable());
-            registratorJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
-            registratorJoinInformation.setMainTableIdField(PERSON_REGISTERER_COLUMN);
-            registratorJoinInformation.setSubTable(PERSONS_TABLE);
-            registratorJoinInformation.setSubTableAlias(aliasFactory.createAlias());
-            registratorJoinInformation.setSubTableIdField(ID_COLUMN);
-            result.put(REGISTRATOR_JOIN_INFORMATION_KEY, registratorJoinInformation);
-        }
-
-        if (tableMapper.hasModifier())
-        {
-            final JoinInformation registratorJoinInformation = new JoinInformation();
-            registratorJoinInformation.setJoinType(JoinType.LEFT);
-            registratorJoinInformation.setMainTable(tableMapper.getEntitiesTable());
-            registratorJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
-            registratorJoinInformation.setMainTableIdField(PERSON_MODIFIER_COLUMN);
-            registratorJoinInformation.setSubTable(PERSONS_TABLE);
-            registratorJoinInformation.setSubTableAlias(aliasFactory.createAlias());
-            registratorJoinInformation.setSubTableIdField(ID_COLUMN);
-            result.put(MODIFIER_JOIN_INFORMATION_KEY, registratorJoinInformation);
-        }
-
-        final JoinInformation typeJoinInformation = new JoinInformation();
-        typeJoinInformation.setJoinType(JoinType.LEFT);
-        typeJoinInformation.setMainTable(tableMapper.getEntitiesTable());
-        typeJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
-        typeJoinInformation.setMainTableIdField(tableMapper.getEntitiesTableEntityTypeIdField());
-        typeJoinInformation.setSubTable(tableMapper.getEntityTypesTable());
-        typeJoinInformation.setSubTableAlias(aliasFactory.createAlias());
-        typeJoinInformation.setSubTableIdField(ID_COLUMN);
-        result.put(ENTITY_TYPE_JOIN_INFORMATION_KEY, typeJoinInformation);
-
-        return result;
+        return TranslatorUtils.getFieldJoinInformationMap(tableMapper, aliasFactory);
     }
 
     @Override
@@ -111,85 +62,80 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final Map<String, String> dataTypeByPropertyCode)
     {
-        switch (criterion.getFieldType())
+        if (criterion.getFieldType() == SearchFieldType.ANY_FIELD)
         {
-            case ANY_FIELD:
-            {
-                final String alias = SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
-                final AbstractStringValue value = criterion.getFieldValue();
-                final boolean useWildcards = criterion.isUseWildcards();
-                final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue());
-                final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
-                final Class<? extends AbstractStringValue> valueClass = value.getClass();
-                final boolean equalsToComparison = (valueClass == StringEqualToValue.class);
-                final int separatorLength = OR_SEPARATOR.length();
-
-                sqlBuilder.append(LP);
-
-                AnyPropertySearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
-                sqlBuilder.append(OR_SEPARATOR);
-
-                if (valueClass != StringMatchesValue.class)
-                {
-                    IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases,
-                            UNIQUE_PREFIX);
-                    sqlBuilder.append(OR_SEPARATOR);
-
-                    translateEntityTypeMatch(value, args, sqlBuilder, aliases, useWildcards);
-                    sqlBuilder.append(OR_SEPARATOR);
-
-                    if (tableMapper.hasRegistrator())
-                    {
-                        translateUserMatch(value, args, sqlBuilder, aliases, REGISTRATOR_JOIN_INFORMATION_KEY,
-                                useWildcards);
-                        sqlBuilder.append(OR_SEPARATOR);
-                    }
-                    if (tableMapper.hasModifier())
-                    {
-                        translateUserMatch(value, args, sqlBuilder, aliases, MODIFIER_JOIN_INFORMATION_KEY,
-                                useWildcards);
-                        sqlBuilder.append(OR_SEPARATOR);
-                    }
-
-                    final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream()
-                            .collect(
-                            StringBuilder::new,
-                            (stringBuilder, fieldToSQLTypesEntry) ->
-                                    translateField(tableMapper, args, alias, value, useWildcards, stringValue,
-                                            compatiblePSQLTypesForValue, valueClass, equalsToComparison,
-                                            stringBuilder, fieldToSQLTypesEntry),
-                        StringBuilder::append);
-
-                    if (resultSqlBuilder.length() > separatorLength)
-                    {
-                        sqlBuilder.append(resultSqlBuilder.substring(separatorLength));
-                    }
-
-                    if (args.isEmpty() || resultSqlBuilder.length() <= separatorLength)
-                    {
-                        // When there are no columns selected (no values added), then the query should return nothing
-                        sqlBuilder.append(FALSE);
-                    }
-                } else
-                {
-                    appendTsVectorMatch(sqlBuilder, criterion.getFieldValue(), MAIN_TABLE_ALIAS, args);
-                }
-
-                sqlBuilder.append(RP).append(NL);
-
-                break;
-            }
-
-            case PROPERTY:
-            case ANY_PROPERTY:
-            case ATTRIBUTE:
-            {
-                throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
-            }
+            translateAnyField(criterion, criterion.isUseWildcards(), tableMapper, args, sqlBuilder, aliases);
+        } else
+        {
+            throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
         }
     }
 
-    private void translateField(final TableMapper tableMapper, final List<Object> args, final String alias,
+    public static void translateAnyField(final AbstractFieldSearchCriteria<AbstractStringValue> criterion,
+            final boolean useWildcards, final TableMapper tableMapper, final List<Object> args,
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases)
+    {
+        final AbstractStringValue value = criterion.getFieldValue();
+        final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue());
+        final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
+        final Class<? extends AbstractStringValue> valueClass = value.getClass();
+        final boolean equalsToComparison = (valueClass == StringEqualToValue.class);
+        final int separatorLength = OR_SEPARATOR.length();
+
+        sqlBuilder.append(LP);
+
+        AnyPropertySearchConditionTranslator.doTranslate(criterion, useWildcards, tableMapper, args, sqlBuilder,
+                aliases);
+        sqlBuilder.append(OR_SEPARATOR);
+
+        if (valueClass != StringMatchesValue.class)
+        {
+            IdentifierSearchConditionTranslator.doTranslate(criterion, useWildcards, tableMapper, args, sqlBuilder,
+                    aliases, UNIQUE_PREFIX);
+            sqlBuilder.append(OR_SEPARATOR);
+
+            translateEntityTypeMatch(value, args, sqlBuilder, aliases, useWildcards);
+            sqlBuilder.append(OR_SEPARATOR);
+
+            if (tableMapper.hasRegistrator())
+            {
+                translateUserMatch(value, args, sqlBuilder, aliases, REGISTRATOR_JOIN_INFORMATION_KEY, useWildcards);
+                sqlBuilder.append(OR_SEPARATOR);
+            }
+            if (tableMapper.hasModifier())
+            {
+                translateUserMatch(value, args, sqlBuilder, aliases, MODIFIER_JOIN_INFORMATION_KEY, useWildcards);
+                sqlBuilder.append(OR_SEPARATOR);
+            }
+
+            final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream()
+                    .collect(
+                    StringBuilder::new,
+                    (stringBuilder, fieldToSQLTypesEntry) ->
+                            translateField(tableMapper, args, SearchCriteriaTranslator.MAIN_TABLE_ALIAS, value, useWildcards, stringValue,
+                                    compatiblePSQLTypesForValue, valueClass, equalsToComparison,
+                                    stringBuilder, fieldToSQLTypesEntry),
+                StringBuilder::append);
+
+            if (resultSqlBuilder.length() > separatorLength)
+            {
+                sqlBuilder.append(resultSqlBuilder.substring(separatorLength));
+            }
+
+            if (args.isEmpty() || resultSqlBuilder.length() <= separatorLength)
+            {
+                // When there are no columns selected (no values added), then the query should return nothing
+                sqlBuilder.append(FALSE);
+            }
+        } else
+        {
+            appendTsVectorMatch(sqlBuilder, criterion.getFieldValue(), MAIN_TABLE_ALIAS, args);
+        }
+
+        sqlBuilder.append(RP).append(NL);
+    }
+
+    private static void translateField(final TableMapper tableMapper, final List<Object> args, final String alias,
             final AbstractStringValue value, final boolean useWildcards, final String stringValue,
             final Set<PSQLTypes> compatiblePSQLTypesForValue, final Class<? extends AbstractStringValue> valueClass,
             final boolean equalsToComparison, final StringBuilder stringBuilder,
@@ -255,7 +201,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
         }
     }
 
-    private void translateUserMatch(final AbstractStringValue value, final List<Object> args,
+    private static void translateUserMatch(final AbstractStringValue value, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final String personJoinInformationKey, final boolean useWildcards)
     {
@@ -266,7 +212,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 sqlBuilder, args);
     }
 
-    private void translateEntityTypeMatch(final AbstractStringValue value, final List<Object> args,
+    private static void translateEntityTypeMatch(final AbstractStringValue value, final List<Object> args,
             final StringBuilder sqlBuilder,
             final Map<String, JoinInformation> aliases, final boolean useWildcards)
     {

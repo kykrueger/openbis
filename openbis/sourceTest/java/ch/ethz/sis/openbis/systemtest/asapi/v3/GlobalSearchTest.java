@@ -169,7 +169,7 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
-        List<GlobalSearchObject> objects = result.getObjects();
+        final List<GlobalSearchObject> objects = result.getObjects();
         assertEquals(objects.size(), 3);
 
         final Set<String> permIds = objects.stream().map(object -> object.getObjectPermId().toString())
