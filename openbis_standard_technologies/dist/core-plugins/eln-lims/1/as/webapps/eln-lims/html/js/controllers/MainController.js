@@ -83,6 +83,7 @@ function MainController(profile) {
 	
 	//Functionality to keep state
 	this.backStack = [];
+	this.loggedInAnonymously = false;
 
 	this.zenodoApiTokenKey = "personal-zenodo-api-token";
 	
