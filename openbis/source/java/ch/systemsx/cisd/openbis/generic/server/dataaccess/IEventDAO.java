@@ -44,4 +44,9 @@ public interface IEventDAO extends IGenericDAO<EventPE>
     public List<DeletedDataSet> listDeletedDataSets(Long lastSeenDeletionEventIdOrNull,
             Date maxDeletionDataOrNull);
 
+
+    /**
+     * Lists events with the specified eventType and entityType.
+     */
+    public List<EventPE> listEvents(EventType eventType, EntityType entityType, Long lastSeenEventIdOrNull);
 }

@@ -1,0 +1,32 @@
+{
+  "20210322115435296-205145": [
+    {
+      "type": "ATTRIBUTE",
+      "value": "TEST_PROJECT",
+      "key": "CODE"
+    },
+    {
+      "type": "ATTRIBUTE",
+      "value": null,
+      "key": "DESCRIPTION"
+    },
+    {
+      "type": "ATTRIBUTE",
+      "value": "2021-03-22 11:54:35 +0100",
+      "key": "REGISTRATION_TIMESTAMP"
+    },
+    {
+      "type": "ATTRIBUTE",
+      "value": "admin",
+      "key": "REGISTRATOR"
+    },
+    {
+      "userId": "admin",
+      "validFrom": "2021-03-22 11:54:35.296",
+      "type": "RELATIONSHIP",
+      "entityType": "SPACE",
+      "key": "OWNED",
+      "value": "SPACE_B"
+    }
+  ]
+}
