@@ -38,10 +38,14 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEventDAO;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEventsSearchDAO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventsSearchPE;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -84,17 +88,39 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         {
             transaction = dataSource.createTransaction();
 
+            LastTimestamps lastTimestamps = new LastTimestamps(dataSource);
             SpaceSnapshots spaceSnapshots = new SpaceSnapshots(dataSource);
             ProjectSnapshots projectSnapshots = new ProjectSnapshots(dataSource);
+            ExperimentSnapshots experimentSnapshots = new ExperimentSnapshots(dataSource);
+
+            processSpaces(lastTimestamps, spaceSnapshots);
+            processProjects(lastTimestamps, spaceSnapshots, projectSnapshots);
+            processExperiments(lastTimestamps, spaceSnapshots, projectSnapshots, experimentSnapshots);
 
             transaction.commit();
         } catch (Exception e)
         {
-            transaction.rollback();
+            if (transaction != null)
+            {
+                transaction.rollback();
+            }
         } finally
         {
             dataSource.close();
         }
+    }
+
+    private void processSpaces(LastTimestamps lastTimestamps, SpaceSnapshots spaceSnapshots)
+    {
+    }
+
+    private void processProjects(LastTimestamps lastTimestamps, SpaceSnapshots spaceSnapshots, ProjectSnapshots projectSnapshots)
+    {
+    }
+
+    private void processExperiments(LastTimestamps lastTimestamps, SpaceSnapshots spaceSnapshots, ProjectSnapshots projectSnapshots,
+            ExperimentSnapshots experimentSnapshots)
+    {
     }
 
     interface IDataSource
@@ -113,6 +139,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         List<Experiment> loadExperiments(ExperimentFetchOptions fo);
 
         List<EventPE> loadEvents(EventType eventType, EntityType entityType, Long lastSeenEventIdOrNull);
+
+        EventsSearchPE loadLastEvent(EventType eventType, EntityType entityType);
 
     }
 
@@ -180,6 +208,12 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             IEventDAO eventDAO = CommonServiceProvider.getDAOFactory().getEventDAO();
             return eventDAO.listEvents(eventType, entityType, lastSeenEventIdOrNull);
         }
+
+        @Override public EventsSearchPE loadLastEvent(EventType eventType, EntityType entityType)
+        {
+            IEventsSearchDAO eventsSearchDAO = CommonServiceProvider.getDAOFactory().getEventsSearchDAO();
+            return eventsSearchDAO.getLastEvent(eventType, entityType);
+        }
     }
 
     private static class DataSourceTransaction implements IDataSourceTransaction
@@ -203,6 +237,34 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         {
             transaction.rollback();
         }
+    }
+
+    static class LastTimestamps
+    {
+        private IDataSource dataSource;
+
+        private Map<Pair<EventType, EntityType>, Date> timestamps;
+
+        public LastTimestamps(IDataSource dataSource)
+        {
+            for (EventType eventType : EventType.values())
+            {
+                for (EntityType entityType : EntityType.values())
+                {
+                    EventsSearchPE lastEvent = dataSource.loadLastEvent(eventType, entityType);
+                    if (lastEvent != null)
+                    {
+                        timestamps.put(new ImmutablePair<>(eventType, entityType), lastEvent.getRegistrationTimestamp());
+                    }
+                }
+            }
+        }
+
+        public Date get(EventType eventType, EntityType entityType)
+        {
+            return timestamps.get(new ImmutablePair<>(eventType, entityType));
+        }
+
     }
 
     static abstract class AbstractSnapshots<T extends AbstractSnapshot>
