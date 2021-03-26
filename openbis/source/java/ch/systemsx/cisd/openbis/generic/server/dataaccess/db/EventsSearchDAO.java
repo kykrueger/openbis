@@ -18,12 +18,19 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.common.reflection.MethodUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEventsSearchDAO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventsSearchPE;
 import org.apache.log4j.Logger;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * Data access object for {@link EventsSearchPE}.
@@ -41,8 +48,28 @@ public class EventsSearchDAO extends AbstractGenericEntityDAO<EventsSearchPE> im
         super(sessionFactory, ENTITY_CLASS, null);
     }
 
-    @Override public EventsSearchPE getLastEvent(EventType eventType, EventPE.EntityType entityType)
+    @Override public void createOrUpdate(EventsSearchPE eventsSearchPE)
     {
-        return null;
+        getHibernateTemplate().saveOrUpdate(eventsSearchPE);
+    }
+
+    @Override public Date getLastTimestamp(EventType eventType, EventPE.EntityType entityType)
+    {
+        DetachedCriteria criteria = DetachedCriteria.forClass(EventsSearchPE.class);
+        criteria.setProjection(Projections.max("registrationTimestamp"));
+        criteria.add(Restrictions.eq("eventType", eventType));
+        criteria.add(Restrictions.eq("entityType", entityType));
+
+        final List list = cast(getHibernateTemplate().findByCriteria(criteria));
+
+        final Date lastTimestamp = list.isEmpty() ? null : (Date) list.get(0);
+
+        if (operationLog.isDebugEnabled())
+        {
+            operationLog.debug(String.format(
+                    "%s(%s, %s): last timestamp = %s.", MethodUtils.getCurrentMethod().getName(), eventType, entityType, lastTimestamp));
+        }
+
+        return lastTimestamp;
     }
 }

@@ -26,12 +26,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.history.ProjectRelationType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -39,10 +37,12 @@ import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEventDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEventsSearchDAO;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISpaceDAO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventsSearchPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -89,13 +89,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             transaction = dataSource.createTransaction();
 
             LastTimestamps lastTimestamps = new LastTimestamps(dataSource);
-            SpaceSnapshots spaceSnapshots = new SpaceSnapshots(dataSource);
-            ProjectSnapshots projectSnapshots = new ProjectSnapshots(dataSource);
-            ExperimentSnapshots experimentSnapshots = new ExperimentSnapshots(dataSource);
-
-            processSpaces(lastTimestamps, spaceSnapshots);
-            processProjects(lastTimestamps, spaceSnapshots, projectSnapshots);
-            processExperiments(lastTimestamps, spaceSnapshots, projectSnapshots, experimentSnapshots);
+            processDeletions(lastTimestamps);
 
             transaction.commit();
         } catch (Exception e)
@@ -110,17 +104,281 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         }
     }
 
-    private void processSpaces(LastTimestamps lastTimestamps, SpaceSnapshots spaceSnapshots)
+    private void processDeletions(LastTimestamps lastTimestamps)
     {
+        SpaceSnapshots spaceSnapshots = new SpaceSnapshots(dataSource);
+        ProjectSnapshots projectSnapshots = new ProjectSnapshots(dataSource);
+        ExperimentSnapshots experimentSnapshots = new ExperimentSnapshots(dataSource);
+
+        processSpaceDeletions(lastTimestamps, spaceSnapshots);
+        processProjectDeletions(lastTimestamps, spaceSnapshots, projectSnapshots);
+        processExperimentDeletions(lastTimestamps, spaceSnapshots, projectSnapshots, experimentSnapshots);
     }
 
-    private void processProjects(LastTimestamps lastTimestamps, SpaceSnapshots spaceSnapshots, ProjectSnapshots projectSnapshots)
+    private void processSpaceDeletions(LastTimestamps lastTimestamps, SpaceSnapshots spaceSnapshots)
     {
+        Date lastSeenTimestampOrNull =
+                lastTimestamps.getEarliestOrNull(EventType.DELETION, EntityType.SPACE, EntityType.PROJECT, EntityType.EXPERIMENT, EntityType.SAMPLE,
+                        EntityType.DATASET);
+
+        List<EventPE> deletions = dataSource.loadEvents(EventType.DELETION, EntityType.SPACE, lastSeenTimestampOrNull);
+
+        Map<String, EventPE> latestDeletions = new HashMap<>();
+
+        for (EventPE deletion : deletions)
+        {
+            String spaceCode = deletion.getIdentifiers().get(0);
+
+            EventPE latestDeletion = latestDeletions.get(spaceCode);
+            if (latestDeletion == null || latestDeletion.getRegistrationDate().before(deletion.getRegistrationDate()))
+            {
+                latestDeletions.put(spaceCode, deletion);
+            }
+
+            EventsSearchPE newEvent = new EventsSearchPE();
+            newEvent.setEventType(deletion.getEventType());
+            newEvent.setEntityType(deletion.getEntityType());
+            newEvent.setEntitySpace(spaceCode);
+            newEvent.setIdentifier(spaceCode);
+            newEvent.setDescription(deletion.getDescription());
+            newEvent.setReason(deletion.getReason());
+            newEvent.setContent(deletion.getContent());
+            newEvent.setAttachmentContent(deletion.getAttachmentContent() != null ? deletion.getAttachmentContent().getId() : null);
+            newEvent.setRegisterer(deletion.getRegistrator());
+            newEvent.setRegistrationTimestamp(deletion.getRegistrationDate());
+            dataSource.createEventsSearch(newEvent);
+        }
+
+        for (EventPE latestDeletion : latestDeletions.values())
+        {
+            SpaceSnapshot snapshot = new SpaceSnapshot();
+            snapshot.spaceCode = latestDeletion.getIdentifiers().get(0);
+            snapshot.to = latestDeletion.getRegistrationDate();
+            spaceSnapshots.put(snapshot.spaceCode, snapshot);
+        }
     }
 
-    private void processExperiments(LastTimestamps lastTimestamps, SpaceSnapshots spaceSnapshots, ProjectSnapshots projectSnapshots,
+    private void processProjectDeletions(LastTimestamps lastTimestamps, SpaceSnapshots spaceSnapshots, ProjectSnapshots projectSnapshots)
+    {
+        final SimpleDateFormat registrationTimestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+        final SimpleDateFormat validTimestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        final ObjectMapper objectMapper = new ObjectMapper();
+
+        Date lastSeenTimestampOrNull =
+                lastTimestamps.getEarliestOrNull(EventType.DELETION, EntityType.PROJECT, EntityType.EXPERIMENT, EntityType.SAMPLE,
+                        EntityType.DATASET);
+
+        List<EventPE> deletions = dataSource.loadEvents(EventType.DELETION, EntityType.PROJECT, lastSeenTimestampOrNull);
+
+        for (EventPE deletion : deletions)
+        {
+            try
+            {
+                Map<String, Object> parsedContent = (Map<String, Object>) objectMapper.readValue(deletion.getContent(), Object.class);
+
+                for (String projectPermId : parsedContent.keySet())
+                {
+                    List<Map<String, String>> projectEntries = (List<Map<String, String>>) parsedContent.get(projectPermId);
+
+                    String projectCode = null;
+                    String registerer = null;
+                    Date registrationTimestamp = null;
+
+                    for (Map<String, String> projectEntry : projectEntries)
+                    {
+                        String type = projectEntry.get("type");
+                        String key = projectEntry.get("key");
+                        String value = projectEntry.get("value");
+
+                        if ("ATTRIBUTE".equals(type))
+                        {
+                            if ("CODE".equals(key))
+                            {
+                                projectCode = value;
+                            } else if ("REGISTRATOR".equals(key))
+                            {
+                                registerer = value;
+                            } else if ("REGISTRATION_TIMESTAMP".equals(key))
+                            {
+                                registrationTimestamp = registrationTimestampFormat.parse(value);
+                            }
+                        }
+                    }
+
+                    String spaceCode = null;
+
+                    for (Map<String, String> projectEntry : projectEntries)
+                    {
+                        String type = projectEntry.get("type");
+                        String entityType = projectEntry.get("entityType");
+
+                        if ("RELATIONSHIP".equals(type) && "SPACE".equals(entityType))
+                        {
+                            String value = projectEntry.get("value");
+                            String validFrom = projectEntry.get("validFrom");
+                            String validUntil = projectEntry.get("validUntil");
+
+                            ProjectSnapshot snapshot = new ProjectSnapshot();
+                            snapshot.projectCode = projectCode;
+                            snapshot.projectPermId = projectPermId;
+                            snapshot.spaceCode = value;
+
+                            if (validFrom != null)
+                            {
+                                snapshot.from = validTimestampFormat.parse(validFrom);
+                            }
+
+                            if (validUntil != null)
+                            {
+                                snapshot.to = validTimestampFormat.parse(validUntil);
+                            } else
+                            {
+                                snapshot.to = deletion.getRegistrationDate();
+                                spaceCode = value;
+                            }
+
+                            projectSnapshots.put(snapshot.projectPermId, snapshot);
+                        }
+                    }
+
+                    SpaceSnapshot spaceSnapshot = spaceSnapshots.get(spaceCode, deletion.getRegistrationDate());
+
+                    EventsSearchPE newEvent = new EventsSearchPE();
+                    newEvent.setEventType(deletion.getEventType());
+                    newEvent.setEntityType(deletion.getEntityType());
+                    newEvent.setEntitySpace(spaceCode);
+                    newEvent.setEntitySpacePermId(spaceSnapshot.spaceTechId != null ? String.valueOf(spaceSnapshot.spaceTechId) : null);
+                    newEvent.setEntityProject(new ProjectIdentifier(spaceCode, projectCode).toString());
+                    newEvent.setEntityProjectPermId(projectPermId);
+                    newEvent.setEntityRegisterer(registerer);
+                    newEvent.setEntityRegistrationTimestamp(registrationTimestamp);
+                    newEvent.setIdentifier(new ProjectIdentifier(spaceCode, projectCode).toString());
+                    newEvent.setDescription(deletion.getDescription());
+                    newEvent.setReason(deletion.getReason());
+                    newEvent.setContent(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(projectEntries));
+                    newEvent.setAttachmentContent(deletion.getAttachmentContent() != null ? deletion.getAttachmentContent().getId() : null);
+                    newEvent.setRegisterer(deletion.getRegistrator());
+                    newEvent.setRegistrationTimestamp(deletion.getRegistrationDate());
+                    dataSource.createEventsSearch(newEvent);
+                }
+
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void processExperimentDeletions(LastTimestamps lastTimestamps, SpaceSnapshots spaceSnapshots, ProjectSnapshots projectSnapshots,
             ExperimentSnapshots experimentSnapshots)
     {
+        final SimpleDateFormat registrationTimestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+        final SimpleDateFormat validTimestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        final ObjectMapper objectMapper = new ObjectMapper();
+
+        Date lastSeenTimestampOrNull =
+                lastTimestamps.getEarliestOrNull(EventType.DELETION, EntityType.EXPERIMENT, EntityType.SAMPLE,
+                        EntityType.DATASET);
+
+        List<EventPE> deletions = dataSource.loadEvents(EventType.DELETION, EntityType.EXPERIMENT, lastSeenTimestampOrNull);
+
+        for (EventPE deletion : deletions)
+        {
+            try
+            {
+                Map<String, Object> parsedContent = (Map<String, Object>) objectMapper.readValue(deletion.getContent(), Object.class);
+
+                for (String experimentPermId : parsedContent.keySet())
+                {
+                    List<Map<String, String>> experimentEntries = (List<Map<String, String>>) parsedContent.get(experimentPermId);
+
+                    String experimentCode = null;
+                    String registerer = null;
+                    Date registrationTimestamp = null;
+
+                    for (Map<String, String> experimentEntry : experimentEntries)
+                    {
+                        String type = experimentEntry.get("type");
+                        String key = experimentEntry.get("key");
+                        String value = experimentEntry.get("value");
+
+                        if ("ATTRIBUTE".equals(type))
+                        {
+                            if ("CODE".equals(key))
+                            {
+                                experimentCode = value;
+                            } else if ("REGISTRATOR".equals(key))
+                            {
+                                registerer = value;
+                            } else if ("REGISTRATION_TIMESTAMP".equals(key))
+                            {
+                                registrationTimestamp = registrationTimestampFormat.parse(value);
+                            }
+                        }
+                    }
+
+                    String projectPermId = null;
+
+                    for (Map<String, String> experimentEntry : experimentEntries)
+                    {
+                        String type = experimentEntry.get("type");
+                        String entityType = experimentEntry.get("entityType");
+
+                        if ("RELATIONSHIP".equals(type) && "PROJECT".equals(entityType))
+                        {
+                            String value = experimentEntry.get("value");
+                            String validFrom = experimentEntry.get("validFrom");
+                            String validUntil = experimentEntry.get("validUntil");
+
+                            ExperimentSnapshot snapshot = new ExperimentSnapshot();
+                            snapshot.experimentCode = experimentCode;
+                            snapshot.experimentPermId = experimentPermId;
+                            snapshot.projectPermId = value;
+
+                            if (validFrom != null)
+                            {
+                                snapshot.from = validTimestampFormat.parse(validFrom);
+                            }
+
+                            if (validUntil != null)
+                            {
+                                snapshot.to = validTimestampFormat.parse(validUntil);
+                            } else
+                            {
+                                snapshot.to = deletion.getRegistrationDate();
+                                projectPermId = value;
+                            }
+
+                            experimentSnapshots.put(snapshot.experimentPermId, snapshot);
+                        }
+                    }
+
+                    ProjectSnapshot projectSnapshot = projectSnapshots.get(projectPermId, deletion.getRegistrationDate());
+                    SpaceSnapshot spaceSnapshot = spaceSnapshots.get(projectSnapshot.spaceCode, deletion.getRegistrationDate());
+
+                    EventsSearchPE newEvent = new EventsSearchPE();
+                    newEvent.setEventType(deletion.getEventType());
+                    newEvent.setEntityType(deletion.getEntityType());
+                    newEvent.setEntitySpace(spaceSnapshot.spaceCode);
+                    newEvent.setEntitySpacePermId(spaceSnapshot.spaceTechId != null ? String.valueOf(spaceSnapshot.spaceTechId) : null);
+                    newEvent.setEntityProject(new ProjectIdentifier(spaceSnapshot.spaceCode, projectSnapshot.projectCode).toString());
+                    newEvent.setEntityProjectPermId(projectPermId);
+                    newEvent.setEntityRegisterer(registerer);
+                    newEvent.setEntityRegistrationTimestamp(registrationTimestamp);
+                    newEvent.setIdentifier(new ProjectIdentifier(spaceSnapshot.spaceCode, projectSnapshot.projectCode).toString());
+                    newEvent.setDescription(deletion.getDescription());
+                    newEvent.setReason(deletion.getReason());
+                    newEvent.setContent(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(experimentEntries));
+                    newEvent.setAttachmentContent(deletion.getAttachmentContent() != null ? deletion.getAttachmentContent().getId() : null);
+                    newEvent.setRegisterer(deletion.getRegistrator());
+                    newEvent.setRegistrationTimestamp(deletion.getRegistrationDate());
+                    dataSource.createEventsSearch(newEvent);
+                }
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     interface IDataSource
@@ -132,15 +390,17 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
         IDataSourceTransaction createTransaction();
 
-        List<Space> loadSpaces(SpaceFetchOptions fo);
+        List<SpacePE> loadSpaces();
 
         List<Project> loadProjects(ProjectFetchOptions fo);
 
         List<Experiment> loadExperiments(ExperimentFetchOptions fo);
 
-        List<EventPE> loadEvents(EventType eventType, EntityType entityType, Long lastSeenEventIdOrNull);
+        List<EventPE> loadEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull);
 
-        EventsSearchPE loadLastEvent(EventType eventType, EntityType entityType);
+        Date loadLastEventsSearchTimestamp(EventType eventType, EntityType entityType);
+
+        void createEventsSearch(EventsSearchPE eventsSearch);
 
     }
 
@@ -176,12 +436,10 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         }
 
         @Override
-        public List<Space> loadSpaces(SpaceFetchOptions fo)
+        public List<SpacePE> loadSpaces()
         {
-            IApplicationServerInternalApi v3 = CommonServiceProvider.getApplicationServerApi();
-            String sessionToken = v3.loginAsSystem();
-            SearchResult<Space> result = v3.searchSpaces(sessionToken, new SpaceSearchCriteria(), fo);
-            return result.getObjects();
+            ISpaceDAO spaceDAO = CommonServiceProvider.getDAOFactory().getSpaceDAO();
+            return spaceDAO.listSpaces();
         }
 
         @Override
@@ -203,16 +461,22 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         }
 
         @Override
-        public List<EventPE> loadEvents(EventType eventType, EntityType entityType, Long lastSeenEventIdOrNull)
+        public List<EventPE> loadEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull)
         {
             IEventDAO eventDAO = CommonServiceProvider.getDAOFactory().getEventDAO();
-            return eventDAO.listEvents(eventType, entityType, lastSeenEventIdOrNull);
+            return eventDAO.listEvents(eventType, entityType, lastSeenTimestampOrNull);
         }
 
-        @Override public EventsSearchPE loadLastEvent(EventType eventType, EntityType entityType)
+        @Override public Date loadLastEventsSearchTimestamp(EventType eventType, EntityType entityType)
         {
             IEventsSearchDAO eventsSearchDAO = CommonServiceProvider.getDAOFactory().getEventsSearchDAO();
-            return eventsSearchDAO.getLastEvent(eventType, entityType);
+            return eventsSearchDAO.getLastTimestamp(eventType, entityType);
+        }
+
+        @Override public void createEventsSearch(EventsSearchPE eventsSearch)
+        {
+            IEventsSearchDAO eventsSearchDAO = CommonServiceProvider.getDAOFactory().getEventsSearchDAO();
+            eventsSearchDAO.createOrUpdate(eventsSearch);
         }
     }
 
@@ -251,45 +515,67 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             {
                 for (EntityType entityType : EntityType.values())
                 {
-                    EventsSearchPE lastEvent = dataSource.loadLastEvent(eventType, entityType);
-                    if (lastEvent != null)
-                    {
-                        timestamps.put(new ImmutablePair<>(eventType, entityType), lastEvent.getRegistrationTimestamp());
-                    }
+                    Date lastTimestamp = dataSource.loadLastEventsSearchTimestamp(eventType, entityType);
+                    timestamps.put(new ImmutablePair<>(eventType, entityType), lastTimestamp);
                 }
             }
         }
 
-        public Date get(EventType eventType, EntityType entityType)
+        public Date getEarliestOrNull(EventType eventType, EntityType... entityTypes)
         {
-            return timestamps.get(new ImmutablePair<>(eventType, entityType));
+            Date earliest = null;
+
+            for (EntityType entityType : entityTypes)
+            {
+                Date timestamp = timestamps.get(new ImmutablePair<>(eventType, entityType));
+
+                if (timestamp == null)
+                {
+                    return null;
+                }
+
+                if (earliest == null || timestamp.before(earliest))
+                {
+                    earliest = timestamp;
+                }
+            }
+
+            return earliest;
         }
 
     }
 
     static abstract class AbstractSnapshots<T extends AbstractSnapshot>
     {
-        private Map<String, List<T>> snapshots = new HashMap<>();
+        protected IDataSource dataSource;
+
+        private Map<String, TreeMap<Date, T>> snapshots = new HashMap<>();
 
         public AbstractSnapshots(IDataSource dataSource)
         {
-            this.snapshots = this.load(dataSource);
+            this.dataSource = dataSource;
         }
 
-        protected abstract Map<String, List<T>> load(IDataSource dataSource);
+        public void put(String key, T snapshot)
+        {
+            TreeMap<Date, T> snapshotsForKey = snapshots.computeIfAbsent(key, k -> new TreeMap<>());
+            snapshotsForKey.put(snapshot.from, snapshot);
+        }
 
         public T get(String key, Date date)
         {
-            List<T> snapshotsForKey = snapshots.get(key);
+            TreeMap<Date, T> snapshotsForKey = snapshots.get(key);
 
             if (snapshotsForKey != null)
             {
-                for (T snapshot : snapshotsForKey)
+                Map.Entry<Date, T> potentialEntry = snapshotsForKey.ceilingEntry(date);
+
+                if (potentialEntry != null)
                 {
-                    if ((snapshot.from == null || snapshot.from.compareTo(date) <= 0) && (snapshot.to == null
-                            || snapshot.to.compareTo(date) >= 0))
+                    T potentialSnapshot = potentialEntry.getValue();
+                    if (potentialSnapshot.to == null || date.before(potentialSnapshot.to))
                     {
-                        return snapshot;
+                        return potentialSnapshot;
                     }
                 }
             }
@@ -311,62 +597,29 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         public SpaceSnapshots(IDataSource dataSource)
         {
             super(dataSource);
+            loadExisting();
         }
 
-        @Override
-        protected Map<String, List<SpaceSnapshot>> load(IDataSource dataSource)
+        private void loadExisting()
         {
-            Map<String, List<SpaceSnapshot>> snapshotsMap = new HashMap<>();
+            List<SpacePE> spaces = dataSource.loadSpaces();
 
-            List<EventPE> deletions = dataSource.loadEvents(EventType.DELETION, EntityType.SPACE, null);
-
-            ArrayList<EventPE> sortedDeletions = new ArrayList<>(deletions);
-            sortedDeletions.sort(new Comparator<EventPE>()
-            {
-                @Override public int compare(EventPE o1, EventPE o2)
-                {
-                    return 10 * o1.getIdentifiers().get(0).compareTo(o2.getIdentifiers().get(0)) + o1.getRegistrationDate()
-                            .compareTo(o2.getRegistrationDate());
-                }
-            });
-
-            EventPE previousDeletion = null;
-            for (EventPE sortedDeletion : sortedDeletions)
-            {
-                SpaceSnapshot snapshot = new SpaceSnapshot();
-
-                if (previousDeletion != null && previousDeletion.getIdentifiers().equals(sortedDeletion.getIdentifiers()))
-                {
-                    snapshot.from = previousDeletion.getRegistrationDate();
-                }
-
-                snapshot.to = sortedDeletion.getRegistrationDate();
-                snapshot.spaceCode = sortedDeletion.getIdentifiers().get(0);
-
-                List<SpaceSnapshot> snapshots = snapshotsMap.computeIfAbsent(snapshot.spaceCode, k -> new ArrayList<>());
-                snapshots.add(snapshot);
-
-                previousDeletion = sortedDeletion;
-            }
-
-            List<Space> spaces = dataSource.loadSpaces(new SpaceFetchOptions());
-
-            for (Space space : spaces)
+            for (SpacePE space : spaces)
             {
                 SpaceSnapshot snapshot = new SpaceSnapshot();
                 snapshot.from = space.getRegistrationDate();
                 snapshot.spaceCode = space.getCode();
+                snapshot.spaceTechId = space.getId();
 
-                List<SpaceSnapshot> snapshots = snapshotsMap.computeIfAbsent(snapshot.spaceCode, k -> new ArrayList<>());
-                snapshots.add(snapshot);
+                put(snapshot.spaceCode, snapshot);
             }
-
-            return snapshotsMap;
         }
     }
 
     static class SpaceSnapshot extends AbstractSnapshot
     {
+
+        public Long spaceTechId;
 
         public String spaceCode;
 
@@ -375,94 +628,13 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
     static class ProjectSnapshots extends AbstractSnapshots<ProjectSnapshot>
     {
 
-        private static final SimpleDateFormat validDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-
-        private static final ObjectMapper objectMapper = new ObjectMapper();
-
         public ProjectSnapshots(IDataSource dataSource)
         {
             super(dataSource);
+            loadExisting();
         }
 
-        @Override
-        protected Map<String, List<ProjectSnapshot>> load(IDataSource dataSource)
-        {
-            Map<String, List<ProjectSnapshot>> snapshotsMap = new HashMap<>();
-
-            loadDeleted(dataSource, snapshotsMap);
-            loadExisting(dataSource, snapshotsMap);
-
-            return snapshotsMap;
-        }
-
-        private void loadDeleted(IDataSource dataSource, Map<String, List<ProjectSnapshot>> snapshotsMap)
-        {
-            List<EventPE> deletions = dataSource.loadEvents(EventType.DELETION, EntityType.PROJECT, null);
-
-            for (EventPE deletion : deletions)
-            {
-                try
-                {
-                    Map<String, Object> parsedContent = (Map<String, Object>) objectMapper.readValue(deletion.getContent(), Object.class);
-
-                    for (String projectPermId : parsedContent.keySet())
-                    {
-                        List<Map<String, String>> projectEntries = (List<Map<String, String>>) parsedContent.get(projectPermId);
-
-                        String projectCode = null;
-                        for (Map<String, String> projectEntry : projectEntries)
-                        {
-                            String type = projectEntry.get("type");
-                            String key = projectEntry.get("key");
-
-                            if ("ATTRIBUTE".equals(type) && "CODE".equals(key))
-                            {
-                                projectCode = projectEntry.get("value");
-                            }
-                        }
-
-                        for (Map<String, String> projectEntry : projectEntries)
-                        {
-                            String type = projectEntry.get("type");
-                            String entityType = projectEntry.get("entityType");
-
-                            if ("RELATIONSHIP".equals(type) && "SPACE".equals(entityType))
-                            {
-                                String value = projectEntry.get("value");
-                                String validFrom = projectEntry.get("validFrom");
-                                String validUntil = projectEntry.get("validUntil");
-
-                                ProjectSnapshot snapshot = new ProjectSnapshot();
-                                snapshot.projectCode = projectCode;
-                                snapshot.projectPermId = projectPermId;
-                                snapshot.spaceCode = value;
-
-                                if (validFrom != null)
-                                {
-                                    snapshot.from = validDateFormat.parse(validFrom);
-                                }
-
-                                if (validUntil != null)
-                                {
-                                    snapshot.to = validDateFormat.parse(validUntil);
-                                } else
-                                {
-                                    snapshot.to = deletion.getRegistrationDate();
-                                }
-
-                                List<ProjectSnapshot> snapshots = snapshotsMap.computeIfAbsent(snapshot.projectPermId, k -> new ArrayList<>());
-                                snapshots.add(snapshot);
-                            }
-                        }
-                    }
-                } catch (Exception e)
-                {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        private void loadExisting(IDataSource dataSource, Map<String, List<ProjectSnapshot>> snapshotsMap)
+        private void loadExisting()
         {
             ProjectFetchOptions fo = new ProjectFetchOptions();
             fo.withSpace();
@@ -489,9 +661,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                             snapshot.from = relationHistoryEntry.getValidFrom();
                             snapshot.to = relationHistoryEntry.getValidTo();
 
-                            List<ProjectSnapshot> snapshots = snapshotsMap.computeIfAbsent(snapshot.projectPermId, k -> new ArrayList<>());
-                            snapshots.add(snapshot);
-
+                            put(snapshot.projectPermId, snapshot);
                             lastSpaceRelationship = relationHistoryEntry;
                         }
                     }
@@ -510,8 +680,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     snapshot.from = project.getRegistrationDate();
                 }
 
-                List<ProjectSnapshot> snapshots = snapshotsMap.computeIfAbsent(snapshot.projectPermId, k -> new ArrayList<>());
-                snapshots.add(snapshot);
+                put(snapshot.projectPermId, snapshot);
             }
         }
     }
@@ -530,94 +699,13 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
     static class ExperimentSnapshots extends AbstractSnapshots<ExperimentSnapshot>
     {
 
-        private static final SimpleDateFormat validDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-
-        private static final ObjectMapper objectMapper = new ObjectMapper();
-
         public ExperimentSnapshots(IDataSource dataSource)
         {
             super(dataSource);
+            loadExisting();
         }
 
-        @Override
-        protected Map<String, List<ExperimentSnapshot>> load(IDataSource dataSource)
-        {
-            Map<String, List<ExperimentSnapshot>> snapshotsMap = new HashMap<>();
-
-            loadDeleted(dataSource, snapshotsMap);
-            loadExisting(dataSource, snapshotsMap);
-
-            return snapshotsMap;
-        }
-
-        private void loadDeleted(IDataSource dataSource, Map<String, List<ExperimentSnapshot>> snapshotsMap)
-        {
-            List<EventPE> deletions = dataSource.loadEvents(EventType.DELETION, EntityType.EXPERIMENT, null);
-
-            for (EventPE deletion : deletions)
-            {
-                try
-                {
-                    Map<String, Object> parsedContent = (Map<String, Object>) objectMapper.readValue(deletion.getContent(), Object.class);
-
-                    for (String experimentPermId : parsedContent.keySet())
-                    {
-                        List<Map<String, String>> experimentEntries = (List<Map<String, String>>) parsedContent.get(experimentPermId);
-
-                        String experimentCode = null;
-                        for (Map<String, String> experimentEntry : experimentEntries)
-                        {
-                            String type = experimentEntry.get("type");
-                            String key = experimentEntry.get("key");
-
-                            if ("ATTRIBUTE".equals(type) && "CODE".equals(key))
-                            {
-                                experimentCode = experimentEntry.get("value");
-                            }
-                        }
-
-                        for (Map<String, String> experimentEntry : experimentEntries)
-                        {
-                            String type = experimentEntry.get("type");
-                            String entityType = experimentEntry.get("entityType");
-
-                            if ("RELATIONSHIP".equals(type) && "PROJECT".equals(entityType))
-                            {
-                                String value = experimentEntry.get("value");
-                                String validFrom = experimentEntry.get("validFrom");
-                                String validUntil = experimentEntry.get("validUntil");
-
-                                ExperimentSnapshot snapshot = new ExperimentSnapshot();
-                                snapshot.experimentCode = experimentCode;
-                                snapshot.experimentPermId = experimentPermId;
-                                snapshot.projectPermId = value;
-
-                                if (validFrom != null)
-                                {
-                                    snapshot.from = validDateFormat.parse(validFrom);
-                                }
-
-                                if (validUntil != null)
-                                {
-                                    snapshot.to = validDateFormat.parse(validUntil);
-                                } else
-                                {
-                                    snapshot.to = deletion.getRegistrationDate();
-                                }
-
-                                List<ExperimentSnapshot> snapshots = snapshotsMap.computeIfAbsent(snapshot.experimentPermId, k -> new ArrayList<>());
-                                snapshots.add(snapshot);
-                            }
-                        }
-                    }
-                } catch (Exception e)
-                {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        private void loadExisting(IDataSource dataSource, Map<String, List<ExperimentSnapshot>> snapshotsMap)
+        private void loadExisting()
         {
             ExperimentFetchOptions fo = new ExperimentFetchOptions();
             fo.withProject();
@@ -644,9 +732,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                             snapshot.from = relationHistoryEntry.getValidFrom();
                             snapshot.to = relationHistoryEntry.getValidTo();
 
-                            List<ExperimentSnapshot> snapshots = snapshotsMap.computeIfAbsent(snapshot.experimentPermId, k -> new ArrayList<>());
-                            snapshots.add(snapshot);
-
+                            put(snapshot.experimentPermId, snapshot);
                             lastProjectRelationship = relationHistoryEntry;
                         }
                     }
@@ -665,8 +751,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     snapshot.from = experiment.getRegistrationDate();
                 }
 
-                List<ExperimentSnapshot> snapshots = snapshotsMap.computeIfAbsent(snapshot.experimentPermId, k -> new ArrayList<>());
-                snapshots.add(snapshot);
+                put(snapshot.experimentPermId, snapshot);
             }
         }
     }

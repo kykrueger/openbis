@@ -20,6 +20,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventsSearchPE;
 
+import java.util.Date;
+
 /**
  * <i>Data Access Object</i> for {@link EventsSearchPE}.
  *
@@ -28,5 +30,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventsSearchPE;
 public interface IEventsSearchDAO extends IGenericDAO<EventsSearchPE>
 {
 
-    EventsSearchPE getLastEvent(EventType eventType, EventPE.EntityType entityType);
+    void createOrUpdate(EventsSearchPE eventsSearchPE);
+
+    Date getLastTimestamp(EventType eventType, EventPE.EntityType entityType);
 }
