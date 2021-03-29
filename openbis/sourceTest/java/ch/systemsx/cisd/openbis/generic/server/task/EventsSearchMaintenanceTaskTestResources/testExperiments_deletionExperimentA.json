@@ -1,18 +1,18 @@
 {
-  "20210322160243866-205154": [
+  "20210329150903348-205179": [
     {
       "type": "ATTRIBUTE",
-      "value": "TEST_EXPERIMENT",
+      "value": "EXPERIMENT_A",
       "key": "CODE"
     },
     {
       "type": "ATTRIBUTE",
-      "value": "2021-03-22 16:02:43 +0100",
+      "value": "2021-03-29 15:09:03 +0200",
       "key": "REGISTRATION_TIMESTAMP"
     },
     {
       "type": "ATTRIBUTE",
-      "value": "admin",
+      "value": "registerer_experiment_A",
       "key": "REGISTRATOR"
     },
     {
@@ -27,20 +27,20 @@
     },
     {
       "userId": "admin",
-      "validFrom": "2021-03-22 16:02:43.866",
-      "validUntil": "2021-03-22 16:02:59.066",
+      "validFrom": "2021-03-29 15:09:03.348",
+      "validUntil": "2021-03-29 15:09:22.472",
       "type": "RELATIONSHIP",
-      "entityType": "PROJECT",
+      "entityType": "UNKNOWN",
       "key": "OWNED",
-      "value": "20210322160218429-205152"
+      "value": "20210329150838023-205177"
     },
     {
       "userId": "admin",
-      "validFrom": "2021-03-22 16:02:59.066",
+      "validFrom": "2021-03-29 15:09:22.472",
       "type": "RELATIONSHIP",
       "entityType": "PROJECT",
       "key": "OWNED",
-      "value": "20210322160225869-205153"
+      "value": "20210329150846687-205178"
     }
   ]
 }

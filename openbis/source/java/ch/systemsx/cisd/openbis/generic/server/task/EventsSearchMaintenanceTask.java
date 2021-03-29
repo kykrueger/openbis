@@ -153,6 +153,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         {
             SpaceSnapshot snapshot = new SpaceSnapshot();
             snapshot.spaceCode = latestDeletion.getIdentifiers().get(0);
+            snapshot.from = new Date(0);
             snapshot.to = latestDeletion.getRegistrationDate();
             spaceSnapshots.put(snapshot.spaceCode, snapshot);
         }
@@ -252,7 +253,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     newEvent.setEntityProjectPermId(projectPermId);
                     newEvent.setEntityRegisterer(registerer);
                     newEvent.setEntityRegistrationTimestamp(registrationTimestamp);
-                    newEvent.setIdentifier(new ProjectIdentifier(spaceCode, projectCode).toString());
+                    newEvent.setIdentifier(projectPermId);
                     newEvent.setDescription(deletion.getDescription());
                     newEvent.setReason(deletion.getReason());
                     newEvent.setContent(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(projectEntries));
@@ -365,7 +366,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     newEvent.setEntityProjectPermId(projectPermId);
                     newEvent.setEntityRegisterer(registerer);
                     newEvent.setEntityRegistrationTimestamp(registrationTimestamp);
-                    newEvent.setIdentifier(new ProjectIdentifier(spaceSnapshot.spaceCode, projectSnapshot.projectCode).toString());
+                    newEvent.setIdentifier(experimentPermId);
                     newEvent.setDescription(deletion.getDescription());
                     newEvent.setReason(deletion.getReason());
                     newEvent.setContent(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(experimentEntries));
@@ -507,7 +508,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
     {
         private IDataSource dataSource;
 
-        private Map<Pair<EventType, EntityType>, Date> timestamps;
+        private Map<Pair<EventType, EntityType>, Date> timestamps = new HashMap<>();
 
         public LastTimestamps(IDataSource dataSource)
         {
@@ -568,7 +569,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
             if (snapshotsForKey != null)
             {
-                Map.Entry<Date, T> potentialEntry = snapshotsForKey.ceilingEntry(date);
+                Map.Entry<Date, T> potentialEntry = snapshotsForKey.floorEntry(date);
 
                 if (potentialEntry != null)
                 {
