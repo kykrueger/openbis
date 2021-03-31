@@ -48,5 +48,5 @@ public interface IEventDAO extends IGenericDAO<EventPE>
     /**
      * Lists events with the specified eventType and entityType.
      */
-    public List<EventPE> listEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull);
+    public List<EventPE> listEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull, int limit);
 }

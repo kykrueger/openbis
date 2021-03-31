@@ -31,6 +31,7 @@ import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.jdbc.support.JdbcAccessor;
 
@@ -114,10 +115,11 @@ public class EventDAO extends AbstractGenericEntityDAO<EventPE> implements IEven
         return result;
     }
 
-    @Override public List<EventPE> listEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull)
+    @Override public List<EventPE> listEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull, int limit)
     {
         final DetachedCriteria criteria = DetachedCriteria.forClass(EventPE.class);
-
+        criteria.addOrder(Order.asc("registrationDate"));
+        criteria.addOrder(Order.asc("id"));
         criteria.add(Restrictions.eq("eventType", eventType));
         criteria.add(Restrictions.eq("entityType", entityType));
 
@@ -126,7 +128,21 @@ public class EventDAO extends AbstractGenericEntityDAO<EventPE> implements IEven
             criteria.add(Restrictions.gt("registrationDate", lastSeenTimestampOrNull));
         }
 
-        final List<EventPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<EventPE> list = cast(getHibernateTemplate().findByCriteria(criteria, 0, limit));
+
+        if (list.size() == limit)
+        {
+            // if there are more events with the same registration date, make sure the batch contains them all even if it is above the limit
+            Date lastRegistrationDate = list.get(list.size() - 1).getRegistrationDateInternal();
+            criteria.add(Restrictions.le("registrationDate", lastRegistrationDate));
+
+            List<EventPE> remainderList = cast(getHibernateTemplate().findByCriteria(criteria, limit, Integer.MAX_VALUE));
+
+            List<EventPE> fullList = new ArrayList<>(list);
+            fullList.addAll(remainderList);
+
+            list = fullList;
+        }
 
         if (operationLog.isDebugEnabled())
         {

@@ -17,6 +17,7 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.api.Invocation;
 import org.jmock.lib.action.CustomAction;
+import org.springframework.transaction.support.TransactionCallback;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -41,13 +42,11 @@ public class EventsSearchMaintenanceTaskTest
 
     private Mockery mockery;
 
-    private TestResources resources = new TestResources(getClass());
+    private final TestResources resources = new TestResources(getClass());
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private EventsSearchMaintenanceTask.IDataSource dataSource;
-
-    private EventsSearchMaintenanceTask.IDataSourceTransaction transaction;
 
     @BeforeMethod
     public void beforeMethod()
@@ -55,17 +54,19 @@ public class EventsSearchMaintenanceTaskTest
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO);
         mockery = new Mockery();
         dataSource = mockery.mock(EventsSearchMaintenanceTask.IDataSource.class);
-        transaction = mockery.mock(EventsSearchMaintenanceTask.IDataSourceTransaction.class);
 
         mockery.checking(new Expectations()
         {
             {
-                one(dataSource).open();
-
-                one(dataSource).createTransaction();
-                will(returnValue(transaction));
-
-                one(dataSource).close();
+                allowing(dataSource).executeInNewTransaction(with(any(TransactionCallback.class)));
+                will(new CustomAction("execute callback")
+                {
+                    @Override public Object invoke(Invocation invocation) throws Throwable
+                    {
+                        ((TransactionCallback) invocation.getParameter(0)).doInTransaction(null);
+                        return null;
+                    }
+                });
             }
         });
     }
@@ -149,13 +150,15 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(EventType.DELETION, EntityType.SPACE, null);
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Arrays.asList(deletionA1, deletionA2, deletionB)));
-
-                one(dataSource).loadEvents(EventType.DELETION, EntityType.PROJECT, null);
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(EventType.DELETION, EntityType.EXPERIMENT, null);
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
@@ -167,8 +170,6 @@ public class EventsSearchMaintenanceTaskTest
                         return null;
                     }
                 });
-
-                one(transaction).commit();
             }
         });
 
@@ -284,13 +285,17 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(EventType.DELETION, EntityType.SPACE, null);
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Arrays.asList(deletionSpaceA, deletionSpaceB)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(EventType.DELETION, EntityType.PROJECT, null);
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Arrays.asList(deletionProjectA, deletionProjectB)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(EventType.DELETION, EntityType.EXPERIMENT, null);
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
@@ -302,8 +307,6 @@ public class EventsSearchMaintenanceTaskTest
                         return null;
                     }
                 });
-
-                one(transaction).commit();
             }
         });
 
@@ -461,14 +464,19 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(EventType.DELETION, EntityType.SPACE, null);
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(EventType.DELETION, EntityType.PROJECT, null);
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Arrays.asList(deletionProjectA, deletionProjectB)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(EventType.DELETION, EntityType.EXPERIMENT, null);
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Arrays.asList(deletionExperimentA, deletionExperimentsAB)));
+                one(dataSource)
+                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
                 will(new CustomAction("collect events")
@@ -479,8 +487,6 @@ public class EventsSearchMaintenanceTaskTest
                         return null;
                     }
                 });
-
-                one(transaction).commit();
             }
         });
 

@@ -23,8 +23,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
 
 import javax.persistence.Id;
 import javax.persistence.*;
@@ -233,7 +231,6 @@ public class EventsSearchPE implements IIdHolder, Serializable
     }
 
     @Column(name = ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, nullable = false, updatable = false)
-    @Generated(GenerationTime.INSERT)
     public Date getRegistrationTimestamp()
     {
         return registrationTimestamp;
