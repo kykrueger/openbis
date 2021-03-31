@@ -1,6 +1,7 @@
 ## Changes with pybis-1.18.6
 
 - fixed create samples bug
+- fixed zip upload bug
 
 ## Changes with pybis-1.18.5
 
