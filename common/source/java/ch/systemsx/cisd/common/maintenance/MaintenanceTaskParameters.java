@@ -229,7 +229,7 @@ public class MaintenanceTaskParameters
                 String[] splitted = StringUtils.split(definition);
                 String[] splittedTime = splitted[splitted.length - 1].split(":");
                 hour = Integer.parseInt(splittedTime[0]);
-                minute = Integer.parseInt(splittedTime[1]);
+                minute = splittedTime.length > 1 ? Integer.parseInt(splittedTime[1]) : 0;
                 nextDay = createNextDay(splitted);
             } catch (Exception e)
             {
