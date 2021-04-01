@@ -1213,11 +1213,6 @@ public interface IApplicationServerApi extends IRpcService
     /**
      * Searches for samples basing on the provided {@code SampleSearchCriteria}.
      * <p>
-     * WARNING: The search internally uses a Lucene index which is updated asynchronously. Recent creations/updates/deletions may be therefore visible
-     * to the search after some delay. In case such a delay is unacceptable {@code getSamples} method should be used instead (it does not use the
-     * Lucene index and is guaranteed to see the latest data).
-     * </p>
-     * <p>
      * By default the returned samples contain only basic information. Any additional information to be fetched has to be explicitly requested via
      * {@code SampleFetchOptions}.
      * </p>
@@ -1247,11 +1242,6 @@ public interface IApplicationServerApi extends IRpcService
     /**
      * Searches for data sets basing on the provided {@code DataSetSearchCriteria}.
      * <p>
-     * WARNING: The search internally uses a Lucene index which is updated asynchronously. Recent creations/updates/deletions may be therefore visible
-     * to the search after some delay. In case such a delay is unacceptable {@code getDataSets} method should be used instead (it does not use the
-     * Lucene index and is guaranteed to see the latest data).
-     * </p>
-     * <p>
      * By default the returned data sets contain only basic information. Any additional information to be fetched has to be explicitly requested via
      * {@code DataSetFetchOptions}.
      * </p>
@@ -1280,11 +1270,6 @@ public interface IApplicationServerApi extends IRpcService
 
     /**
      * Searches for materials basing on the provided {@code MaterialSearchCriteria}.
-     * <p>
-     * WARNING: The search internally uses a Lucene index which is updated asynchronously. Recent creations/updates/deletions may be therefore visible
-     * to the search after some delay. In case such a delay is unacceptable {@code getMaterials} method should be used instead (it does not use the
-     * Lucene index and is guaranteed to see the latest data).
-     * </p>
      * <p>
      * By default the returned materials contain only basic information. Any additional information to be fetched has to be explicitly requested via
      * {@code MaterialFetchOptions}.
@@ -1530,10 +1515,6 @@ public interface IApplicationServerApi extends IRpcService
 
     /**
      * Searches for experiments, samples, data sets and materials at once basing on the provided {@code GlobalSearchCriteria}.
-     * <p>
-     * WARNING: The search internally uses a Lucene index which is updated asynchronously. Recent creations/updates/deletions may be therefore visible
-     * to the search after some delay.
-     * </p>
      * <p>
      * By default the returned objects contain only basic information. Any additional information to be fetched has to be explicitly requested via
      * {@code GlobalSearchObjectFetchOptions}.

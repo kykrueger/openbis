@@ -89,7 +89,11 @@ public class MaintenancePlugin
 
         final TimerTask timerTask = new MaintenanceTimerTask();
         final Date startDate = parameters.getStartDate();
-        if (parameters.isExecuteOnlyOnce())
+        INextTimestampProvider nextTimestampProvider = parameters.getNextTimestampProvider();
+        if (nextTimestampProvider != null)
+        {
+            schedule(timerTask, nextTimestampProvider);
+        } else if (parameters.isExecuteOnlyOnce())
         {
             workerTimer.schedule(timerTask, startDate);
             if (operationLog.isInfoEnabled())
@@ -106,6 +110,23 @@ public class MaintenancePlugin
                         + ", first execution at " + startDate + ", scheduling interval: "
                         + parameters.getIntervalSeconds() + "s.");
             }
+        }
+    }
+
+    private void schedule(final TimerTask timerTask, INextTimestampProvider nextTimestampProvider)
+    {
+        Date nextTimestamp = nextTimestampProvider.getNextTimestamp(new Date());
+        if (workerTimer != null)
+        {
+            workerTimer.schedule(new TimerTask()
+            {
+                @Override
+                public void run()
+                {
+                    timerTask.run();
+                    schedule(timerTask, nextTimestampProvider);
+                }
+            }, nextTimestamp);
         }
     }
 

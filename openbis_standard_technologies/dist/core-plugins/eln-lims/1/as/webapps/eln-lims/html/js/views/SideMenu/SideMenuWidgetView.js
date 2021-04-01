@@ -120,8 +120,11 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         searchElement.css({"margin-left" : "2px"});
         searchElement.css({"margin-right" : "2px"});
         
-        var logoutButton = FormUtil.getButtonWithIcon("glyphicon-off", function() {
+        var icon = mainController.loggedInAnonymously ? "glyphicon-log-in" : "glyphicon-off";
+        var logoutButton = FormUtil.getButtonWithIcon(icon, function() {
             $('body').addClass('bodyLogin');
+            sessionStorage.setItem("forceNormalLogin", mainController.loggedInAnonymously);
+            mainController.loggedInAnonymously = false;
             mainController.serverFacade.logout();
          }, null, null, "logoutBtn");
         
@@ -343,7 +346,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             treeModelUtils.push({ displayName: "Trashcan", title : trashCanLink, entityType: "TRASHCAN", key : "TRASHCAN", folder : false, lazy : false, view : "showTrashcanPage", icon : "glyphicon glyphicon-trash" });
         }
         
-        if(profile.mainMenu.showSettings && profile.isAdmin) {
+        if(profile.mainMenu.showSettings) {
             var settingsLink = _this.getLinkForNode("Settings", "SETTINGS", "showSettingsPage", null, null);
             treeModelUtils.push({ displayName: "Settings", title : settingsLink, entityType: "SETTINGS", key : "SETTINGS", folder : false, lazy : false, view : "showSettingsPage", icon : "glyphicon glyphicon-cog" });
         }
