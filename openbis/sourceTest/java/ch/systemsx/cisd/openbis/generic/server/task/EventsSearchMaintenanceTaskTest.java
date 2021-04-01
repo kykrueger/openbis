@@ -1,6 +1,8 @@
 package ch.systemsx.cisd.openbis.generic.server.task;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
@@ -161,6 +163,9 @@ public class EventsSearchMaintenanceTaskTest
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
                 will(new CustomAction("collect events")
                 {
@@ -296,6 +301,9 @@ public class EventsSearchMaintenanceTaskTest
                 will(returnValue(Collections.emptyList()));
 
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
@@ -478,6 +486,9 @@ public class EventsSearchMaintenanceTaskTest
                         .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
                 will(new CustomAction("collect events")
                 {
@@ -549,6 +560,256 @@ public class EventsSearchMaintenanceTaskTest
         deletionExperimentsABExpectedA.setIdentifier("20210329151120278-205181");
         deletionExperimentsABExpectedA.setContent(loadFile("testExperiments_deletionExperimentsABExpectedA.json"));
         assertExpectedEvent(events.get(4), deletionExperimentsABExpectedA);
+    }
+
+    @Test
+    public void testSamples()
+    {
+        // Tests the following scenario:
+        // - create space A
+        // - create space B
+        // - create project /A/A
+        // - create project /B/B
+        // - create experiment /A/A/A
+        // - create experiment /B/B/B
+        // - create sample A in space A
+        // - move sample A to space B
+        // - delete sample A
+        // - create sample B in project /A/A
+        // - move sample B to project /B/B
+        // - delete sample B
+        // - create sample C in experiment /A/A/A
+        // - move sample C to experiment /B/B/B
+        // - delete sample C
+        // - create sample D in space A
+        // - move sample D to experiment /A/A/A
+        // - move experiment /A/A/A to project /B/B
+        // - move sample D to experiment /B/B/B
+        // - delete experiment /B/B/A
+        // - delete sample D
+
+        PersonPE deleterSampleA = new PersonPE();
+        deleterSampleA.setUserId("deleter_sample_A");
+
+        PersonPE deleterSampleB = new PersonPE();
+        deleterSampleB.setUserId("deleter_sample_B");
+
+        PersonPE deleterSampleC = new PersonPE();
+        deleterSampleC.setUserId("deleter_sample_C");
+
+        PersonPE deleterExperimentA = new PersonPE();
+        deleterExperimentA.setUserId("deleter_experiment_A");
+
+        PersonPE deleterSampleD = new PersonPE();
+        deleterSampleD.setUserId("deleter_sample_D");
+
+        EventPE deletionSampleA = new EventPE();
+        deletionSampleA.setId(1L);
+        deletionSampleA.setEventType(EventType.DELETION);
+        deletionSampleA.setEntityType(EntityType.SAMPLE);
+        deletionSampleA.setIdentifiers(Collections.singletonList("20210401151915172-205200"));
+        deletionSampleA.setDescription("Description Sample A");
+        deletionSampleA.setReason("Reason Sample A");
+        deletionSampleA.setContent(loadFile("testSamples_deletionSampleA.json"));
+        deletionSampleA.setRegistrator(deleterSampleA);
+        deletionSampleA.setRegistrationDate(dateTimeMillis("2021-04-01 15:20:49.605"));
+
+        EventPE deletionSampleB = new EventPE();
+        deletionSampleB.setId(2L);
+        deletionSampleB.setEventType(EventType.DELETION);
+        deletionSampleB.setEntityType(EntityType.SAMPLE);
+        deletionSampleB.setIdentifiers(Collections.singletonList("20210401152005699-205201"));
+        deletionSampleB.setDescription("Description Sample B");
+        deletionSampleB.setReason("Reason Sample B");
+        deletionSampleB.setContent(loadFile("testSamples_deletionSampleB.json"));
+        deletionSampleB.setRegistrator(deleterSampleB);
+        deletionSampleB.setRegistrationDate(dateTimeMillis("2021-04-01 15:20:53.103"));
+
+        EventPE deletionSampleC = new EventPE();
+        deletionSampleC.setId(3L);
+        deletionSampleC.setEventType(EventType.DELETION);
+        deletionSampleC.setEntityType(EntityType.SAMPLE);
+        deletionSampleC.setIdentifiers(Collections.singletonList("20210401152124191-205202"));
+        deletionSampleC.setDescription("Description Sample C");
+        deletionSampleC.setReason("Reason Sample C");
+        deletionSampleC.setContent(loadFile("testSamples_deletionSampleC.json"));
+        deletionSampleC.setRegistrator(deleterSampleC);
+        deletionSampleC.setRegistrationDate(dateTimeMillis("2021-04-01 15:21:55.391"));
+
+        EventPE deletionExperimentA = new EventPE();
+        deletionExperimentA.setId(4L);
+        deletionExperimentA.setEventType(EventType.DELETION);
+        deletionExperimentA.setEntityType(EntityType.EXPERIMENT);
+        deletionExperimentA.setIdentifiers(Collections.singletonList("20210401151830921-205198"));
+        deletionExperimentA.setDescription("Description Experiment A");
+        deletionExperimentA.setReason("Reason Experiment A");
+        deletionExperimentA.setContent(loadFile("testSamples_deletionExperimentA.json"));
+        deletionExperimentA.setRegistrator(deleterExperimentA);
+        deletionExperimentA.setRegistrationDate(dateTimeMillis("2021-04-01 15:23:42.574"));
+
+        EventPE deletionSampleD = new EventPE();
+        deletionSampleD.setId(5L);
+        deletionSampleD.setEventType(EventType.DELETION);
+        deletionSampleD.setEntityType(EntityType.SAMPLE);
+        deletionSampleD.setIdentifiers(Collections.singletonList("20210401152213749-205203"));
+        deletionSampleD.setDescription("Description Sample D");
+        deletionSampleD.setReason("Reason Sample D");
+        deletionSampleD.setContent(loadFile("testSamples_deletionSampleD.json"));
+        deletionSampleD.setRegistrator(deleterSampleD);
+        deletionSampleD.setRegistrationDate(dateTimeMillis("2021-04-01 15:24:07.632"));
+
+        SpacePE spaceA = new SpacePE();
+        spaceA.setId(100L);
+        spaceA.setCode("SPACE_A");
+        spaceA.setRegistrationDate(dateTimeMillis("2021-03-29 15:07:55.947"));
+
+        SpacePE spaceB = new SpacePE();
+        spaceB.setId(200L);
+        spaceB.setCode("SPACE_B");
+        spaceB.setRegistrationDate(dateTimeMillis("2021-03-29 15:08:03.609"));
+
+        Space spaceAv3 = new Space();
+        spaceAv3.setCode("SPACE_A");
+
+        Space spaceBv3 = new Space();
+        spaceBv3.setCode("SPACE_B");
+
+        ProjectFetchOptions projectFo = new ProjectFetchOptions();
+        projectFo.withSpace();
+        projectFo.withHistory();
+
+        Project projectA = new Project();
+        projectA.setCode("PROJECT_A");
+        projectA.setPermId(new ProjectPermId("20210329151103947-205180"));
+        projectA.setSpace(spaceAv3);
+        projectA.setRegistrationDate(dateTimeMillis("2021-03-29 15:11:03.947"));
+        projectA.setHistory(Collections.emptyList());
+        projectA.setFetchOptions(projectFo);
+
+        Project projectB = new Project();
+        projectB.setCode("PROJECT_B");
+        projectB.setPermId(new ProjectPermId("20210401151815315-205197"));
+        projectB.setSpace(spaceBv3);
+        projectB.setRegistrationDate(dateTimeMillis("2021-04-01 15:18:15.315"));
+        projectB.setHistory(Collections.emptyList());
+        projectB.setFetchOptions(projectFo);
+
+        ExperimentFetchOptions experimentFo = new ExperimentFetchOptions();
+        experimentFo.withProject();
+        experimentFo.withHistory();
+
+        Experiment experimentB = new Experiment();
+        experimentB.setCode("EXPERIMENT_B");
+        experimentB.setPermId(new ExperimentPermId("20210401151838580-205199"));
+        experimentB.setProject(projectB);
+        experimentB.setRegistrationDate(dateTimeMillis("2021-04-01 15:18:38.580"));
+        experimentB.setHistory(Collections.emptyList());
+        experimentB.setFetchOptions(experimentFo);
+
+        List<EventsSearchPE> events = new ArrayList<>();
+
+        mockery.checking(new Expectations()
+        {
+            {
+                one(dataSource).loadSpaces();
+                will(returnValue(Arrays.asList(spaceA, spaceB)));
+
+                one(dataSource).loadProjects(with(any(ProjectFetchOptions.class)));
+                will(returnValue(Arrays.asList(projectA, projectB)));
+
+                one(dataSource).loadExperiments(with(any(ExperimentFetchOptions.class)));
+                will(returnValue(Arrays.asList(experimentB)));
+
+                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
+                will(returnValue(null));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Arrays.asList(deletionExperimentA)));
+                one(dataSource)
+                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Arrays.asList(deletionSampleA, deletionSampleB, deletionSampleC, deletionSampleD)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
+                will(new CustomAction("collect events")
+                {
+                    @Override public Object invoke(Invocation invocation) throws Throwable
+                    {
+                        events.add((EventsSearchPE) invocation.getParameter(0));
+                        return null;
+                    }
+                });
+            }
+        });
+
+        EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
+        task.execute();
+
+        assertEquals(events.size(), 5);
+
+        EventsSearchPE deletionExperimentAExpected = createExpectedEvent(deletionExperimentA);
+        deletionExperimentAExpected.setEntitySpace("SPACE_B");
+        deletionExperimentAExpected.setEntitySpacePermId("200");
+        deletionExperimentAExpected.setEntityProject("/SPACE_B/PROJECT_B");
+        deletionExperimentAExpected.setEntityProjectPermId("20210401151815315-205197");
+        deletionExperimentAExpected.setEntityRegisterer("registerer_experiment_A");
+        deletionExperimentAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-01 15:18:30.000"));
+        deletionExperimentAExpected.setIdentifier("20210401151830921-205198");
+        deletionExperimentAExpected.setContent(loadFile("testSamples_deletionExperimentAExpected.json"));
+        assertExpectedEvent(events.get(0), deletionExperimentAExpected);
+
+        EventsSearchPE deletionSampleAExpected = createExpectedEvent(deletionSampleA);
+        deletionSampleAExpected.setEntitySpace("SPACE_B");
+        deletionSampleAExpected.setEntitySpacePermId("200");
+        deletionSampleAExpected.setEntityRegisterer("registerer_sample_A");
+        deletionSampleAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-01 15:19:15.000"));
+        deletionSampleAExpected.setIdentifier("20210401151915172-205200");
+        deletionSampleAExpected.setContent(loadFile("testSamples_deletionSampleAExpected.json"));
+        assertExpectedEvent(events.get(1), deletionSampleAExpected);
+
+        EventsSearchPE deletionSampleBExpected = createExpectedEvent(deletionSampleB);
+        // TODO project samples (uncomment once supported)
+        //deletionSampleBExpected.setEntitySpace("SPACE_B");
+        //deletionSampleBExpected.setEntitySpacePermId("200");
+        //deletionSampleBExpected.setEntityProject("/SPACE_B/PROJECT_B");
+        //deletionSampleBExpected.setEntityProjectPermId("20210401151815315-205197");
+        deletionSampleBExpected.setEntityRegisterer("registerer_sample_B");
+        deletionSampleBExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-01 15:20:05.000"));
+        deletionSampleBExpected.setIdentifier("20210401152005699-205201");
+        deletionSampleBExpected.setContent(loadFile("testSamples_deletionSampleBExpected.json"));
+        assertExpectedEvent(events.get(2), deletionSampleBExpected);
+
+        EventsSearchPE deletionSampleCExpected = createExpectedEvent(deletionSampleC);
+        deletionSampleCExpected.setEntitySpace("SPACE_B");
+        deletionSampleCExpected.setEntitySpacePermId("200");
+        deletionSampleCExpected.setEntityProject("/SPACE_B/PROJECT_B");
+        deletionSampleCExpected.setEntityProjectPermId("20210401151815315-205197");
+        deletionSampleCExpected.setEntityRegisterer("registerer_sample_C");
+        deletionSampleCExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-01 15:21:24.000"));
+        deletionSampleCExpected.setIdentifier("20210401152124191-205202");
+        deletionSampleCExpected.setContent(loadFile("testSamples_deletionSampleCExpected.json"));
+        assertExpectedEvent(events.get(3), deletionSampleCExpected);
+
+        EventsSearchPE deletionSampleDExpected = createExpectedEvent(deletionSampleD);
+        deletionSampleDExpected.setEntitySpace("SPACE_B");
+        deletionSampleDExpected.setEntitySpacePermId("200");
+        deletionSampleDExpected.setEntityProject("/SPACE_B/PROJECT_B");
+        deletionSampleDExpected.setEntityProjectPermId("20210401151815315-205197");
+        deletionSampleDExpected.setEntityRegisterer("registerer_sample_D");
+        deletionSampleDExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-01 15:22:13.000"));
+        deletionSampleDExpected.setIdentifier("20210401152213749-205203");
+        deletionSampleDExpected.setContent(loadFile("testSamples_deletionSampleDExpected.json"));
+        assertExpectedEvent(events.get(4), deletionSampleDExpected);
     }
 
     private EventsSearchPE createExpectedEvent(EventPE originalEvent)
