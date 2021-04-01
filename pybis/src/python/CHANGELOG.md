@@ -1,3 +1,7 @@
+## Changes with pybis-1.18.7
+
+- fixed entity_type caching problem
+
 ## Changes with pybis-1.18.6
 
 - fixed create samples bug
