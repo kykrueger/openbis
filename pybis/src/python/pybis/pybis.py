@@ -1670,7 +1670,7 @@ class Openbis:
                 } ]
             ]
         }
-        resp = self._post_request(self.as_v3, request)
+        self._post_request(self.as_v3, request)
         return
 
 
@@ -2525,7 +2525,7 @@ class Openbis:
                 }
             ]
         }
-        resp = self._post_request(self.as_v3, request)
+        self._post_request(self.as_v3, request)
 
 
     def delete_openbis_entity(self, entity, objectId, reason='No reason given'):
@@ -3453,6 +3453,7 @@ class Openbis:
             entity     = 'materialType',
             cls        = MaterialType,
             identifier = type,
+            method     = self.get_material_type,
             only_data  = only_data,
         )
 
@@ -3473,6 +3474,7 @@ class Openbis:
             entity     = 'experimentType',
             cls        = ExperimentType,
             identifier = type,
+            method     = self.get_experiment_type,
             only_data  = only_data,
         )
     get_collection_type = get_experiment_type  # Alias
@@ -3493,6 +3495,7 @@ class Openbis:
             entity     = 'dataSetType',
             identifier = type,
             cls        = DataSetType,
+            method     = self.get_dataset_type,
             only_data  = only_data,
         )
 
@@ -3514,6 +3517,7 @@ class Openbis:
             identifier = type,
             cls        = SampleType,
             with_vocabulary = with_vocabulary,
+            method     = self.get_sample_type,
             only_data  = only_data,
         )
     get_object_type = get_sample_type # Alias
@@ -3569,7 +3573,7 @@ class Openbis:
             totalCount = resp.get('totalCount'),
         )
 
-    def get_entity_type(self, entity, identifier, cls, only_data=False, with_vocabulary=False):
+    def get_entity_type(self, entity, identifier, cls, method=None, only_data=False, with_vocabulary=False):
 
         et = not only_data and not isinstance(identifier, list) and self._object_cache(entity=entity, code=identifier)
         if et:
@@ -3614,7 +3618,8 @@ class Openbis:
             else:
                 obj = cls(
                     openbis_obj = self,
-                    data = resp[ident]
+                    data = resp[ident],
+                    method = method,
                 )
                 if self.use_cache:
                     self._object_cache(entity=entity, code=ident, value=obj)
