@@ -24,7 +24,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -231,29 +230,35 @@ public class MaintenanceTaskParameters
                 String[] splittedTime = splitted[splitted.length - 1].split(":");
                 hour = Integer.parseInt(splittedTime[0]);
                 minute = Integer.parseInt(splittedTime[1]);
-                List<Object> descriptors = new ArrayList<>();
-                if (splitted.length > 1)
-                {
-                    for (int i = 0; i < splitted.length - 1; i++)
-                    {
-                        for (String string : splitted[i].split("\\."))
-                        {
-                            parseDescriptor(descriptors, string);
-                        }
-                    }
-                }
-                for (INextDayFactory factory : NEXT_DAY_FACTORIES)
-                {
-                    if (factory.accept(descriptors))
-                    {
-                        nextDay = factory.create(descriptors);
-                        break;
-                    }
-                }
+                nextDay = createNextDay(splitted);
             } catch (Exception e)
             {
-                throw new IllegalArgumentException("Invalid definition: " + definition, e);
+                throw new IllegalArgumentException("Invalid property '" + RUN_SCHEDULE_KEY
+                        + "' (Reason: " + e.getMessage() + "): " + definition, e);
             }
+        }
+        
+        private INextDay createNextDay(String[] splitted)
+        {
+            List<Object> descriptors = new ArrayList<>();
+            if (splitted.length > 1)
+            {
+                for (int i = 0; i < splitted.length - 1; i++)
+                {
+                    for (String string : splitted[i].split("\\."))
+                    {
+                        parseDescriptor(descriptors, string);
+                    }
+                }
+            }
+            for (INextDayFactory factory : NEXT_DAY_FACTORIES)
+            {
+                if (factory.accept(descriptors))
+                {
+                    return factory.create(descriptors);
+                }
+            }
+            throw new IllegalArgumentException("Invalid description");
         }
 
         private void parseDescriptor(List<Object> descriptors, String descriptorString)
@@ -532,7 +537,7 @@ public class MaintenanceTaskParameters
         @Override
         public boolean accept(List<Object> descriptors)
         {
-            return true;
+            return descriptors.isEmpty();
         }
 
         @Override
