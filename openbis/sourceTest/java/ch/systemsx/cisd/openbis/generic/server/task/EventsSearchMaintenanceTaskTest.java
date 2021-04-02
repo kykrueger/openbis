@@ -140,15 +140,6 @@ public class EventsSearchMaintenanceTaskTest
         mockery.checking(new Expectations()
         {
             {
-                one(dataSource).loadSpaces();
-                will(returnValue(Arrays.asList(spaceA)));
-
-                one(dataSource).loadProjects(with(any(ProjectFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadExperiments(with(any(ExperimentFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
@@ -164,6 +155,9 @@ public class EventsSearchMaintenanceTaskTest
                 will(returnValue(Collections.emptyList()));
 
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
@@ -278,14 +272,8 @@ public class EventsSearchMaintenanceTaskTest
         mockery.checking(new Expectations()
         {
             {
-                one(dataSource).loadSpaces();
+                one(dataSource).loadSpaces(with(any(List.class)));
                 will(returnValue(Arrays.asList(spaceC)));
-
-                one(dataSource).loadProjects(with(any(ProjectFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadExperiments(with(any(ExperimentFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
 
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
@@ -304,6 +292,9 @@ public class EventsSearchMaintenanceTaskTest
                 will(returnValue(Collections.emptyList()));
 
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
@@ -460,14 +451,11 @@ public class EventsSearchMaintenanceTaskTest
         mockery.checking(new Expectations()
         {
             {
-                one(dataSource).loadSpaces();
+                one(dataSource).loadSpaces(with(any(List.class)));
                 will(returnValue(Arrays.asList(spaceA, spaceB)));
 
-                one(dataSource).loadProjects(with(any(ProjectFetchOptions.class)));
+                one(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
                 will(returnValue(Arrays.asList(projectA)));
-
-                one(dataSource).loadExperiments(with(any(ExperimentFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
 
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
@@ -487,6 +475,9 @@ public class EventsSearchMaintenanceTaskTest
                 will(returnValue(Collections.emptyList()));
 
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
@@ -711,13 +702,13 @@ public class EventsSearchMaintenanceTaskTest
         mockery.checking(new Expectations()
         {
             {
-                one(dataSource).loadSpaces();
+                one(dataSource).loadSpaces(with(any(List.class)));
                 will(returnValue(Arrays.asList(spaceA, spaceB)));
 
-                one(dataSource).loadProjects(with(any(ProjectFetchOptions.class)));
+                one(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
                 will(returnValue(Arrays.asList(projectA, projectB)));
 
-                one(dataSource).loadExperiments(with(any(ExperimentFetchOptions.class)));
+                one(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
                 will(returnValue(Arrays.asList(experimentB)));
 
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
@@ -738,6 +729,9 @@ public class EventsSearchMaintenanceTaskTest
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Arrays.asList(deletionSampleA, deletionSampleB, deletionSampleC, deletionSampleD)));
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
