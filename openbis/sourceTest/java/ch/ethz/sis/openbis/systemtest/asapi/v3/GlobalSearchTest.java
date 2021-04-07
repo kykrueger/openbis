@@ -160,6 +160,19 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithOneStartsWithOneWord()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatStartsWith("stu");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+
+        assertStuff(result);
+    }
+
+    @Test
     public void testSearchWithOneContainsOneWord()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
