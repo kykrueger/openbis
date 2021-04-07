@@ -1,7 +1,10 @@
 package ch.systemsx.cisd.common.maintenance;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -11,12 +14,15 @@ import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
+import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 
 public class MaintenancePlugin
 {
+    static final String TIME_STAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             MaintenancePlugin.class);
 
@@ -115,19 +121,47 @@ public class MaintenancePlugin
 
     private void schedule(final TimerTask timerTask, INextTimestampProvider nextTimestampProvider)
     {
-        Date nextTimestamp = nextTimestampProvider.getNextTimestamp(new Date());
+        Date savedNext = loadPersistenNextDateOrNull();
+        Date next = nextTimestampProvider.getNextTimestamp(new Date());
+        Date timestamp = savedNext == null || next.after(savedNext) == false ? next : new Date();
         if (workerTimer != null)
         {
             workerTimer.schedule(new TimerTask()
-            {
-                @Override
-                public void run()
                 {
-                    timerTask.run();
-                    schedule(timerTask, nextTimestampProvider);
-                }
-            }, nextTimestamp);
+                    @Override
+                    public void run()
+                    {
+                        timerTask.run();
+                        savePersistentNextDate(nextTimestampProvider.getNextTimestamp(next));
+                        schedule(timerTask, nextTimestampProvider);
+                    }
+                }, timestamp);
         }
+    }
+
+    private Date loadPersistenNextDateOrNull()
+    {
+        File persistentNextDateFile = parameters.getPersistentNextDateFile();
+        if (persistentNextDateFile.isFile())
+        {
+            String timeStampString = FileUtilities.loadToString(persistentNextDateFile).trim();
+            try
+            {
+                return new SimpleDateFormat(TIME_STAMP_FORMAT).parse(timeStampString);
+            } catch (ParseException ex)
+            {
+                operationLog.warn("Invalid time stamp in '" + persistentNextDateFile.getAbsolutePath() + "': "
+                        + timeStampString);
+            }
+        }
+        return null;
+    }
+
+    private void savePersistentNextDate(Date next)
+    {
+        File persistentNextDateFile = parameters.getPersistentNextDateFile();
+        persistentNextDateFile.getParentFile().mkdirs();
+        FileUtilities.writeToFile(persistentNextDateFile, new SimpleDateFormat(TIME_STAMP_FORMAT).format(next));
     }
 
     public synchronized void execute()

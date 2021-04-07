@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.common.maintenance;
 
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
@@ -35,6 +36,38 @@ public class MaintenanceTaskParametersTest
     private static final String CRON = MaintenanceTaskParameters.CRON_PREFIX;
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    @DataProvider(name = "next-next")
+    public static Object[][] nextNext()
+    {
+        return new Object[][] {
+                new Object[] { CRON + "* * * * * *" },
+                new Object[] { CRON + "3 * * * * *" },
+                new Object[] { "21:10" },
+                new Object[] { "MO 21:10" },
+                new Object[] { "2.SA 1:10" },
+                new Object[] { "1.7. 2" },
+        };
+    }
+
+    @Test(dataProvider = "next-next")
+    public void testNextNext(String definition) throws ParseException
+    {
+        // Given
+        Properties properties = new Properties();
+        properties.setProperty(MaintenanceTaskParameters.CLASS_KEY, "dummy");
+        properties.setProperty(MaintenanceTaskParameters.RUN_SCHEDULE_KEY, definition);
+        MaintenanceTaskParameters parameters = new MaintenanceTaskParameters(properties, "test");
+        INextTimestampProvider nextTimestampProvider = parameters.getNextTimestampProvider();
+
+        // When
+        Date next = nextTimestampProvider.getNextTimestamp(new Date());
+        Date nextNext = nextTimestampProvider.getNextTimestamp(next);
+
+        // Then
+        assertTrue(nextNext.after(next),
+                "Expection failed: " + DATE_FORMAT.format(next) + " < " + DATE_FORMAT.format(nextNext));
+    }
 
     @DataProvider(name = "run-scheduling")
     public static Object[][] runScheduling()
