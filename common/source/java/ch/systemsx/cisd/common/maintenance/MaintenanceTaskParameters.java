@@ -134,7 +134,7 @@ public class MaintenanceTaskParameters
         {
             if (file.getName().equals("servers"))
             {
-                return file;
+                return file.getParentFile();
             }
         }
         return etc;
