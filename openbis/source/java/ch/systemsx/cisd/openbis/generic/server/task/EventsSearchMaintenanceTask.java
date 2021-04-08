@@ -47,6 +47,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISpaceDAO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -568,6 +569,24 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
         final Date lastSeenSampleTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, EntityType.SAMPLE);
 
+        if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
+        {
+            for (String samplePermId : deletion.getIdentifiers())
+            {
+                SampleSnapshot snapshot = new SampleSnapshot();
+                snapshot.samplePermId = samplePermId;
+                snapshot.from = new Date(0);
+                snapshot.to = deletion.getRegistrationDateInternal();
+                snapshots.putDeletedSample(snapshot);
+
+                NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
+                newEvent.identifier = samplePermId;
+                newEvents.add(newEvent);
+            }
+
+            return newEvents;
+        }
+
         @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
                 (Map<String, Object>) objectMapper.readValue(deletion.getContent(), Object.class);
 
@@ -969,21 +988,29 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
         public void loadExistingProjects(Collection<String> projectPermIds)
         {
-            List<ProjectSnapshot> snapshots = projectSnapshots.load(projectPermIds);
+            projectSnapshots.load(projectPermIds);
+
+            Collection<ProjectSnapshot> snapshots = projectSnapshots.get(projectPermIds);
             Set<String> spaceCodes = snapshots.stream().map(snapshot -> snapshot.spaceCode).collect(Collectors.toSet());
+
             loadExistingSpaces(spaceCodes);
         }
 
         public void loadExistingExperiments(Collection<String> experimentPermIds)
         {
-            List<ExperimentSnapshot> snapshots = experimentSnapshots.load(experimentPermIds);
+            experimentSnapshots.load(experimentPermIds);
+
+            Collection<ExperimentSnapshot> snapshots = experimentSnapshots.get(experimentPermIds);
             Set<String> projectPermIds = snapshots.stream().map(snapshot -> snapshot.projectPermId).collect(Collectors.toSet());
+
             loadExistingProjects(projectPermIds);
         }
 
         public void loadExistingSamples(Collection<String> samplePermIds)
         {
-            List<SampleSnapshot> snapshots = sampleSnapshots.load(samplePermIds);
+            sampleSnapshots.load(samplePermIds);
+
+            Collection<SampleSnapshot> snapshots = sampleSnapshots.get(samplePermIds);
 
             Set<String> spaceCodes =
                     snapshots.stream().map(snapshot -> snapshot.spaceCode).filter(Objects::nonNull).collect(Collectors.toSet());
@@ -1089,7 +1116,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             snapshotsForKey.put(snapshot.from, snapshot);
         }
 
-        public List<T> load(Collection<String> keysToLoad)
+        public void load(Collection<String> keysToLoad)
         {
             Set<String> notLoaded = new HashSet<>(keysToLoad);
             notLoaded.removeAll(loadedKeys);
@@ -1102,14 +1129,27 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     put(snapshot.getKey(), snapshot);
                 }
                 loadedKeys.addAll(notLoaded);
-                return snapshots;
-            } else
-            {
-                return Collections.emptyList();
             }
         }
 
         protected abstract List<T> doLoad(Collection<String> keysToLoad);
+
+        public Collection<T> get(Collection<String> keys)
+        {
+            Collection<T> snapshotsForKeys = new ArrayList<>();
+
+            for (String key : keys)
+            {
+                TreeMap<Date, T> snapshotsForKey = snapshots.get(key);
+
+                if (snapshotsForKey != null)
+                {
+                    snapshotsForKeys.addAll(snapshotsForKey.values());
+                }
+            }
+
+            return snapshotsForKeys;
+        }
 
         public T get(String key, Date date)
         {
@@ -1122,7 +1162,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 if (potentialEntry != null)
                 {
                     T potentialSnapshot = potentialEntry.getValue();
-                    if (potentialSnapshot.to == null || date.before(potentialSnapshot.to))
+                    if (potentialSnapshot.to == null || date.compareTo(potentialSnapshot.to) <= 0)
                     {
                         return potentialSnapshot;
                     }
@@ -1458,6 +1498,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
     static class NewEvent
     {
+        public Long id;
+
         public EventType eventType;
 
         public EntityType entityType;
@@ -1495,6 +1537,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         public static NewEvent fromOldEventPE(EventPE oldEvent)
         {
             NewEvent newEvent = new NewEvent();
+            newEvent.id = oldEvent.getId();
             newEvent.eventType = oldEvent.getEventType();
             newEvent.entityType = oldEvent.getEntityType();
             newEvent.description = oldEvent.getDescription();
@@ -1524,6 +1567,11 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             newEventPE.setRegisterer(registerer);
             newEventPE.setRegistrationTimestamp(registrationTimestamp);
             return newEventPE;
+        }
+
+        @Override public String toString()
+        {
+            return ToStringBuilder.reflectionToString(this);
         }
     }
 

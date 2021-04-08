@@ -275,7 +275,7 @@ public class EventsSearchMaintenanceTaskTest
         mockery.checking(new Expectations()
         {
             {
-                one(dataSource).loadSpaces(with(any(List.class)));
+                allowing(dataSource).loadSpaces(with(any(List.class)));
                 will(returnValue(Arrays.asList(spaceC)));
 
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
@@ -454,10 +454,10 @@ public class EventsSearchMaintenanceTaskTest
         mockery.checking(new Expectations()
         {
             {
-                one(dataSource).loadSpaces(with(any(List.class)));
+                allowing(dataSource).loadSpaces(with(any(List.class)));
                 will(returnValue(Arrays.asList(spaceA, spaceB)));
 
-                one(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
+                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
                 will(returnValue(Arrays.asList(projectA)));
 
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
@@ -705,13 +705,13 @@ public class EventsSearchMaintenanceTaskTest
         mockery.checking(new Expectations()
         {
             {
-                one(dataSource).loadSpaces(with(any(List.class)));
+                allowing(dataSource).loadSpaces(with(any(List.class)));
                 will(returnValue(Arrays.asList(spaceA, spaceB)));
 
-                one(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
+                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
                 will(returnValue(Arrays.asList(projectA, projectB)));
 
-                one(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
+                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
                 will(returnValue(Arrays.asList(experimentB)));
 
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
@@ -982,16 +982,16 @@ public class EventsSearchMaintenanceTaskTest
         mockery.checking(new Expectations()
         {
             {
-                one(dataSource).loadSpaces(with(any(List.class)));
+                allowing(dataSource).loadSpaces(with(any(List.class)));
                 will(returnValue(Arrays.asList(spaceA, spaceB)));
 
-                one(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
+                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
                 will(returnValue(Arrays.asList(projectA, projectB)));
 
-                one(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
+                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
                 will(returnValue(Arrays.asList(experimentB)));
 
-                one(dataSource).loadSamples(with(any(List.class)), with(any(SampleFetchOptions.class)));
+                allowing(dataSource).loadSamples(with(any(List.class)), with(any(SampleFetchOptions.class)));
                 will(returnValue(Arrays.asList(sampleB, sampleC)));
 
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
