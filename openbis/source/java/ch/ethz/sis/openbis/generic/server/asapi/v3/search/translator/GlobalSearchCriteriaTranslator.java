@@ -112,6 +112,8 @@ public class GlobalSearchCriteriaTranslator
 
     private static final Map<String, String> ALIAS_BY_FIELD_NAME = new HashMap<>(4);
 
+    private static final String PREFIX_MATCH_SUFFIX = " || ':*'";
+
     static
     {
         ALIAS_BY_FIELD_NAME.put(SCORE, RANK_ALIAS);
@@ -579,7 +581,8 @@ public class GlobalSearchCriteriaTranslator
     {
         final Set<GlobalSearchObjectKind> objectKinds = translationContext.getObjectKinds();
         if (criterion instanceof GlobalSearchTextCriteria && objectKinds != null && !objectKinds.isEmpty() &&
-                ((GlobalSearchTextCriteria) criterion).getFieldValue() instanceof StringMatchesValue)
+                (((GlobalSearchTextCriteria) criterion).getFieldValue() instanceof StringMatchesValue ||
+                        ((GlobalSearchTextCriteria) criterion).getFieldValue() instanceof StringStartsWithValue))
         {
             final GlobalSearchTextCriteria globalSearchTextCriterion = (GlobalSearchTextCriteria) criterion;
             final boolean containsSample = objectKinds.contains(GlobalSearchObjectKind.SAMPLE);
@@ -695,12 +698,13 @@ public class GlobalSearchCriteriaTranslator
             final TranslationContext translationContext, final GlobalSearchTextCriteria globalSearchTextCriterion,
             final TableMapper tableMapper, final Collection<Long> resultIds)
     {
-        // Fields
+        // Attributes
         buildDetailsSelect(sqlBuilder, translationContext, globalSearchTextCriterion, tableMapper, true);
         buildDetailsFrom(sqlBuilder, tableMapper, true);
         buildDetailsWhere(sqlBuilder, translationContext, globalSearchTextCriterion, resultIds, tableMapper, true);
 
-        if (globalSearchTextCriterion.getFieldValue() instanceof StringMatchesValue)
+        if (globalSearchTextCriterion.getFieldValue() instanceof StringMatchesValue ||
+                globalSearchTextCriterion.getFieldValue() instanceof StringStartsWithValue)
         {
             sqlBuilder.append(UNION_ALL).append(NL);
 
@@ -851,15 +855,20 @@ public class GlobalSearchCriteriaTranslator
         final List<Object> args = translationContext.getArgs();
 
         sqlBuilder.append(WHERE).append(SP).append(LP);
+        final AbstractStringValue stringValue = criterion.getFieldValue();
         if (forAttributes)
         {
+            final String tsQuerySuffix = StringStartsWithValue.class.isAssignableFrom(stringValue.getClass())
+                    ? PREFIX_MATCH_SUFFIX : "";
             sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD)
                     .append(TS_VECTOR_COLUMN).append(SP).append(DOUBLE_AT)
-                    .append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
-            args.add(toTsQueryText(criterion.getFieldValue()));
+                    .append(SP).append(LP).append(QU).append(tsQuerySuffix).append(RP).append(DOUBLE_COLON)
+                    .append(TSQUERY);
+            final String tsQueryText = toTsQueryText(stringValue);
+            args.add(tsQueryText);
         } else
         {
-            buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), tableMapper, args);
+            buildTsVectorMatch(sqlBuilder, stringValue, tableMapper, args);
         }
         sqlBuilder.append(RP);
         translateAuthorisation(sqlBuilder, translationContext, tableMapper);
@@ -916,7 +925,10 @@ public class GlobalSearchCriteriaTranslator
         }
         sqlBuilder.append(SP).append(SPACE_CODE_ALIAS).append(COMMA).append(NL);
 
-        final String[] criterionValues = stringValue.getValue().toLowerCase().trim().split("\\s+");
+        final String[] criterionValues = (stringValue instanceof StringContainsValue) ||
+                (stringValue instanceof StringMatchesValue)
+                ? stringValue.getValue().toLowerCase().trim().split("\\s+")
+                : new String[] {stringValue.getValue().toLowerCase()};
         if (forAttributes)
         {
             buildAttributesMatchSelection(sqlBuilder, stringValue.getClass(), criterionValues, tableMapper, args);
@@ -1044,7 +1056,7 @@ public class GlobalSearchCriteriaTranslator
     private static void buildTsHeadline(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
             final List<Object> args, final String field, final String alias, final boolean useHeadline)
     {
-        if (useHeadline && stringValue instanceof StringMatchesValue)
+        if (useHeadline && (stringValue instanceof StringMatchesValue || stringValue instanceof StringStartsWithValue))
         {
             sqlBuilder.append(TS_HEADLINE).append(LP).append(field).append(COMMA).append(SP);
             buildTsQueryPart(sqlBuilder, stringValue, args);
@@ -1066,9 +1078,11 @@ public class GlobalSearchCriteriaTranslator
     private static void buildAttributesMatchCondition(final StringBuilder sqlBuilder,
             final GlobalSearchTextCriteria criterion, final List<Object> args)
     {
+        final AbstractStringValue stringValue = criterion.getFieldValue();
+        final String tsQuerySuffix = stringValue instanceof StringStartsWithValue ? PREFIX_MATCH_SUFFIX : "";
         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP).append(DOUBLE_AT)
-                .append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
-        args.add(toTsQueryText(criterion.getFieldValue()));
+                .append(SP).append(LP).append(QU).append(tsQuerySuffix).append(RP).append(DOUBLE_COLON).append(TSQUERY);
+        args.add(toTsQueryText(stringValue));
     }
 
     /**
@@ -1410,7 +1424,7 @@ public class GlobalSearchCriteriaTranslator
         args.add(resultIds.toArray(new Long[0]));
 
         final AbstractStringValue fieldValue = criterion.getFieldValue();
-        if (fieldValue instanceof StringMatchesValue)
+        if (fieldValue instanceof StringMatchesValue || fieldValue instanceof StringStartsWithValue)
         {
             sqlBuilder.append(SP).append(AND).append(SP).append(LP);
             if (forAttributes)
@@ -1440,8 +1454,11 @@ public class GlobalSearchCriteriaTranslator
 
         sqlBuilder.append(SP).append(OR).append(SP);
 
+        final String tsQuerySuffix = StringStartsWithValue.class.isAssignableFrom(stringValue.getClass())
+                ? PREFIX_MATCH_SUFFIX : "";
         sqlBuilder.append(MATERIALS_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
-                .append(DOUBLE_AT).append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
+                .append(DOUBLE_AT).append(SP).append(LP).append(QU).append(tsQuerySuffix).append(RP)
+                .append(DOUBLE_COLON).append(TSQUERY);
         args.add(toTsQueryText(stringValue));
 
         if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
@@ -1450,7 +1467,8 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(SP).append(OR).append(SP);
 
             sqlBuilder.append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
-                    .append(DOUBLE_AT).append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
+                    .append(DOUBLE_AT).append(LP).append(SP).append(QU).append(tsQuerySuffix).append(RP)
+                    .append(DOUBLE_COLON).append(TSQUERY);
             args.add(toTsQueryText(stringValue));
         }
     }
@@ -1458,15 +1476,19 @@ public class GlobalSearchCriteriaTranslator
     private static void buildTsQueryPart(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
             final List<Object> args)
     {
+        final String tsQuerySuffix = StringStartsWithValue.class.isAssignableFrom(stringValue.getClass())
+                ? PREFIX_MATCH_SUFFIX : "";
         sqlBuilder.append(TO_TSQUERY).append(LP).append(SQ).append(REG_CONFIG).append(SQ).append(COMMA).append(SP)
-                .append(QU).append(RP);
+                .append(LP).append(QU).append(tsQuerySuffix).append(RP).append(RP);
         args.add(toTsQueryText(stringValue));
     }
 
     private static void buildCastingTsQueryPart(final StringBuilder sqlBuilder,
             final AbstractStringValue stringValue, final List<Object> args)
     {
-        sqlBuilder.append(QU).append(DOUBLE_COLON).append(TSQUERY);
+        final String tsQuerySuffix = StringStartsWithValue.class.isAssignableFrom(stringValue.getClass())
+                ? PREFIX_MATCH_SUFFIX : "";
+        sqlBuilder.append(LP).append(QU).append(tsQuerySuffix).append(RP).append(DOUBLE_COLON).append(TSQUERY);
         args.add(toTsQueryText(stringValue));
     }
 
@@ -1477,10 +1499,12 @@ public class GlobalSearchCriteriaTranslator
 
     private static String toTsQueryText(final String value, final Class<? extends AbstractStringValue> stringValueClass)
     {
-        return ('\'' + value.toLowerCase().replaceAll("'", "''") + '\'') +
-                ((StringContainsExactlyValue.class.isAssignableFrom(stringValueClass))
-                        ? "" : " | " + value.toLowerCase().replaceAll("['&|:!()<>]", " ").trim()
-                        .replaceAll("\\s+", " | "));
+        final String fullValue = value.toLowerCase().replaceAll("'", "''");
+        final String splitValues = StringContainsValue.class.isAssignableFrom(stringValueClass) ||
+                StringMatchesValue.class.isAssignableFrom(stringValueClass)
+                ? " | " + value.toLowerCase().replaceAll("['&|:!()<>]", " ").trim().replaceAll("\\s+", " | ")
+                : "";
+        return ('\'' + fullValue + '\'') + splitValues;
     }
 
 }
