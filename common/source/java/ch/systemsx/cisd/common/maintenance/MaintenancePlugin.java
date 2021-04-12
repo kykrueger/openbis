@@ -98,6 +98,10 @@ public class MaintenancePlugin
         INextTimestampProvider nextTimestampProvider = parameters.getNextTimestampProvider();
         if (nextTimestampProvider != null)
         {
+            if (loadPersistenNextDateOrNull() == null)
+            {
+                savePersistentNextDate(nextTimestampProvider.getNextTimestamp(new Date()));
+            }
             schedule(timerTask, nextTimestampProvider);
         } else if (parameters.isExecuteOnlyOnce())
         {
@@ -122,8 +126,9 @@ public class MaintenancePlugin
     private void schedule(final TimerTask timerTask, INextTimestampProvider nextTimestampProvider)
     {
         Date savedNext = loadPersistenNextDateOrNull();
-        Date next = nextTimestampProvider.getNextTimestamp(new Date());
-        Date timestamp = savedNext == null || next.after(savedNext) == false ? next : new Date();
+        Date now = new Date();
+        Date next = nextTimestampProvider.getNextTimestamp(now);
+        Date timestamp = savedNext == null || next.after(savedNext) == false ? next : now;
         if (workerTimer != null)
         {
             workerTimer.schedule(new TimerTask()
@@ -132,7 +137,7 @@ public class MaintenancePlugin
                     public void run()
                     {
                         timerTask.run();
-                        savePersistentNextDate(nextTimestampProvider.getNextTimestamp(next));
+                        savePersistentNextDate(nextTimestampProvider.getNextTimestamp(timestamp));
                         schedule(timerTask, nextTimestampProvider);
                     }
                 }, timestamp);
