@@ -16,11 +16,13 @@
 
 package ch.systemsx.cisd.common.maintenance;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -40,6 +42,10 @@ import ch.systemsx.cisd.common.time.DateTimeUtils;
 public class MaintenanceTaskParameters
 {
     public static final String RUN_SCHEDULE_KEY = "run-schedule";
+
+    public static final String RUN_SCHEDULE_FILE_KEY = "run-schedule-file";
+
+    public static final String RETRY_INTERVALS_AFTER_FAILURE_KEY = "retry-intervals-after-failure";
 
     public static final String CLASS_KEY = "class";
 
@@ -69,7 +75,11 @@ public class MaintenanceTaskParameters
 
     private final boolean executeOnlyOnce;
 
+    private final List<Long> retryIntervals;
+
     private INextTimestampProvider nextTimestampProvider;
+
+    private File persistentNextDateFile;
 
     public MaintenanceTaskParameters(Properties properties, String pluginName)
     {
@@ -79,11 +89,16 @@ public class MaintenanceTaskParameters
         className = PropertyUtils.getMandatoryProperty(properties, CLASS_KEY);
         startDate = extractStartDate(PropertyUtils.getProperty(properties, START_KEY));
         executeOnlyOnce = PropertyUtils.getBoolean(properties, ONE_TIME_EXECUTION_KEY, false);
+        List<Long> intervals = getRetryIntervals(properties);
+        this.retryIntervals = intervals;
         String runScheduleDescription = properties.getProperty(RUN_SCHEDULE_KEY, null);
         if (runScheduleDescription != null)
         {
             nextTimestampProvider = createNextTimestampProvider(runScheduleDescription);
+            String defaultPath = getPersistenNextDateFile(pluginName, className).getAbsolutePath();
+            persistentNextDateFile = new File(properties.getProperty(RUN_SCHEDULE_FILE_KEY, defaultPath));
         }
+        removeRetryIntervalsWhichAreTooLarge();
     }
 
     private static Date extractStartDate(String timeOrNull)
@@ -112,6 +127,56 @@ public class MaintenanceTaskParameters
             throw new ConfigurationFailureException(String.format(
                     "Start date <%s> does not match the required format <%s>", timeOrNull,
                     TIME_FORMAT));
+        }
+    }
+
+    private static List<Long> getRetryIntervals(Properties properties)
+    {
+        String retryIntervals = properties.getProperty(RETRY_INTERVALS_AFTER_FAILURE_KEY);
+        List<Long> intervals = new ArrayList<>();
+        if (StringUtils.isNotBlank(retryIntervals))
+        {
+            for (String retryInterval : retryIntervals.split(","))
+            {
+                intervals.add(DateTimeUtils.parseDurationToMillis(retryInterval));
+            }
+            Collections.sort(intervals);
+        }
+        return intervals;
+    }
+
+    private static File getPersistenNextDateFile(String pluginName, String className)
+    {
+        return new File(findFolderForPersistentNextDateFile(), pluginName + "_" + className);
+    }
+
+    private static File findFolderForPersistentNextDateFile()
+    {
+        File etc = new File(System.getProperty("user.dir"), "etc");
+        for (File file = etc; file != null; file = file.getParentFile())
+        {
+            if (file.getName().equals("servers"))
+            {
+                return file.getParentFile();
+            }
+        }
+        return etc;
+    }
+
+    private void removeRetryIntervalsWhichAreTooLarge()
+    {
+        long interval = 1000 * this.interval;
+        if (nextTimestampProvider != null)
+        {
+            Date next = nextTimestampProvider.getNextTimestamp(new Date());
+            interval = nextTimestampProvider.getNextTimestamp(next).getTime() - next.getTime();
+        }
+        for (int i = this.retryIntervals.size() - 1; i >= 0; i--)
+        {
+            if (interval < this.retryIntervals.get(i))
+            {
+                this.retryIntervals.remove(i);
+            }
         }
     }
 
@@ -145,9 +210,19 @@ public class MaintenanceTaskParameters
         return startDate;
     }
 
+    public List<Long> getRetryIntervals()
+    {
+        return retryIntervals;
+    }
+
     public INextTimestampProvider getNextTimestampProvider()
     {
         return nextTimestampProvider;
+    }
+
+    public File getPersistentNextDateFile()
+    {
+        return persistentNextDateFile;
     }
 
     private static final INextTimestampProvider createNextTimestampProvider(String runScheduleDescription)
@@ -237,7 +312,7 @@ public class MaintenanceTaskParameters
                         + "' (Reason: " + e.getMessage() + "): " + definition, e);
             }
         }
-        
+
         private INextDay createNextDay(String[] splitted)
         {
             List<Object> descriptors = new ArrayList<>();
@@ -506,7 +581,7 @@ public class MaintenanceTaskParameters
         public INextDay create(List<Object> descriptors)
         {
             int monthDay = ((Integer) descriptors.get(0)).intValue();
-            int monthIndex = descriptors.get(1) instanceof Integer ? ((Integer) descriptors.get(1)).intValue() - 1 
+            int monthIndex = descriptors.get(1) instanceof Integer ? ((Integer) descriptors.get(1)).intValue() - 1
                     : ((Month) descriptors.get(1)).getNumber();
             return new AnyDay()
                 {
