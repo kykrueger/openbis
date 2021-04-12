@@ -1,3 +1,7 @@
+## Changes with pybis-1.18.8
+
+- fixed problem with 20.10 releases where samples could not be found using the permId
+
 ## Changes with pybis-1.18.7
 
 - fixed entity_type caching problem

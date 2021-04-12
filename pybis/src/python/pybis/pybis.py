@@ -426,6 +426,11 @@ def _subcriteria_for_properties(prop, value, entity):
     - child_propertyName
     - container_propertyName
     """
+    additional_attr = {}
+    if '*' in str(value):
+        additional_attr['useWildcards']= True
+    else:
+        additional_attr['useWildcards']= False
 
     search_types = {
         'sample': {
@@ -514,8 +519,9 @@ def _subcriteria_for_properties(prop, value, entity):
                     eq_type = "as.dto.common.search.StringLessThanValue"
                 elif comp_operator == '<=':
                     eq_type = "as.dto.common.search.StringLessThanOrEqualToValue"
-                #elif comp_operator == '=':
-                #    eq_type = "as.dto.common.search.StringEqualToValue"
+                elif comp_operator == '=':
+                    eq_type = "as.dto.common.search.StringEqualToValue"
+                    additional_attr['useWildcards']= False
                 else:
                     eq_type = "as.dto.common.search.StringEqualToValue"
 
@@ -551,7 +557,8 @@ def _subcriteria_for_properties(prop, value, entity):
                     "fieldValue": {
                         "@type": "as.dto.common.search.StringEqualToValue",
                         "value": value,
-                    }
+                    },
+                    **additional_attr
                 }
             ]
         }
@@ -571,7 +578,8 @@ def _subcriteria_for_properties(prop, value, entity):
                         "fieldValue": {
                             "@type": eq_type,
                             "value": value,
-                        }
+                        },
+                        **additional_attr
                     }
                 ]
             }
@@ -588,7 +596,8 @@ def _subcriteria_for_properties(prop, value, entity):
         "fieldValue": {
             "value": value,
             "@type": eq_type
-        }
+        },
+        **additional_attr
     }
 
 def _subcriteria_for(thing, entity, parents_or_children='', operator='AND'):
@@ -689,7 +698,7 @@ def _subcriteria_for_permid(permids, entity, parents_or_children='', operator='A
                 "@type": "as.dto.common.search.StringEqualToValue"
             },
             "fieldType": "ATTRIBUTE",
-            "fieldName": "code"
+            "fieldName": "perm_id"
         })
 
     search_type = get_type_for_entity(entity, 'search', parents_or_children)
@@ -1986,7 +1995,8 @@ class Openbis:
         criteria = {
             "criteria": sub_criteria,
             "@type": "as.dto.sample.search.SampleSearchCriteria",
-            "operator": "AND"
+            "operator": "AND",
+            "relation": "SAMPLE"
         }
 
         attrs_fetchoptions = self._get_fetchopts_for_attrs(attrs)
