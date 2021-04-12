@@ -23,12 +23,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.log4j.Level;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
+import ch.systemsx.cisd.common.logging.BufferedAppender;
 
 /**
  * @author Franz-Josef Elmer
@@ -36,7 +39,16 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 public class MaintenancePluginTest extends AbstractFileSystemTestCase
 {
     private static final int TOLERANCE = 20;
+
     private static final String CRON = MaintenanceTaskParameters.CRON_PREFIX;
+
+    private BufferedAppender logRecorder;
+
+    @BeforeMethod
+    public void setUpLogRecorder()
+    {
+        logRecorder = new BufferedAppender("%-5p %c - %m%n", Level.INFO);
+    }
 
     @DataProvider(name = "properties")
     public static Object[][] properties()
@@ -71,7 +83,7 @@ public class MaintenancePluginTest extends AbstractFileSystemTestCase
         plugin.shutdown();
 
         // Then
-        assertEquals(executionDates.size(), 3);
+        assertEquals(3, executionDates.size());
         int expectedDifference = 2000;
         for (int i = 1; i < executionDates.size(); i++)
         {
@@ -111,7 +123,7 @@ public class MaintenancePluginTest extends AbstractFileSystemTestCase
         plugin.shutdown();
 
         // Then
-        assertEquals(executionDates.size(), 3);
+        assertEquals(3, executionDates.size());
         System.out.println("Execution dates: " + executionDates);
         assertTimestamps(executionDates, now, 5000, false);
     }
@@ -149,7 +161,7 @@ public class MaintenancePluginTest extends AbstractFileSystemTestCase
         plugin.shutdown();
 
         // Then
-        assertEquals(executionDates.size(), 3);
+        assertEquals(3, executionDates.size());
         System.out.println("Execution dates 2: " + executionDates);
         assertTimestamps(executionDates, start, 5000, false);
     }
@@ -185,7 +197,6 @@ public class MaintenancePluginTest extends AbstractFileSystemTestCase
         plugin = new MaintenancePlugin(task, new MaintenanceTaskParameters(properties, "test"));
         plugin.start();
         List<Date> savedDates = new ArrayList<>();
-        int n = 4;
         for (int i = 1; i <= 4; i++)
         {
             messageChannel.assertNextMessage(i + ". execution");
@@ -195,11 +206,48 @@ public class MaintenancePluginTest extends AbstractFileSystemTestCase
         plugin.shutdown();
 
         // Then
-        assertEquals(executionDates.size(), n);
+        assertEquals(4, executionDates.size());
         System.out.println("Execution dates 3: " + executionDates);
         assertTimestamps(executionDates, start, 5000, false);
         System.out.println("Saved dates 3:" + savedDates);
         assertTimestamps(savedDates, start, 5000, true);
+    }
+
+    @Test
+    public void testRetry() throws Exception
+    {
+        // Given
+        MessageChannel messageChannel = new MessageChannel(10000);
+        List<Date> executionDates = new ArrayList<>();
+        TestMaintenanceTask task = new TestMaintenanceTask(messageChannel, executionDates, 2);
+        Properties properties = new Properties();
+        properties.setProperty(MaintenanceTaskParameters.CLASS_KEY, TestMaintenanceTask.class.getName());
+        properties.setProperty(MaintenanceTaskParameters.RUN_SCHEDULE_FILE_KEY, getPersistentNextDateFile().getPath());
+        properties.setProperty(MaintenanceTaskParameters.RUN_SCHEDULE_KEY, CRON + "*/5 * * * * *");
+        properties.setProperty(MaintenanceTaskParameters.RETRY_INTERVALS_AFTER_FAILURE_KEY, "1 sec, 1500 msec");
+        MaintenancePlugin plugin = new MaintenancePlugin(task, new MaintenanceTaskParameters(properties, "test"));
+
+        // When
+        Date start = new Date();
+        plugin.start();
+        for (int i = 1; i <= 3; i++)
+        {
+            messageChannel.assertNextMessage(i + ". execution");
+            if (i == 1)
+            {
+                start = new Date();
+            }
+        }
+        plugin.shutdown();
+
+        // Then
+        String prefix = "WARN  OPERATION.MaintenancePlugin - Execution of maintenance task '"
+                + "ch.systemsx.cisd.common.maintenance.MaintenancePluginTest.TestMaintenanceTask' failed. ";
+        assertEquals(prefix + "1. retry in 1000 msec.\n"
+                + prefix + "2. retry in 1500 msec.", logRecorder.getLogContent());
+        assertEquals(3, executionDates.size());
+        System.out.println("Execution dates 4: " + executionDates);
+        assertTimestamps(executionDates, start, 5000, false);
     }
 
     private void assertTimestamps(List<Date> dates, Date start, long period, boolean startOnRaster)
@@ -232,7 +280,7 @@ public class MaintenancePluginTest extends AbstractFileSystemTestCase
                     + ". Expected " + expectedDifference + " +- " + TOLERANCE + ".");
         }
     }
-    
+
     private Date getSavedNext() throws Exception
     {
         String savedNext = FileUtilities.loadToString(getPersistentNextDateFile());
@@ -252,10 +300,18 @@ public class MaintenancePluginTest extends AbstractFileSystemTestCase
 
         private int counter;
 
+        private int failureCount;
+
         TestMaintenanceTask(MessageChannel messageChannel, List<Date> executionDates)
+        {
+            this(messageChannel, executionDates, 0);
+        }
+
+        TestMaintenanceTask(MessageChannel messageChannel, List<Date> executionDates, int failureCount)
         {
             this.messageChannel = messageChannel;
             this.executionDates = executionDates;
+            this.failureCount = failureCount;
         }
 
         @Override
@@ -266,6 +322,11 @@ public class MaintenancePluginTest extends AbstractFileSystemTestCase
         @Override
         public void execute()
         {
+            if (failureCount > 0)
+            {
+                failureCount--;
+                throw new RuntimeException("Failed");
+            }
             executionDates.add(new Date());
             messageChannel.send(++counter + ". execution");
         }

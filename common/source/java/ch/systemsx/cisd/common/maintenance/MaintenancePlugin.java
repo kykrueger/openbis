@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.locks.ReentrantLock;
@@ -13,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
+import ch.systemsx.cisd.common.concurrent.ConcurrencyUtilities;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -93,7 +95,7 @@ public class MaintenancePlugin
         final String timerThreadName = parameters.getPluginName() + " - Maintenance Plugin";
         workerTimer = new Timer(timerThreadName);
 
-        final TimerTask timerTask = new MaintenanceTimerTask();
+        final TimerTask timerTask = new MaintenanceTimerTask(parameters.getRetryIntervals());
         final Date startDate = parameters.getStartDate();
         INextTimestampProvider nextTimestampProvider = parameters.getNextTimestampProvider();
         if (nextTimestampProvider != null)
@@ -171,7 +173,7 @@ public class MaintenancePlugin
 
     public synchronized void execute()
     {
-        final MaintenanceTimerTask timerTask = new MaintenanceTimerTask();
+        final MaintenanceTimerTask timerTask = new MaintenanceTimerTask(parameters.getRetryIntervals());
         timerTask.doRun();
     }
 
@@ -197,6 +199,13 @@ public class MaintenancePlugin
 
     private class MaintenanceTimerTask extends TimerTask
     {
+        private List<Long> retryIntervals;
+
+        public MaintenanceTimerTask(List<Long> retryIntervals)
+        {
+            this.retryIntervals = retryIntervals;
+        }
+
         @Override
         public void run()
         {
@@ -211,13 +220,34 @@ public class MaintenancePlugin
         private void doRun()
         {
             acquireLockIfNecessary();
+            String className = task.getClass().getCanonicalName();
+            int retryCounter = 1;
             try
             {
-                task.execute();
+                while (true)
+                {
+                    try
+                    {
+                        task.execute();
+                        return;
+                    } catch (Throwable th)
+                    {
+                        if (retryCounter <= retryIntervals.size())
+                        {
+                            long retryInterval = retryIntervals.get(retryCounter - 1);
+                            operationLog.warn("Execution of maintenance task '" + className + "' failed. "
+                                    + retryCounter + ". retry in " + retryInterval + " msec.");
+                            retryCounter++;
+                            ConcurrencyUtilities.sleep(retryInterval);
+                        } else
+                        {
+                            throw th;
+                        }
+                    }
+                }
             } catch (Throwable th)
             {
-                operationLog.error("Exception when running maintenance task '"
-                        + task.getClass().getCanonicalName() + "'.", th);
+                operationLog.error("Exception when running maintenance task '" + className + "'.", th);
             } finally
             {
                 releaseLockIfNecessay();

@@ -170,4 +170,19 @@ public class MaintenanceTaskParametersTest
         }
     }
 
+    @Test
+    public void testRetryIntervals()
+    {
+        // Given
+        Properties properties = new Properties();
+        properties.setProperty(MaintenanceTaskParameters.CLASS_KEY, "dummy");
+        properties.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, "30 m");
+        properties.setProperty(MaintenanceTaskParameters.RETRY_INTERVALS_AFTER_FAILURE_KEY, "1 h, 1 min, 40 s");
+        
+        // When
+        MaintenanceTaskParameters parameters = new MaintenanceTaskParameters(properties, "test");
+        
+        // Then
+        assertEquals(parameters.getRetryIntervals().toString(), "[40000, 60000]"); 
+    }
 }
