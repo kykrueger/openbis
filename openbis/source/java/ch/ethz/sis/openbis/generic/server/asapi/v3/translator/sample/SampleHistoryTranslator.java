@@ -16,21 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.fetchoptions.HistoryEntryFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.history.SampleRelationType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
@@ -40,11 +31,15 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment.IExperi
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history.HistoryPropertyRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history.HistoryRelationshipRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history.HistoryTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.project.IProjectAuthorizationValidator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.space.ISpaceAuthorizationValidator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.RelationType;
-
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.lemnik.eodsql.QueryTool;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 /**
  * @author pkupczyk
@@ -55,6 +50,9 @@ public class SampleHistoryTranslator extends HistoryTranslator implements ISampl
 
     @Autowired
     private ISpaceAuthorizationValidator spaceValidator;
+
+    @Autowired
+    private IProjectAuthorizationValidator projectValidator;
 
     @Autowired
     private IExperimentAuthorizationValidator experimentValidator;
@@ -81,6 +79,7 @@ public class SampleHistoryTranslator extends HistoryTranslator implements ISampl
         List<SampleRelationshipRecord> validRecords = new ArrayList<SampleRelationshipRecord>();
 
         Set<Long> spaceIds = new HashSet<Long>();
+        Set<Long> projectIds = new HashSet<Long>();
         Set<Long> experimentIds = new HashSet<Long>();
         Set<Long> sampleIds = new HashSet<Long>();
         Set<Long> dataSetIds = new HashSet<Long>();
@@ -90,6 +89,9 @@ public class SampleHistoryTranslator extends HistoryTranslator implements ISampl
             if (record.spaceId != null)
             {
                 spaceIds.add(record.spaceId);
+            } else if (record.projectId != null)
+            {
+                projectIds.add(record.projectId);
             } else if (record.experimentId != null)
             {
                 experimentIds.add(record.experimentId);
@@ -105,6 +107,10 @@ public class SampleHistoryTranslator extends HistoryTranslator implements ISampl
         if (false == spaceIds.isEmpty())
         {
             spaceIds = spaceValidator.validate(context.getSession().tryGetPerson(), spaceIds);
+        }
+        if (false == projectIds.isEmpty())
+        {
+            projectIds = projectValidator.validate(context.getSession().tryGetPerson(), projectIds);
         }
         if (false == experimentIds.isEmpty())
         {
@@ -126,6 +132,9 @@ public class SampleHistoryTranslator extends HistoryTranslator implements ISampl
             if (record.spaceId != null)
             {
                 isValid = spaceIds.contains(record.spaceId);
+            } else if (record.projectId != null)
+            {
+                isValid = projectIds.contains(record.projectId);
             } else if (record.experimentId != null)
             {
                 isValid = experimentIds.contains(record.experimentId);
@@ -158,6 +167,10 @@ public class SampleHistoryTranslator extends HistoryTranslator implements ISampl
         {
             entry.setRelationType(SampleRelationType.SPACE);
             entry.setRelatedObjectId(new SpacePermId(sampleRecord.relatedObjectId));
+        } else if (sampleRecord.projectId != null)
+        {
+            entry.setRelationType(SampleRelationType.PROJECT);
+            entry.setRelatedObjectId(new ProjectPermId(sampleRecord.relatedObjectId));
         } else if (sampleRecord.experimentId != null)
         {
             entry.setRelationType(SampleRelationType.EXPERIMENT);
