@@ -183,6 +183,6 @@ public class MaintenanceTaskParametersTest
         MaintenanceTaskParameters parameters = new MaintenanceTaskParameters(properties, "test");
         
         // Then
-        assertEquals(parameters.getRetryIntervals().toString(), "[40000, 60000]"); 
+        assertEquals(parameters.getRetryIntervals().toString(), "[3600000, 60000, 40000]"); 
     }
 }
