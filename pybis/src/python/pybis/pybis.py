@@ -280,6 +280,17 @@ def _criteria_for_code(code):
         "@type": "as.dto.common.search.CodeSearchCriteria"
     }
 
+def _criteria_for_permId(permId):
+    return {
+        "fieldName": "perm_id",
+        "fieldType": "ATTRIBUTE",
+        "fieldValue": {
+            "value": permId,
+            "@type": "as.dto.common.search.StringEqualToValue"
+        },
+        "@type": "as.dto.common.search.PermIdSearchCriteria"
+    }
+
 def _subcriteria_for_userId(userId):
     return {
           "criteria": [
@@ -607,6 +618,18 @@ def _subcriteria_for(thing, entity, parents_or_children='', operator='AND'):
     - an identifier
     - a code
     """
+
+    entity, *_ = entity.split('.')
+    if _:
+        new_entity = '.'.join(_)
+        subcrit = _subcriteria_for(thing, new_entity)
+
+        search_type = get_type_for_entity(entity, 'search', parents_or_children)
+        return {
+            "criteria": subcrit,
+            **search_type,
+            "operator": operator
+        }
 
     if isinstance(thing, str):
         if is_permid(thing):
@@ -1989,8 +2012,7 @@ class Openbis:
         if code:
             sub_criteria.append(_criteria_for_code(code))
         if permId:
-            sub_criteria.append(_common_search("as.dto.common.search.PermIdSearchCriteria", permId))
-
+            sub_criteria.append(_criteria_for_permId(permId))
 
         criteria = {
             "criteria": sub_criteria,
@@ -1998,8 +2020,6 @@ class Openbis:
             "operator": "AND",
             "relation": "SAMPLE"
         }
-
-        attrs_fetchoptions = self._get_fetchopts_for_attrs(attrs)
 
         # build the various fetch options
         fetchopts = fetch_option['sample']
@@ -2110,13 +2130,13 @@ class Openbis:
 
         sub_criteria = []
         if space:
-            sub_criteria.append(_subcriteria_for_code(space, 'space'))
+            sub_criteria.append(_subcriteria_for(space, 'project.space', operator='AND'))
         if project:
-            sub_criteria.append(_subcriteria_for_code(project, 'project'))
+            sub_criteria.append(_subcriteria_for(project, 'project', operator='AND'))
         if code:
             sub_criteria.append(_criteria_for_code(code))
         if permId:
-            sub_criteria.append(_common_search("as.dto.common.search.PermIdSearchCriteria", permId))
+            sub_criteria.append(_criteria_for_permId(permId))
         if type:
             sub_criteria.append(_subcriteria_for_code(type, 'experimentType'))
         if tags:
@@ -2231,7 +2251,8 @@ class Openbis:
     def get_datasets(
         self, code=None, type=None, withParents=None, withChildren=None,
         start_with=None, count=None, kind=None,
-        status=None, sample=None, experiment=None, collection=None, project=None,
+        status=None, sample=None, experiment=None, collection=None,
+        project=None, space=None,
         tags=None, attrs=None, props=None, 
         where=None,
         **properties
@@ -2289,12 +2310,10 @@ class Openbis:
         if experiment:
             sub_criteria.append(_subcriteria_for(experiment, 'experiment'))
         if attrs is None: attrs = []
-
         if project:
-            exp_crit = _subcriteria_for(experiment, 'experiment')
-            proj_crit = _subcriteria_for(project, 'project')
-            exp_crit['criteria'].append(proj_crit)
-            sub_criteria.append(exp_crit)
+            sub_criteria.append(_subcriteria_for(project, 'experiment.project'))
+        if space:
+            sub_criteria.append(_subcriteria_for(space, 'experiment.project.space'))
         if tags:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if status:
@@ -2325,18 +2344,6 @@ class Openbis:
             fetchopts[option] = fetch_option[option]
 
         fetchopts['experiment']['project'] = fetch_option['project']
-
-       # else:
-       #     # get fetch options for projects and spaces
-       #     # via experiment, if requested
-       #     for attr in attrs:
-       #         if any([entity in attr for entity in ['space','project']]):
-       #             fetchopts['experiment'] = fetch_option['experiment']
-       #             fetchopts['experiment']['project'] = fetch_option['project']
-
-       #     options = self._get_fetchopts_for_attrs(attrs)
-       #     for option in ['tags', 'properties', 'physicalData']+options:
-       #         fetchopts[option] = fetch_option[option]
 
         if kind:
             kind = kind.upper()
