@@ -22,7 +22,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -98,7 +97,6 @@ public class MaintenanceTaskParameters
             String defaultPath = getPersistenNextDateFile(pluginName, className).getAbsolutePath();
             persistentNextDateFile = new File(properties.getProperty(RUN_SCHEDULE_FILE_KEY, defaultPath));
         }
-        removeRetryIntervalsWhichAreTooLarge();
     }
 
     private static Date extractStartDate(String timeOrNull)
@@ -140,7 +138,6 @@ public class MaintenanceTaskParameters
             {
                 intervals.add(DateTimeUtils.parseDurationToMillis(retryInterval));
             }
-            Collections.sort(intervals);
         }
         return intervals;
     }
@@ -161,23 +158,6 @@ public class MaintenanceTaskParameters
             }
         }
         return etc;
-    }
-
-    private void removeRetryIntervalsWhichAreTooLarge()
-    {
-        long interval = 1000 * this.interval;
-        if (nextTimestampProvider != null)
-        {
-            Date next = nextTimestampProvider.getNextTimestamp(new Date());
-            interval = nextTimestampProvider.getNextTimestamp(next).getTime() - next.getTime();
-        }
-        for (int i = this.retryIntervals.size() - 1; i >= 0; i--)
-        {
-            if (interval < this.retryIntervals.get(i))
-            {
-                this.retryIntervals.remove(i);
-            }
-        }
     }
 
     public boolean isExecuteOnlyOnce()
