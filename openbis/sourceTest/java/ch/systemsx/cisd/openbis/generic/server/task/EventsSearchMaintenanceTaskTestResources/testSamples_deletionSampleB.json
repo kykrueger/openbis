@@ -25,7 +25,7 @@
       "validFrom": "2021-04-01 15:20:05.699",
       "validUntil": "2021-04-01 15:20:18.102",
       "type": "RELATIONSHIP",
-      "entityType": "PROJECT",
+      "entityType": "UNKNOWN",
       "key": "OWNED",
       "value": "20210329151103947-205180"
     },
@@ -33,7 +33,7 @@
       "userId": "admin",
       "validFrom": "2021-04-01 15:20:18.102",
       "type": "RELATIONSHIP",
-      "entityType": "PROJECT",
+      "entityType": "UNKNOWN",
       "key": "OWNED",
       "value": "20210401151815315-205197"
     }

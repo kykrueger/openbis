@@ -229,18 +229,13 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     }
                 }
 
-                snapshots.loadExistingSpaces(
-                        newEvents.stream().map(event -> event.entitySpaceCode).filter(Objects::nonNull).collect(Collectors.toSet()));
+                snapshots.loadExistingSpaces(NewEvent.getEntitySpaceCodesOrUnknown(newEvents));
 
                 for (NewEvent newEvent : newEvents)
                 {
                     try
                     {
-                        if (newEvent.entitySpaceCode != null)
-                        {
-                            snapshots.fillBySpaceCode(newEvent.entitySpaceCode, newEvent);
-                        }
-
+                        snapshots.fillByProjectPermId(newEvent.identifier, newEvent);
                         dataSource.createEventsSearch(newEvent.toNewEventPE());
 
                     } catch (Exception e)
@@ -259,6 +254,24 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         final List<NewEvent> newEvents = new ArrayList<>();
 
         final Date lastSeenProjectTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, EntityType.PROJECT);
+
+        if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
+        {
+            for (String projectPermId : deletion.getIdentifiers())
+            {
+                ProjectSnapshot snapshot = new ProjectSnapshot();
+                snapshot.projectPermId = projectPermId;
+                snapshot.from = new Date(0);
+                snapshot.to = deletion.getRegistrationDateInternal();
+                snapshots.putDeletedProject(snapshot);
+
+                NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
+                newEvent.identifier = projectPermId;
+                newEvents.add(newEvent);
+            }
+
+            return newEvents;
+        }
 
         @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
                 (Map<String, Object>) objectMapper.readValue(deletion.getContent(), Object.class);
@@ -299,41 +312,63 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 String type = projectEntry.get("type");
                 String entityType = projectEntry.get("entityType");
 
-                if ("RELATIONSHIP".equals(type) && "SPACE".equals(entityType))
+                if ("RELATIONSHIP".equals(type))
                 {
-                    String value = projectEntry.get("value");
-                    String validFrom = projectEntry.get("validFrom");
-                    String validUntil = projectEntry.get("validUntil");
-
-                    ProjectSnapshot snapshot = new ProjectSnapshot();
-                    snapshot.projectCode = projectCode;
-                    snapshot.projectPermId = projectPermId;
-                    snapshot.spaceCode = value;
-
-                    if (validFrom != null)
+                    if ("SPACE".equals(entityType) || "UNKNOWN".equals(entityType))
                     {
-                        snapshot.from = VALID_TIMESTAMP_FORMAT.parse(validFrom);
+                        String value = projectEntry.get("value");
+                        String validFrom = projectEntry.get("validFrom");
+                        String validUntil = projectEntry.get("validUntil");
+
+                        ProjectSnapshot snapshot = new ProjectSnapshot();
+                        snapshot.projectCode = projectCode;
+                        snapshot.projectPermId = projectPermId;
+
+                        if ("SPACE".equals(entityType))
+                        {
+                            snapshot.spaceCode = value;
+                        } else
+                        {
+                            snapshot.unknownPermId = value;
+                        }
+
+                        if (validFrom != null)
+                        {
+                            snapshot.from = VALID_TIMESTAMP_FORMAT.parse(validFrom);
+                        }
+
+                        if (validUntil != null)
+                        {
+                            snapshot.to = VALID_TIMESTAMP_FORMAT.parse(validUntil);
+                        } else
+                        {
+                            snapshot.to = deletion.getRegistrationDateInternal();
+                            lastSnapshot = snapshot;
+                        }
+
+                        snapshots.putDeletedProject(snapshot);
                     }
-
-                    if (validUntil != null)
-                    {
-                        snapshot.to = VALID_TIMESTAMP_FORMAT.parse(validUntil);
-                    } else
-                    {
-                        snapshot.to = deletion.getRegistrationDateInternal();
-                        lastSnapshot = snapshot;
-                    }
-
-                    snapshots.putDeletedProject(snapshot);
                 }
+            }
+
+            if (lastSnapshot == null)
+            {
+                ProjectSnapshot snapshot = new ProjectSnapshot();
+                snapshot.projectCode = projectCode;
+                snapshot.projectPermId = projectPermId;
+                snapshot.from = registrationTimestamp;
+                snapshot.to = deletion.getRegistrationDateInternal();
+
+                snapshots.putDeletedProject(snapshot);
+                lastSnapshot = snapshot;
             }
 
             if (lastSeenProjectTimestampOrNull == null || deletion.getRegistrationDateInternal().after(lastSeenProjectTimestampOrNull))
             {
                 NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
-                newEvent.entitySpaceCode = lastSnapshot != null ? lastSnapshot.spaceCode : null;
-                newEvent.entityProjectPermId = projectPermId;
-                newEvent.entityProject = lastSnapshot != null ? new ProjectIdentifier(lastSnapshot.spaceCode, projectCode).toString() : null;
+                newEvent.entitySpaceCode = lastSnapshot.spaceCode;
+                newEvent.entityProjectPermId = lastSnapshot.projectPermId;
+                newEvent.entityUnknownPermId = lastSnapshot.unknownPermId;
                 newEvent.entityRegisterer = registerer;
                 newEvent.entityRegistrationTimestamp = registrationTimestamp;
                 newEvent.identifier = projectPermId;
@@ -382,18 +417,13 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     }
                 }
 
-                snapshots.loadExistingProjects(
-                        newEvents.stream().map(event -> event.entityProjectPermId).filter(Objects::nonNull).collect(Collectors.toSet()));
+                snapshots.loadExistingProjects(NewEvent.getEntityProjectPermIdsOrUnknown(newEvents));
 
                 for (NewEvent newEvent : newEvents)
                 {
                     try
                     {
-                        if (newEvent.entityProjectPermId != null)
-                        {
-                            snapshots.fillByProjectPermId(newEvent.entityProjectPermId, newEvent);
-                        }
-
+                        snapshots.fillByExperimentPermId(newEvent.identifier, newEvent);
                         dataSource.createEventsSearch(newEvent.toNewEventPE());
 
                     } catch (Exception e)
@@ -412,6 +442,24 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         final List<NewEvent> newEvents = new ArrayList<>();
 
         final Date lastSeenExperimentTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, EntityType.EXPERIMENT);
+
+        if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
+        {
+            for (String experimentPermId : deletion.getIdentifiers())
+            {
+                ExperimentSnapshot snapshot = new ExperimentSnapshot();
+                snapshot.experimentPermId = experimentPermId;
+                snapshot.from = new Date(0);
+                snapshot.to = deletion.getRegistrationDateInternal();
+                snapshots.putDeletedExperiment(snapshot);
+
+                NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
+                newEvent.identifier = experimentPermId;
+                newEvents.add(newEvent);
+            }
+
+            return newEvents;
+        }
 
         @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
                 (Map<String, Object>) objectMapper.readValue(deletion.getContent(), Object.class);
@@ -453,40 +501,63 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 String type = experimentEntry.get("type");
                 String entityType = experimentEntry.get("entityType");
 
-                if ("RELATIONSHIP".equals(type) && "PROJECT".equals(entityType))
+                if ("RELATIONSHIP".equals(type))
                 {
-                    String value = experimentEntry.get("value");
-                    String validFrom = experimentEntry.get("validFrom");
-                    String validUntil = experimentEntry.get("validUntil");
-
-                    ExperimentSnapshot snapshot = new ExperimentSnapshot();
-                    snapshot.experimentCode = experimentCode;
-                    snapshot.experimentPermId = experimentPermId;
-                    snapshot.projectPermId = value;
-
-                    if (validFrom != null)
+                    if ("PROJECT".equals(entityType) || "UNKNOWN".equals(entityType))
                     {
-                        snapshot.from = VALID_TIMESTAMP_FORMAT.parse(validFrom);
+                        String value = experimentEntry.get("value");
+                        String validFrom = experimentEntry.get("validFrom");
+                        String validUntil = experimentEntry.get("validUntil");
+
+                        ExperimentSnapshot snapshot = new ExperimentSnapshot();
+                        snapshot.experimentCode = experimentCode;
+                        snapshot.experimentPermId = experimentPermId;
+
+                        if ("PROJECT".equals(entityType))
+                        {
+                            snapshot.projectPermId = value;
+                        } else
+                        {
+                            snapshot.unknownPermId = value;
+                        }
+
+                        if (validFrom != null)
+                        {
+                            snapshot.from = VALID_TIMESTAMP_FORMAT.parse(validFrom);
+                        }
+
+                        if (validUntil != null)
+                        {
+                            snapshot.to = VALID_TIMESTAMP_FORMAT.parse(validUntil);
+                        } else
+                        {
+                            snapshot.to = deletion.getRegistrationDateInternal();
+                            lastSnapshot = snapshot;
+                        }
+
+                        snapshots.putDeletedExperiment(snapshot);
                     }
-
-                    if (validUntil != null)
-                    {
-                        snapshot.to = VALID_TIMESTAMP_FORMAT.parse(validUntil);
-                    } else
-                    {
-                        snapshot.to = deletion.getRegistrationDateInternal();
-                        lastSnapshot = snapshot;
-                    }
-
-                    snapshots.putDeletedExperiment(snapshot);
                 }
+            }
+
+            if (lastSnapshot == null)
+            {
+                ExperimentSnapshot snapshot = new ExperimentSnapshot();
+                snapshot.experimentCode = experimentCode;
+                snapshot.experimentPermId = experimentPermId;
+                snapshot.from = registrationTimestamp;
+                snapshot.to = deletion.getRegistrationDateInternal();
+
+                snapshots.putDeletedExperiment(snapshot);
+                lastSnapshot = snapshot;
             }
 
             if (lastSeenExperimentTimestampOrNull == null || deletion.getRegistrationDateInternal()
                     .after(lastSeenExperimentTimestampOrNull))
             {
                 NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
-                newEvent.entityProjectPermId = lastSnapshot != null ? lastSnapshot.projectPermId : null;
+                newEvent.entityProjectPermId = lastSnapshot.projectPermId;
+                newEvent.entityUnknownPermId = lastSnapshot.unknownPermId;
                 newEvent.entityRegisterer = registerer;
                 newEvent.entityRegistrationTimestamp = registrationTimestamp;
                 newEvent.identifier = experimentPermId;
@@ -533,28 +604,15 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     }
                 }
 
-                snapshots.loadExistingSpaces(
-                        newEvents.stream().map(event -> event.entitySpaceCode).filter(Objects::nonNull).collect(Collectors.toSet()));
-                snapshots.loadExistingProjects(
-                        newEvents.stream().map(event -> event.entityProjectPermId).filter(Objects::nonNull).collect(Collectors.toSet()));
-                snapshots.loadExistingExperiments(
-                        newEvents.stream().map(event -> event.entityExperimentPermId).filter(Objects::nonNull).collect(Collectors.toSet()));
+                snapshots.loadExistingSpaces(NewEvent.getEntitySpaceCodesOrUnknown(newEvents));
+                snapshots.loadExistingProjects(NewEvent.getEntityProjectPermIdsOrUnknown(newEvents));
+                snapshots.loadExistingExperiments(NewEvent.getEntityExperimentPermIdsOrUnknown(newEvents));
 
                 for (NewEvent newEvent : newEvents)
                 {
                     try
                     {
-                        if (newEvent.entityExperimentPermId != null)
-                        {
-                            snapshots.fillByExperimentPermId(newEvent.entityExperimentPermId, newEvent);
-                        } else if (newEvent.entityProjectPermId != null)
-                        {
-                            snapshots.fillByProjectPermId(newEvent.entityProjectPermId, newEvent);
-                        } else if (newEvent.entitySpaceCode != null)
-                        {
-                            snapshots.fillBySpaceCode(newEvent.entitySpaceCode, newEvent);
-                        }
-
+                        snapshots.fillBySamplePermId(newEvent.identifier, newEvent);
                         dataSource.createEventsSearch(newEvent.toNewEventPE());
 
                     } catch (Exception e)
@@ -635,9 +693,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 {
                     String entityType = sampleEntry.get("entityType");
 
-                    // TODO project samples (currently they are stored with "entityType" == "UNKNOWN")
-
-                    if ("SPACE".equals(entityType) || "EXPERIMENT".equals(entityType) || "PROJECT".equals(entityType))
+                    if ("SPACE".equals(entityType) || "EXPERIMENT".equals(entityType) || "PROJECT".equals(entityType) || "UNKNOWN"
+                            .equals(entityType))
                     {
                         SampleSnapshot snapshot = new SampleSnapshot();
                         snapshot.sampleCode = sampleCode;
@@ -650,9 +707,12 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                         } else if ("PROJECT".equals(entityType))
                         {
                             snapshot.projectPermId = value;
-                        } else
+                        } else if ("EXPERIMENT".equals(entityType))
                         {
                             snapshot.experimentPermId = value;
+                        } else
+                        {
+                            snapshot.unknownPermId = value;
                         }
 
                         String validFrom = sampleEntry.get("validFrom");
@@ -695,6 +755,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 newEvent.entitySpaceCode = lastSnapshot.spaceCode;
                 newEvent.entityProjectPermId = lastSnapshot.projectPermId;
                 newEvent.entityExperimentPermId = lastSnapshot.experimentPermId;
+                newEvent.entityUnknownPermId = lastSnapshot.unknownPermId;
                 newEvent.entityRegisterer = registerer;
                 newEvent.entityRegistrationTimestamp = registrationTimestamp;
                 newEvent.identifier = samplePermId;
@@ -741,10 +802,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     }
                 }
 
-                snapshots.loadExistingExperiments(
-                        newEvents.stream().map(event -> event.entityExperimentPermId).filter(Objects::nonNull).collect(Collectors.toSet()));
-                snapshots.loadExistingSamples(
-                        newEvents.stream().map(event -> event.entitySamplePermId).filter(Objects::nonNull).collect(Collectors.toSet()));
+                snapshots.loadExistingExperiments(NewEvent.getEntityExperimentPermIdsOrUnknown(newEvents));
+                snapshots.loadExistingSamples(NewEvent.getEntitySamplePermIdsOrUnknown(newEvents));
 
                 for (NewEvent newEvent : newEvents)
                 {
@@ -756,6 +815,13 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                         } else if (newEvent.entitySamplePermId != null)
                         {
                             snapshots.fillBySamplePermId(newEvent.entitySamplePermId, newEvent);
+                        } else if (newEvent.entityUnknownPermId != null)
+                        {
+                            snapshots.fillByExperimentPermId(newEvent.entityUnknownPermId, newEvent);
+                            if (newEvent.entitySpaceCode == null)
+                            {
+                                snapshots.fillBySamplePermId(newEvent.entityUnknownPermId, newEvent);
+                            }
                         }
 
                         dataSource.createEventsSearch(newEvent.toNewEventPE());
@@ -774,6 +840,18 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
     private List<NewEvent> processDataSetDeletion(EventPE deletion) throws Exception
     {
         final List<NewEvent> newEvents = new ArrayList<>();
+
+        if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
+        {
+            for (String dataSetPermId : deletion.getIdentifiers())
+            {
+                NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
+                newEvent.identifier = dataSetPermId;
+                newEvents.add(newEvent);
+            }
+
+            return newEvents;
+        }
 
         @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
                 (Map<String, Object>) objectMapper.readValue(deletion.getContent(), Object.class);
@@ -806,6 +884,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
             String experimentPermId = null;
             String samplePermId = null;
+            String unknownPermId = null;
 
             for (Map<String, String> dataSetEntry : dataSetEntries)
             {
@@ -825,6 +904,9 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                         } else if ("SAMPLE".equals(entityType))
                         {
                             samplePermId = value;
+                        } else if ("UNKNOWN".equals(entityType))
+                        {
+                            unknownPermId = value;
                         }
                     }
                 }
@@ -833,6 +915,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
             newEvent.entityExperimentPermId = experimentPermId;
             newEvent.entitySamplePermId = samplePermId;
+            newEvent.entityUnknownPermId = unknownPermId;
             newEvent.entityRegisterer = registerer;
             newEvent.entityRegistrationTimestamp = registrationTimestamp;
             newEvent.identifier = dataSetPermId;
@@ -1056,31 +1139,49 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         {
             SpaceSnapshot spaceSnapshot = spaceSnapshots.get(spaceCode, newEvent.registrationTimestamp);
 
-            newEvent.entitySpaceCode = spaceSnapshot.spaceCode;
-            newEvent.entitySpacePermId = spaceSnapshot.spaceTechId != null ? String.valueOf(spaceSnapshot.spaceTechId) : null;
+            if (spaceSnapshot != null)
+            {
+                newEvent.entitySpaceCode = spaceSnapshot.spaceCode;
+                newEvent.entitySpacePermId = spaceSnapshot.spaceTechId != null ? String.valueOf(spaceSnapshot.spaceTechId) : null;
+            }
         }
 
         public void fillByProjectPermId(String projectPermId, NewEvent newEvent)
         {
             ProjectSnapshot projectSnapshot = projectSnapshots.get(projectPermId, newEvent.registrationTimestamp);
-            SpaceSnapshot spaceSnapshot = spaceSnapshots.get(projectSnapshot.spaceCode, newEvent.registrationTimestamp);
 
-            newEvent.entitySpaceCode = spaceSnapshot.spaceCode;
-            newEvent.entitySpacePermId = spaceSnapshot.spaceTechId != null ? String.valueOf(spaceSnapshot.spaceTechId) : null;
-            newEvent.entityProject = new ProjectIdentifier(spaceSnapshot.spaceCode, projectSnapshot.projectCode).toString();
-            newEvent.entityProjectPermId = projectPermId;
+            if (projectSnapshot != null)
+            {
+                if (projectSnapshot.spaceCode != null)
+                {
+                    fillBySpaceCode(projectSnapshot.spaceCode, newEvent);
+                } else if (projectSnapshot.unknownPermId != null)
+                {
+                    fillBySpaceCode(projectSnapshot.unknownPermId, newEvent);
+                }
+
+                newEvent.entityProjectPermId = projectPermId;
+                if (newEvent.entitySpaceCode != null)
+                {
+                    newEvent.entityProject = new ProjectIdentifier(newEvent.entitySpaceCode, projectSnapshot.projectCode).toString();
+                }
+            }
         }
 
         public void fillByExperimentPermId(String experimentPermId, NewEvent newEvent)
         {
             ExperimentSnapshot experimentSnapshot = experimentSnapshots.get(experimentPermId, newEvent.registrationTimestamp);
-            ProjectSnapshot projectSnapshot = projectSnapshots.get(experimentSnapshot.projectPermId, newEvent.registrationTimestamp);
-            SpaceSnapshot spaceSnapshot = spaceSnapshots.get(projectSnapshot.spaceCode, newEvent.registrationTimestamp);
 
-            newEvent.entitySpaceCode = spaceSnapshot.spaceCode;
-            newEvent.entitySpacePermId = spaceSnapshot.spaceTechId != null ? String.valueOf(spaceSnapshot.spaceTechId) : null;
-            newEvent.entityProject = new ProjectIdentifier(spaceSnapshot.spaceCode, projectSnapshot.projectCode).toString();
-            newEvent.entityProjectPermId = projectSnapshot.projectPermId;
+            if (experimentSnapshot != null)
+            {
+                if (experimentSnapshot.projectPermId != null)
+                {
+                    fillByProjectPermId(experimentSnapshot.projectPermId, newEvent);
+                } else if (experimentSnapshot.unknownPermId != null)
+                {
+                    fillByProjectPermId(experimentSnapshot.unknownPermId, newEvent);
+                }
+            }
         }
 
         public void fillBySamplePermId(String samplePermId, NewEvent newEvent)
@@ -1098,6 +1199,17 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 } else if (sampleSnapshot.spaceCode != null)
                 {
                     fillBySpaceCode(sampleSnapshot.spaceCode, newEvent);
+                } else if (sampleSnapshot.unknownPermId != null)
+                {
+                    fillByExperimentPermId(sampleSnapshot.unknownPermId, newEvent);
+                    if (newEvent.entitySpaceCode == null)
+                    {
+                        fillByProjectPermId(sampleSnapshot.unknownPermId, newEvent);
+                        if (newEvent.entitySpaceCode == null)
+                        {
+                            fillBySpaceCode(sampleSnapshot.unknownPermId, newEvent);
+                        }
+                    }
                 }
             }
         }
@@ -1304,6 +1416,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
         public String spaceCode;
 
+        public String unknownPermId;
+
         @Override protected String getKey()
         {
             return projectPermId;
@@ -1350,7 +1464,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
                             snapshots.add(snapshot);
 
-                            if (lastProjectRelationship == null || relationHistoryEntry.getValidFrom().after(lastProjectRelationship.getValidFrom()))
+                            if (lastProjectRelationship == null || relationHistoryEntry.getValidFrom()
+                                    .after(lastProjectRelationship.getValidFrom()))
                             {
                                 lastProjectRelationship = relationHistoryEntry;
                             }
@@ -1386,6 +1501,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         public String experimentPermId;
 
         public String projectPermId;
+
+        public String unknownPermId;
 
         @Override protected String getKey()
         {
@@ -1498,6 +1615,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
         public String experimentPermId;
 
+        public String unknownPermId;
+
         @Override protected String getKey()
         {
             return samplePermId;
@@ -1524,6 +1643,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
         public String entitySamplePermId;
 
+        public String entityUnknownPermId;
+
         public String entityRegisterer;
 
         public Date entityRegistrationTimestamp;
@@ -1541,6 +1662,70 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         public PersonPE registerer;
 
         public Date registrationTimestamp;
+
+        public static Set<String> getEntitySpaceCodesOrUnknown(Collection<NewEvent> newEvents)
+        {
+            Set<String> result = new HashSet<>();
+            for (NewEvent newEvent : newEvents)
+            {
+                if (newEvent.entitySpaceCode != null)
+                {
+                    result.add(newEvent.entitySpaceCode);
+                } else if (newEvent.entityUnknownPermId != null)
+                {
+                    result.add(newEvent.entityUnknownPermId);
+                }
+            }
+            return result;
+        }
+
+        public static Set<String> getEntityProjectPermIdsOrUnknown(Collection<NewEvent> newEvents)
+        {
+            Set<String> result = new HashSet<>();
+            for (NewEvent newEvent : newEvents)
+            {
+                if (newEvent.entityProjectPermId != null)
+                {
+                    result.add(newEvent.entityProjectPermId);
+                } else if (newEvent.entityUnknownPermId != null)
+                {
+                    result.add(newEvent.entityUnknownPermId);
+                }
+            }
+            return result;
+        }
+
+        public static Set<String> getEntityExperimentPermIdsOrUnknown(Collection<NewEvent> newEvents)
+        {
+            Set<String> result = new HashSet<>();
+            for (NewEvent newEvent : newEvents)
+            {
+                if (newEvent.entityExperimentPermId != null)
+                {
+                    result.add(newEvent.entityExperimentPermId);
+                } else if (newEvent.entityUnknownPermId != null)
+                {
+                    result.add(newEvent.entityUnknownPermId);
+                }
+            }
+            return result;
+        }
+
+        public static Set<String> getEntitySamplePermIdsOrUnknown(Collection<NewEvent> newEvents)
+        {
+            Set<String> result = new HashSet<>();
+            for (NewEvent newEvent : newEvents)
+            {
+                if (newEvent.entitySamplePermId != null)
+                {
+                    result.add(newEvent.entitySamplePermId);
+                } else if (newEvent.entityUnknownPermId != null)
+                {
+                    result.add(newEvent.entityUnknownPermId);
+                }
+            }
+            return result;
+        }
 
         public static NewEvent fromOldEventPE(EventPE oldEvent)
         {
