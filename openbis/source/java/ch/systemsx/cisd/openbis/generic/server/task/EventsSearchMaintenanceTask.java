@@ -535,6 +535,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
                 snapshots.loadExistingSpaces(
                         newEvents.stream().map(event -> event.entitySpaceCode).filter(Objects::nonNull).collect(Collectors.toSet()));
+                snapshots.loadExistingProjects(
+                        newEvents.stream().map(event -> event.entityProjectPermId).filter(Objects::nonNull).collect(Collectors.toSet()));
                 snapshots.loadExistingExperiments(
                         newEvents.stream().map(event -> event.entityExperimentPermId).filter(Objects::nonNull).collect(Collectors.toSet()));
 
@@ -545,6 +547,9 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                         if (newEvent.entityExperimentPermId != null)
                         {
                             snapshots.fillByExperimentPermId(newEvent.entityExperimentPermId, newEvent);
+                        } else if (newEvent.entityProjectPermId != null)
+                        {
+                            snapshots.fillByProjectPermId(newEvent.entityProjectPermId, newEvent);
                         } else if (newEvent.entitySpaceCode != null)
                         {
                             snapshots.fillBySpaceCode(newEvent.entitySpaceCode, newEvent);
@@ -632,7 +637,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
                     // TODO project samples (currently they are stored with "entityType" == "UNKNOWN")
 
-                    if ("SPACE".equals(entityType) || "EXPERIMENT".equals(entityType))
+                    if ("SPACE".equals(entityType) || "EXPERIMENT".equals(entityType) || "PROJECT".equals(entityType))
                     {
                         SampleSnapshot snapshot = new SampleSnapshot();
                         snapshot.sampleCode = sampleCode;
@@ -642,7 +647,10 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                         if ("SPACE".equals(entityType))
                         {
                             snapshot.spaceCode = value;
-                        } else if ("EXPERIMENT".equals(entityType))
+                        } else if ("PROJECT".equals(entityType))
+                        {
+                            snapshot.projectPermId = value;
+                        } else
                         {
                             snapshot.experimentPermId = value;
                         }
@@ -685,7 +693,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             {
                 NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
                 newEvent.entitySpaceCode = lastSnapshot.spaceCode;
-                // TODO project samples (currently they are stored with "entityType" == "UNKNOWN")
+                newEvent.entityProjectPermId = lastSnapshot.projectPermId;
                 newEvent.entityExperimentPermId = lastSnapshot.experimentPermId;
                 newEvent.entityRegisterer = registerer;
                 newEvent.entityRegistrationTimestamp = registrationTimestamp;
@@ -1079,8 +1087,6 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         {
             SampleSnapshot sampleSnapshot = sampleSnapshots.get(samplePermId, newEvent.registrationTimestamp);
 
-            // TODO project samples (currently snapshots for periods when a sample was connected with a project are not available)
-
             if (sampleSnapshot != null)
             {
                 if (sampleSnapshot.experimentPermId != null)
@@ -1419,9 +1425,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                         RelationHistoryEntry relationHistoryEntry = (RelationHistoryEntry) historyEntry;
                         IRelationType relationType = relationHistoryEntry.getRelationType();
 
-                        // TODO project samples (currently relations with projects are not included)
-
-                        if (SampleRelationType.SPACE.equals(relationType) || SampleRelationType.EXPERIMENT.equals(relationType))
+                        if (SampleRelationType.SPACE.equals(relationType) || SampleRelationType.PROJECT.equals(relationType)
+                                || SampleRelationType.EXPERIMENT.equals(relationType))
                         {
                             SampleSnapshot snapshot = new SampleSnapshot();
                             snapshot.sampleCode = sample.getCode();
@@ -1432,6 +1437,9 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                             if (SampleRelationType.SPACE.equals(relationType))
                             {
                                 snapshot.spaceCode = ((SpacePermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
+                            } else if (SampleRelationType.PROJECT.equals(relationType))
+                            {
+                                snapshot.projectPermId = ((ProjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
                             } else
                             {
                                 snapshot.experimentPermId = ((ExperimentPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();

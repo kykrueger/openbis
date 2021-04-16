@@ -775,11 +775,10 @@ public class EventsSearchMaintenanceTaskTest
         assertExpectedEvent(events.get(1), deletionSampleAExpected);
 
         EventsSearchPE deletionSampleBExpected = createExpectedEvent(deletionSampleB);
-        // TODO project samples (uncomment once supported)
-        //deletionSampleBExpected.setEntitySpace("SPACE_B");
-        //deletionSampleBExpected.setEntitySpacePermId("200");
-        //deletionSampleBExpected.setEntityProject("/SPACE_B/PROJECT_B");
-        //deletionSampleBExpected.setEntityProjectPermId("20210401151815315-205197");
+        deletionSampleBExpected.setEntitySpace("SPACE_B");
+        deletionSampleBExpected.setEntitySpacePermId("200");
+        deletionSampleBExpected.setEntityProject("/SPACE_B/PROJECT_B");
+        deletionSampleBExpected.setEntityProjectPermId("20210401151815315-205197");
         deletionSampleBExpected.setEntityRegisterer("registerer_sample_B");
         deletionSampleBExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-01 15:20:05.000"));
         deletionSampleBExpected.setIdentifier("20210401152005699-205201");
