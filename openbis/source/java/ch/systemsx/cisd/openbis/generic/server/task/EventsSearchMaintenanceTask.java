@@ -211,12 +211,13 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
             dataSource.executeInNewTransaction((TransactionCallback<Void>) status -> {
                 List<NewEvent> newEvents = new LinkedList<>();
+                List<ProjectSnapshot> newSnapshots = new LinkedList<>();
 
                 for (EventPE deletion : deletions)
                 {
                     try
                     {
-                        newEvents.addAll(processProjectDeletion(lastTimestamps, snapshots, deletion));
+                        processProjectDeletion(lastTimestamps, deletion, newEvents, newSnapshots);
 
                         if (latestLastSeenTimestamp.getValue() == null || deletion.getRegistrationDateInternal()
                                 .after(latestLastSeenTimestamp.getValue()))
@@ -229,7 +230,23 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     }
                 }
 
-                snapshots.loadExistingSpaces(NewEvent.getEntitySpaceCodesOrUnknown(newEvents));
+                snapshots.loadExistingSpaces(ProjectSnapshot.getSpaceCodesOrUnknown(newSnapshots));
+
+                for (ProjectSnapshot newSnapshot : newSnapshots)
+                {
+                    if (newSnapshot.unknownPermId == null)
+                    {
+                        snapshots.putDeletedProject(newSnapshot);
+                    } else
+                    {
+                        SpaceSnapshot spaceSnapshot = snapshots.getSpace(newSnapshot.unknownPermId, newSnapshot.from);
+                        if (spaceSnapshot != null)
+                        {
+                            newSnapshot.spaceCode = newSnapshot.unknownPermId;
+                            snapshots.putDeletedProject(newSnapshot);
+                        }
+                    }
+                }
 
                 for (NewEvent newEvent : newEvents)
                 {
@@ -249,10 +266,9 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         }
     }
 
-    private List<NewEvent> processProjectDeletion(LastTimestamps lastTimestamps, Snapshots snapshots, EventPE deletion) throws Exception
+    private void processProjectDeletion(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents,
+            List<ProjectSnapshot> newSnapshots) throws Exception
     {
-        final List<NewEvent> newEvents = new ArrayList<>();
-
         final Date lastSeenProjectTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, EntityType.PROJECT);
 
         if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
@@ -263,14 +279,14 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 snapshot.projectPermId = projectPermId;
                 snapshot.from = new Date(0);
                 snapshot.to = deletion.getRegistrationDateInternal();
-                snapshots.putDeletedProject(snapshot);
+                newSnapshots.add(snapshot);
 
                 NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
                 newEvent.identifier = projectPermId;
                 newEvents.add(newEvent);
             }
 
-            return newEvents;
+            return;
         }
 
         @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
@@ -346,7 +362,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                             lastSnapshot = snapshot;
                         }
 
-                        snapshots.putDeletedProject(snapshot);
+                        newSnapshots.add(snapshot);
                     }
                 }
             }
@@ -359,7 +375,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 snapshot.from = registrationTimestamp;
                 snapshot.to = deletion.getRegistrationDateInternal();
 
-                snapshots.putDeletedProject(snapshot);
+                newSnapshots.add(snapshot);
                 lastSnapshot = snapshot;
             }
 
@@ -376,8 +392,6 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 newEvents.add(newEvent);
             }
         }
-
-        return newEvents;
     }
 
     private void processExperimentDeletions(LastTimestamps lastTimestamps, Snapshots snapshots)
@@ -399,12 +413,13 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
             dataSource.executeInNewTransaction((TransactionCallback<Void>) status -> {
                 List<NewEvent> newEvents = new LinkedList<>();
+                List<ExperimentSnapshot> newSnapshots = new LinkedList<>();
 
                 for (EventPE deletion : deletions)
                 {
                     try
                     {
-                        newEvents.addAll(processExperimentDeletion(lastTimestamps, snapshots, deletion));
+                        processExperimentDeletion(lastTimestamps, deletion, newEvents, newSnapshots);
 
                         if (latestLastSeenTimestamp.getValue() == null || deletion.getRegistrationDateInternal()
                                 .after(latestLastSeenTimestamp.getValue()))
@@ -417,7 +432,23 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     }
                 }
 
-                snapshots.loadExistingProjects(NewEvent.getEntityProjectPermIdsOrUnknown(newEvents));
+                snapshots.loadExistingProjects(ExperimentSnapshot.getProjectPermIdsOrUnknown(newSnapshots));
+
+                for (ExperimentSnapshot newSnapshot : newSnapshots)
+                {
+                    if (newSnapshot.unknownPermId == null)
+                    {
+                        snapshots.putDeletedExperiment(newSnapshot);
+                    } else
+                    {
+                        ProjectSnapshot projectSnapshot = snapshots.getProject(newSnapshot.unknownPermId, newSnapshot.from);
+                        if (projectSnapshot != null)
+                        {
+                            newSnapshot.projectPermId = newSnapshot.unknownPermId;
+                            snapshots.putDeletedExperiment(newSnapshot);
+                        }
+                    }
+                }
 
                 for (NewEvent newEvent : newEvents)
                 {
@@ -437,10 +468,9 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         }
     }
 
-    private List<NewEvent> processExperimentDeletion(LastTimestamps lastTimestamps, Snapshots snapshots, EventPE deletion) throws Exception
+    private void processExperimentDeletion(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents,
+            List<ExperimentSnapshot> newSnapshots) throws Exception
     {
-        final List<NewEvent> newEvents = new ArrayList<>();
-
         final Date lastSeenExperimentTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, EntityType.EXPERIMENT);
 
         if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
@@ -451,14 +481,14 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 snapshot.experimentPermId = experimentPermId;
                 snapshot.from = new Date(0);
                 snapshot.to = deletion.getRegistrationDateInternal();
-                snapshots.putDeletedExperiment(snapshot);
+                newSnapshots.add(snapshot);
 
                 NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
                 newEvent.identifier = experimentPermId;
                 newEvents.add(newEvent);
             }
 
-            return newEvents;
+            return;
         }
 
         @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
@@ -535,7 +565,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                             lastSnapshot = snapshot;
                         }
 
-                        snapshots.putDeletedExperiment(snapshot);
+                        newSnapshots.add(snapshot);
                     }
                 }
             }
@@ -548,7 +578,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 snapshot.from = registrationTimestamp;
                 snapshot.to = deletion.getRegistrationDateInternal();
 
-                snapshots.putDeletedExperiment(snapshot);
+                newSnapshots.add(snapshot);
                 lastSnapshot = snapshot;
             }
 
@@ -565,8 +595,6 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 newEvents.add(newEvent);
             }
         }
-
-        return newEvents;
     }
 
     private void processSampleDeletions(LastTimestamps lastTimestamps, Snapshots snapshots)
@@ -586,12 +614,13 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
             dataSource.executeInNewTransaction((TransactionCallback<Void>) status -> {
                 List<NewEvent> newEvents = new LinkedList<>();
+                List<SampleSnapshot> newSnapshots = new LinkedList<>();
 
                 for (EventPE deletion : deletions)
                 {
                     try
                     {
-                        newEvents.addAll(processSampleDeletion(lastTimestamps, snapshots, deletion));
+                        processSampleDeletion(lastTimestamps, deletion, newEvents, newSnapshots);
 
                         if (latestLastSeenTimestamp.getValue() == null || deletion.getRegistrationDateInternal()
                                 .after(latestLastSeenTimestamp.getValue()))
@@ -604,9 +633,41 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                     }
                 }
 
-                snapshots.loadExistingSpaces(NewEvent.getEntitySpaceCodesOrUnknown(newEvents));
-                snapshots.loadExistingProjects(NewEvent.getEntityProjectPermIdsOrUnknown(newEvents));
-                snapshots.loadExistingExperiments(NewEvent.getEntityExperimentPermIdsOrUnknown(newEvents));
+                snapshots.loadExistingSpaces(SampleSnapshot.getSpaceCodesOrUnknown(newSnapshots));
+                snapshots.loadExistingProjects(SampleSnapshot.getProjectPermIdsOrUnknown(newSnapshots));
+                snapshots.loadExistingExperiments(SampleSnapshot.getExperimentPermIdsOrUnknown(newSnapshots));
+
+                for (SampleSnapshot newSnapshot : newSnapshots)
+                {
+                    if (newSnapshot.unknownPermId == null)
+                    {
+                        snapshots.putDeletedSample(newSnapshot);
+                    } else
+                    {
+                        ExperimentSnapshot experimentSnapshot = snapshots.getExperiment(newSnapshot.unknownPermId, newSnapshot.from);
+                        if (experimentSnapshot != null)
+                        {
+                            newSnapshot.experimentPermId = newSnapshot.unknownPermId;
+                            snapshots.putDeletedSample(newSnapshot);
+                        } else
+                        {
+                            ProjectSnapshot projectSnapshot = snapshots.getProject(newSnapshot.unknownPermId, newSnapshot.from);
+                            if (projectSnapshot != null)
+                            {
+                                newSnapshot.projectPermId = newSnapshot.unknownPermId;
+                                snapshots.putDeletedSample(newSnapshot);
+                            } else
+                            {
+                                SpaceSnapshot spaceSnapshot = snapshots.getSpace(newSnapshot.unknownPermId, newSnapshot.from);
+                                if (spaceSnapshot != null)
+                                {
+                                    newSnapshot.spaceCode = newSnapshot.unknownPermId;
+                                    snapshots.putDeletedSample(newSnapshot);
+                                }
+                            }
+                        }
+                    }
+                }
 
                 for (NewEvent newEvent : newEvents)
                 {
@@ -626,10 +687,9 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         }
     }
 
-    private List<NewEvent> processSampleDeletion(LastTimestamps lastTimestamps, Snapshots snapshots, EventPE deletion) throws Exception
+    private void processSampleDeletion(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents, List<SampleSnapshot> newSnapshots)
+            throws Exception
     {
-        final List<NewEvent> newEvents = new ArrayList<>();
-
         final Date lastSeenSampleTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, EntityType.SAMPLE);
 
         if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
@@ -640,14 +700,14 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 snapshot.samplePermId = samplePermId;
                 snapshot.from = new Date(0);
                 snapshot.to = deletion.getRegistrationDateInternal();
-                snapshots.putDeletedSample(snapshot);
+                newSnapshots.add(snapshot);
 
                 NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
                 newEvent.identifier = samplePermId;
                 newEvents.add(newEvent);
             }
 
-            return newEvents;
+            return;
         }
 
         @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
@@ -731,7 +791,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                             lastSnapshot = snapshot;
                         }
 
-                        snapshots.putDeletedSample(snapshot);
+                        newSnapshots.add(snapshot);
                     }
                 }
             }
@@ -744,7 +804,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 snapshot.from = registrationTimestamp;
                 snapshot.to = deletion.getRegistrationDateInternal();
 
-                snapshots.putDeletedSample(snapshot);
+                newSnapshots.add(snapshot);
                 lastSnapshot = snapshot;
             }
 
@@ -763,8 +823,6 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 newEvents.add(newEvent);
             }
         }
-
-        return newEvents;
     }
 
     private void processDataSetDeletions(LastTimestamps lastTimestamps, Snapshots snapshots)
@@ -789,7 +847,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 {
                     try
                     {
-                        newEvents.addAll(processDataSetDeletion(deletion));
+                        processDataSetDeletion(deletion, newEvents);
 
                         if (latestLastSeenTimestamp.getValue() == null || deletion.getRegistrationDateInternal()
                                 .after(latestLastSeenTimestamp.getValue()))
@@ -837,10 +895,8 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         }
     }
 
-    private List<NewEvent> processDataSetDeletion(EventPE deletion) throws Exception
+    private void processDataSetDeletion(EventPE deletion, List<NewEvent> newEvents) throws Exception
     {
-        final List<NewEvent> newEvents = new ArrayList<>();
-
         if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
         {
             for (String dataSetPermId : deletion.getIdentifiers())
@@ -850,7 +906,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 newEvents.add(newEvent);
             }
 
-            return newEvents;
+            return;
         }
 
         @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
@@ -922,8 +978,6 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             newEvent.content = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(dataSetEntries);
             newEvents.add(newEvent);
         }
-
-        return newEvents;
     }
 
     interface IDataSource
@@ -1135,6 +1189,26 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             sampleSnapshots.put(snapshot.samplePermId, snapshot);
         }
 
+        public SpaceSnapshot getSpace(String spaceCode, Date date)
+        {
+            return spaceSnapshots.get(spaceCode, date);
+        }
+
+        public ProjectSnapshot getProject(String projectPermId, Date date)
+        {
+            return projectSnapshots.get(projectPermId, date);
+        }
+
+        public ExperimentSnapshot getExperiment(String experimentPermId, Date date)
+        {
+            return experimentSnapshots.get(experimentPermId, date);
+        }
+
+        public SampleSnapshot getSample(String samplePermId, Date date)
+        {
+            return sampleSnapshots.get(samplePermId, date);
+        }
+
         public void fillBySpaceCode(String spaceCode, NewEvent newEvent)
         {
             SpaceSnapshot spaceSnapshot = spaceSnapshots.get(spaceCode, newEvent.registrationTimestamp);
@@ -1152,15 +1226,10 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
             if (projectSnapshot != null)
             {
-                if (projectSnapshot.spaceCode != null)
-                {
-                    fillBySpaceCode(projectSnapshot.spaceCode, newEvent);
-                } else if (projectSnapshot.unknownPermId != null)
-                {
-                    fillBySpaceCode(projectSnapshot.unknownPermId, newEvent);
-                }
-
                 newEvent.entityProjectPermId = projectPermId;
+
+                fillBySpaceCode(projectSnapshot.spaceCode, newEvent);
+
                 if (newEvent.entitySpaceCode != null)
                 {
                     newEvent.entityProject = new ProjectIdentifier(newEvent.entitySpaceCode, projectSnapshot.projectCode).toString();
@@ -1174,13 +1243,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
 
             if (experimentSnapshot != null)
             {
-                if (experimentSnapshot.projectPermId != null)
-                {
-                    fillByProjectPermId(experimentSnapshot.projectPermId, newEvent);
-                } else if (experimentSnapshot.unknownPermId != null)
-                {
-                    fillByProjectPermId(experimentSnapshot.unknownPermId, newEvent);
-                }
+                fillByProjectPermId(experimentSnapshot.projectPermId, newEvent);
             }
         }
 
@@ -1199,17 +1262,6 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 } else if (sampleSnapshot.spaceCode != null)
                 {
                     fillBySpaceCode(sampleSnapshot.spaceCode, newEvent);
-                } else if (sampleSnapshot.unknownPermId != null)
-                {
-                    fillByExperimentPermId(sampleSnapshot.unknownPermId, newEvent);
-                    if (newEvent.entitySpaceCode == null)
-                    {
-                        fillByProjectPermId(sampleSnapshot.unknownPermId, newEvent);
-                        if (newEvent.entitySpaceCode == null)
-                        {
-                            fillBySpaceCode(sampleSnapshot.unknownPermId, newEvent);
-                        }
-                    }
                 }
             }
         }
@@ -1422,6 +1474,23 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         {
             return projectPermId;
         }
+
+        public static Set<String> getSpaceCodesOrUnknown(Collection<ProjectSnapshot> snapshots)
+        {
+            Set<String> result = new HashSet<>();
+            for (ProjectSnapshot snapshot : snapshots)
+            {
+                if (snapshot.spaceCode != null)
+                {
+                    result.add(snapshot.spaceCode);
+                } else if (snapshot.unknownPermId != null)
+                {
+                    result.add(snapshot.unknownPermId);
+                }
+            }
+            return result;
+        }
+
     }
 
     static class ExperimentSnapshots extends AbstractSnapshots<ExperimentSnapshot>
@@ -1507,6 +1576,22 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         @Override protected String getKey()
         {
             return experimentPermId;
+        }
+
+        public static Set<String> getProjectPermIdsOrUnknown(Collection<ExperimentSnapshot> snapshots)
+        {
+            Set<String> result = new HashSet<>();
+            for (ExperimentSnapshot snapshot : snapshots)
+            {
+                if (snapshot.projectPermId != null)
+                {
+                    result.add(snapshot.projectPermId);
+                } else if (snapshot.unknownPermId != null)
+                {
+                    result.add(snapshot.unknownPermId);
+                }
+            }
+            return result;
         }
     }
 
@@ -1621,6 +1706,55 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         {
             return samplePermId;
         }
+
+        public static Set<String> getSpaceCodesOrUnknown(Collection<SampleSnapshot> snapshots)
+        {
+            Set<String> result = new HashSet<>();
+            for (SampleSnapshot snapshot : snapshots)
+            {
+                if (snapshot.spaceCode != null)
+                {
+                    result.add(snapshot.spaceCode);
+                } else if (snapshot.unknownPermId != null)
+                {
+                    result.add(snapshot.unknownPermId);
+                }
+            }
+            return result;
+        }
+
+        public static Set<String> getProjectPermIdsOrUnknown(Collection<SampleSnapshot> snapshots)
+        {
+            Set<String> result = new HashSet<>();
+            for (SampleSnapshot snapshot : snapshots)
+            {
+                if (snapshot.projectPermId != null)
+                {
+                    result.add(snapshot.projectPermId);
+                } else if (snapshot.unknownPermId != null)
+                {
+                    result.add(snapshot.unknownPermId);
+                }
+            }
+            return result;
+        }
+
+        public static Set<String> getExperimentPermIdsOrUnknown(Collection<SampleSnapshot> snapshots)
+        {
+            Set<String> result = new HashSet<>();
+            for (SampleSnapshot snapshot : snapshots)
+            {
+                if (snapshot.experimentPermId != null)
+                {
+                    result.add(snapshot.experimentPermId);
+                } else if (snapshot.unknownPermId != null)
+                {
+                    result.add(snapshot.unknownPermId);
+                }
+            }
+            return result;
+        }
+
     }
 
     static class NewEvent
@@ -1662,38 +1796,6 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         public PersonPE registerer;
 
         public Date registrationTimestamp;
-
-        public static Set<String> getEntitySpaceCodesOrUnknown(Collection<NewEvent> newEvents)
-        {
-            Set<String> result = new HashSet<>();
-            for (NewEvent newEvent : newEvents)
-            {
-                if (newEvent.entitySpaceCode != null)
-                {
-                    result.add(newEvent.entitySpaceCode);
-                } else if (newEvent.entityUnknownPermId != null)
-                {
-                    result.add(newEvent.entityUnknownPermId);
-                }
-            }
-            return result;
-        }
-
-        public static Set<String> getEntityProjectPermIdsOrUnknown(Collection<NewEvent> newEvents)
-        {
-            Set<String> result = new HashSet<>();
-            for (NewEvent newEvent : newEvents)
-            {
-                if (newEvent.entityProjectPermId != null)
-                {
-                    result.add(newEvent.entityProjectPermId);
-                } else if (newEvent.entityUnknownPermId != null)
-                {
-                    result.add(newEvent.entityUnknownPermId);
-                }
-            }
-            return result;
-        }
 
         public static Set<String> getEntityExperimentPermIdsOrUnknown(Collection<NewEvent> newEvents)
         {
