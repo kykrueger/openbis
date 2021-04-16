@@ -173,6 +173,28 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithOneStartsWithOneWordMatchingDifferentWords()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withObjectKind().thatIn(GlobalSearchObjectKind.SAMPLE);
+        criteria.withText().thatStartsWith("co");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+
+        List<GlobalSearchObject> objects = result.getObjects();
+        assertEquals(objects.size(), 3);
+        final GlobalSearchObject obj1 = findObjectByPermId(objects, "200811050919915-8");
+        final GlobalSearchObject obj2 = findObjectByPermId(objects, "200811050946559-981");
+        final GlobalSearchObject obj3 = findObjectByPermId(objects, "201206191219327-1055");
+
+        assertSample(obj1, "200811050919915-8", "/CISD/CL1", "Property 'Description': test control layout", true);
+        assertSample(obj2, "200811050946559-981", "/CISD/3VCP7", "Property 'Comment': test comment", true);
+        assertSample(obj3, "201206191219327-1055", "/TEST-SPACE/EV-TEST", "Property 'Comment': test comment", true);
+    }
+
+    @Test
     public void testSearchWithOneContainsOneWord()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
