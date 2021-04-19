@@ -151,17 +151,14 @@ public class EventsSearchMaintenanceTaskTest
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
-                will(returnValue(Collections.emptyList()));
+                for (EntityType entityType : EnumSet
+                        .of(EntityType.PROJECT, EntityType.EXPERIMENT, EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL,
+                                EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                                EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
+                {
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    will(returnValue(Collections.emptyList()));
+                }
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
                 will(new CustomAction("collect events")
@@ -291,14 +288,14 @@ public class EventsSearchMaintenanceTaskTest
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
-                will(returnValue(Collections.emptyList()));
+                for (EntityType entityType : EnumSet
+                        .of(EntityType.EXPERIMENT, EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL,
+                                EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                                EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
+                {
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    will(returnValue(Collections.emptyList()));
+                }
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
                 will(new CustomAction("collect events")
@@ -477,11 +474,14 @@ public class EventsSearchMaintenanceTaskTest
                         .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
-                will(returnValue(Collections.emptyList()));
+                for (EntityType entityType : EnumSet
+                        .of(EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL,
+                                EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                                EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
+                {
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    will(returnValue(Collections.emptyList()));
+                }
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
                 will(new CustomAction("collect events")
@@ -554,6 +554,147 @@ public class EventsSearchMaintenanceTaskTest
         deletionExperimentsABExpectedA.setIdentifier("20210329151120278-205181");
         deletionExperimentsABExpectedA.setContent(loadFile("testExperiments_deletionExperimentsABExpectedA.json"));
         assertExpectedEvent(events.get(4), deletionExperimentsABExpectedA);
+    }
+
+    @Test
+    public void testExperimentWithUnknownSpace()
+    {
+        // Tests the following scenario:
+        // - create space A
+        // - create space B
+        // - create project /A/A
+        // - create experiment /A/A/A
+        // - delete experiment /A/A/A
+        // - move project /A/A to space B (it becomes /B/A)
+        // - delete space A (project /B/A relation with space A loses space_id and will be stored as UNKNOWN)
+        // - delete project /B/A
+
+        PersonPE deleterExperimentA = new PersonPE();
+        deleterExperimentA.setUserId("deleter_experiment_A");
+
+        PersonPE deleterSpaceA = new PersonPE();
+        deleterSpaceA.setUserId("deleter_space_A");
+
+        PersonPE deleterProjectA = new PersonPE();
+        deleterProjectA.setUserId("deleter_project_A");
+
+        EventPE deletionExperimentA = new EventPE();
+        deletionExperimentA.setId(1L);
+        deletionExperimentA.setEventType(EventType.DELETION);
+        deletionExperimentA.setEntityType(EntityType.EXPERIMENT);
+        deletionExperimentA.setIdentifiers(Collections.singletonList("20210419162809496-205242"));
+        deletionExperimentA.setDescription("Description Experiment A");
+        deletionExperimentA.setReason("Reason Experiment A");
+        deletionExperimentA.setContent(loadFile("testExperimentWithUnknownSpace_deletionExperimentA.json"));
+        deletionExperimentA.setRegistrator(deleterExperimentA);
+        deletionExperimentA.setRegistrationDate(dateTimeMillis("2021-04-19 16:28:27.497"));
+
+        EventPE deletionSpaceA = new EventPE();
+        deletionSpaceA.setId(2L);
+        deletionSpaceA.setEventType(EventType.DELETION);
+        deletionSpaceA.setEntityType(EntityType.SPACE);
+        deletionSpaceA.setIdentifiers(Collections.singletonList("SPACE_A"));
+        deletionSpaceA.setDescription("Description Space A");
+        deletionSpaceA.setReason("Reason Space A");
+        deletionSpaceA.setRegistrator(deleterSpaceA);
+        deletionSpaceA.setRegistrationDate(dateTimeMillis("2021-04-19 16:29:52.293"));
+
+        EventPE deletionProjectA = new EventPE();
+        deletionProjectA.setId(3L);
+        deletionProjectA.setEventType(EventType.DELETION);
+        deletionProjectA.setEntityType(EntityType.PROJECT);
+        deletionProjectA.setIdentifiers(Collections.singletonList("20210419162753803-205241"));
+        deletionProjectA.setDescription("Description Project A");
+        deletionProjectA.setReason("Reason Project A");
+        deletionProjectA.setContent(loadFile("testExperimentWithUnknownSpace_deletionProjectA.json"));
+        deletionProjectA.setRegistrator(deleterProjectA);
+        deletionProjectA.setRegistrationDate(dateTimeMillis("2021-04-19 16:30:11.575"));
+
+        SpacePE spaceB = new SpacePE();
+        spaceB.setId(200L);
+        spaceB.setCode("SPACE_B");
+        spaceB.setRegistrationDate(dateTimeMillis("2021-04-19 16:27:27.930"));
+
+        List<EventsSearchPE> events = new ArrayList<>();
+
+        mockery.checking(new Expectations()
+        {
+            {
+                allowing(dataSource).loadSpaces(with(any(List.class)));
+                will(returnValue(Arrays.asList(spaceB)));
+
+                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
+                will(returnValue(Collections.emptyList()));
+
+                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
+                will(returnValue(null));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Arrays.asList(deletionSpaceA)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Arrays.asList(deletionProjectA)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Arrays.asList(deletionExperimentA)));
+                one(dataSource)
+                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                for (EntityType entityType : EnumSet
+                        .of(EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                                EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
+                {
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    will(returnValue(Collections.emptyList()));
+                }
+
+                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
+                will(new CustomAction("collect events")
+                {
+                    @Override public Object invoke(Invocation invocation) throws Throwable
+                    {
+                        events.add((EventsSearchPE) invocation.getParameter(0));
+                        return null;
+                    }
+                });
+            }
+        });
+
+        EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
+        task.execute();
+
+        assertEquals(events.size(), 3);
+
+        EventsSearchPE deletionSpaceAExpected = createExpectedEvent(deletionSpaceA);
+        deletionSpaceAExpected.setEntitySpace("SPACE_A");
+        deletionSpaceAExpected.setIdentifier("SPACE_A");
+        assertExpectedEvent(events.get(0), deletionSpaceAExpected);
+
+        EventsSearchPE deletionProjectAExpected = createExpectedEvent(deletionProjectA);
+        deletionProjectAExpected.setEntitySpace("SPACE_B");
+        deletionProjectAExpected.setEntitySpacePermId("200");
+        deletionProjectAExpected.setEntityProject("/SPACE_B/PROJECT_A");
+        deletionProjectAExpected.setEntityProjectPermId("20210419162753803-205241");
+        deletionProjectAExpected.setEntityRegisterer("registerer_project_A");
+        deletionProjectAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-19 16:27:53.000"));
+        deletionProjectAExpected.setIdentifier("20210419162753803-205241");
+        deletionProjectAExpected.setContent(loadFile("testExperimentWithUnknownSpace_deletionProjectAExpected.json"));
+        assertExpectedEvent(events.get(1), deletionProjectAExpected);
+
+        EventsSearchPE deletionExperimentAExpected = createExpectedEvent(deletionExperimentA);
+        deletionExperimentAExpected.setEntitySpace("SPACE_A");
+        deletionExperimentAExpected.setEntityProject("/SPACE_A/PROJECT_A");
+        deletionExperimentAExpected.setEntityProjectPermId("20210419162753803-205241");
+        deletionExperimentAExpected.setEntityRegisterer("registerer_experiment_A");
+        deletionExperimentAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-19 16:28:09.000"));
+        deletionExperimentAExpected.setIdentifier("20210419162809496-205242");
+        deletionExperimentAExpected.setContent(loadFile("testExperimentWithUnknownSpace_deletionExperimentAExpected.json"));
+        assertExpectedEvent(events.get(2), deletionExperimentAExpected);
     }
 
     @Test
@@ -734,8 +875,13 @@ public class EventsSearchMaintenanceTaskTest
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
-                will(returnValue(Collections.emptyList()));
+                for (EntityType entityType : EnumSet.of(EntityType.DATASET, EntityType.MATERIAL,
+                        EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                        EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
+                {
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    will(returnValue(Collections.emptyList()));
+                }
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
                 will(new CustomAction("collect events")
@@ -806,6 +952,183 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleDExpected.setIdentifier("20210401152213749-205203");
         deletionSampleDExpected.setContent(loadFile("testSamples_deletionSampleDExpected.json"));
         assertExpectedEvent(events.get(4), deletionSampleDExpected);
+    }
+
+    @Test
+    public void testSampleWithUnknownProject()
+    {
+        // Tests the following scenario:
+        // - create space A
+        // - create space B
+        // - create project /A/A
+        // - create project /B/B
+        // - create experiment /A/A/A
+        // - create sample A in experiment /A/A/A
+        // - delete sample A
+        // - move experiment /A/A/A to project /B/B (it becomes /B/B/A)
+        // - delete project /A/A (experiment /B/B/A relation history with project /A/A loses proj_id and will be stored as UNKNOWN)
+        // - delete experiment /B/B/A
+
+        PersonPE deleterSampleA = new PersonPE();
+        deleterSampleA.setUserId("deleter_sample_A");
+
+        PersonPE deleterProjectA = new PersonPE();
+        deleterProjectA.setUserId("deleter_project_A");
+
+        PersonPE deleterExperimentA = new PersonPE();
+        deleterExperimentA.setUserId("deleter_experiment_A");
+
+        EventPE deletionSampleA = new EventPE();
+        deletionSampleA.setId(1L);
+        deletionSampleA.setEventType(EventType.DELETION);
+        deletionSampleA.setEntityType(EntityType.SAMPLE);
+        deletionSampleA.setIdentifiers(Collections.singletonList("20210419173140752-205246"));
+        deletionSampleA.setDescription("Description Sample A");
+        deletionSampleA.setReason("Reason Sample A");
+        deletionSampleA.setContent(loadFile("testSampleWithUnknownProject_deletionSampleA.json"));
+        deletionSampleA.setRegistrator(deleterSampleA);
+        deletionSampleA.setRegistrationDate(dateTimeMillis("2021-04-19 17:32:01.964"));
+
+        EventPE deletionProjectA = new EventPE();
+        deletionProjectA.setId(2L);
+        deletionProjectA.setEventType(EventType.DELETION);
+        deletionProjectA.setEntityType(EntityType.PROJECT);
+        deletionProjectA.setIdentifiers(Collections.singletonList("20210419173048021-205243"));
+        deletionProjectA.setDescription("Description Project A");
+        deletionProjectA.setReason("Reason Project A");
+        deletionProjectA.setContent(loadFile("testSampleWithUnknownProject_deletionProjectA.json"));
+        deletionProjectA.setRegistrator(deleterProjectA);
+        deletionProjectA.setRegistrationDate(dateTimeMillis("2021-04-19 17:32:47.361"));
+
+        EventPE deletionExperimentA = new EventPE();
+        deletionExperimentA.setId(3L);
+        deletionExperimentA.setEventType(EventType.DELETION);
+        deletionExperimentA.setEntityType(EntityType.EXPERIMENT);
+        deletionExperimentA.setIdentifiers(Collections.singletonList("20210419173116451-205245"));
+        deletionExperimentA.setDescription("Description Experiment A");
+        deletionExperimentA.setReason("Reason Experiment A");
+        deletionExperimentA.setContent(loadFile("testSampleWithUnknownProject_deletionExperimentA.json"));
+        deletionExperimentA.setRegistrator(deleterExperimentA);
+        deletionExperimentA.setRegistrationDate(dateTimeMillis("2021-04-19 17:34:27.090"));
+
+        SpacePE spaceA = new SpacePE();
+        spaceA.setId(100L);
+        spaceA.setCode("SPACE_A");
+        spaceA.setRegistrationDate(dateTimeMillis("2021-04-19 17:30:28.204"));
+
+        SpacePE spaceB = new SpacePE();
+        spaceB.setId(200L);
+        spaceB.setCode("SPACE_B");
+        spaceB.setRegistrationDate(dateTimeMillis("2021-04-19 17:30:33.073"));
+
+        Space spaceBv3 = new Space();
+        spaceBv3.setCode("SPACE_B");
+
+        ProjectFetchOptions projectFo = new ProjectFetchOptions();
+        projectFo.withSpace();
+        projectFo.withHistory();
+
+        Project projectB = new Project();
+        projectB.setCode("PROJECT_B");
+        projectB.setPermId(new ProjectPermId("20210419173058839-205244"));
+        projectB.setSpace(spaceBv3);
+        projectB.setRegistrationDate(dateTimeMillis("2021-04-19 17:30:58.839"));
+        projectB.setHistory(Collections.emptyList());
+        projectB.setFetchOptions(projectFo);
+
+        List<EventsSearchPE> events = new ArrayList<>();
+
+        mockery.checking(new Expectations()
+        {
+            {
+                allowing(dataSource).loadSpaces(with(any(List.class)));
+                will(returnValue(Arrays.asList(spaceA, spaceB)));
+
+                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
+                will(returnValue(Arrays.asList(projectB)));
+
+                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
+                will(returnValue(Collections.emptyList()));
+
+                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
+                will(returnValue(null));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Arrays.asList(deletionProjectA)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Arrays.asList(deletionExperimentA)));
+                one(dataSource)
+                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Arrays.asList(deletionSampleA)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                will(returnValue(Collections.emptyList()));
+
+                for (EntityType entityType : EnumSet.of(EntityType.DATASET, EntityType.MATERIAL,
+                        EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                        EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
+                {
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    will(returnValue(Collections.emptyList()));
+                }
+
+                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
+                will(new CustomAction("collect events")
+                {
+                    @Override public Object invoke(Invocation invocation) throws Throwable
+                    {
+                        events.add((EventsSearchPE) invocation.getParameter(0));
+                        return null;
+                    }
+                });
+            }
+        });
+
+        EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
+        task.execute();
+
+        assertEquals(events.size(), 3);
+
+        EventsSearchPE deletionProjectAExpected = createExpectedEvent(deletionProjectA);
+        deletionProjectAExpected.setEntitySpace("SPACE_A");
+        deletionProjectAExpected.setEntitySpacePermId("100");
+        deletionProjectAExpected.setEntityProject("/SPACE_A/PROJECT_A");
+        deletionProjectAExpected.setEntityProjectPermId("20210419173048021-205243");
+        deletionProjectAExpected.setEntityRegisterer("registerer_project_A");
+        deletionProjectAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-19 17:30:48.000"));
+        deletionProjectAExpected.setIdentifier("20210419173048021-205243");
+        deletionProjectAExpected.setContent(loadFile("testSampleWithUnknownProject_deletionProjectAExpected.json"));
+        assertExpectedEvent(events.get(0), deletionProjectAExpected);
+
+        EventsSearchPE deletionExperimentAExpected = createExpectedEvent(deletionExperimentA);
+        deletionExperimentAExpected.setEntitySpace("SPACE_B");
+        deletionExperimentAExpected.setEntitySpacePermId("200");
+        deletionExperimentAExpected.setEntityProject("/SPACE_B/PROJECT_B");
+        deletionExperimentAExpected.setEntityProjectPermId("20210419173058839-205244");
+        deletionExperimentAExpected.setEntityRegisterer("registerer_experiment_A");
+        deletionExperimentAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-19 17:31:16.000"));
+        deletionExperimentAExpected.setIdentifier("20210419173116451-205245");
+        deletionExperimentAExpected.setContent(loadFile("testSampleWithUnknownProject_deletionExperimentAExpected.json"));
+        assertExpectedEvent(events.get(1), deletionExperimentAExpected);
+
+        EventsSearchPE deletionSampleAExpected = createExpectedEvent(deletionSampleA);
+        deletionSampleAExpected.setEntitySpace("SPACE_A");
+        deletionSampleAExpected.setEntitySpacePermId("100");
+        deletionSampleAExpected.setEntityProject("/SPACE_A/PROJECT_A");
+        deletionSampleAExpected.setEntityProjectPermId("20210419173048021-205243");
+        deletionSampleAExpected.setEntityRegisterer("registerer_sample_A");
+        deletionSampleAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-19 17:31:40.000"));
+        deletionSampleAExpected.setIdentifier("20210419173140752-205246");
+        deletionSampleAExpected.setContent(loadFile("testSampleWithUnknownProject_deletionSampleAExpected.json"));
+        assertExpectedEvent(events.get(2), deletionSampleAExpected);
     }
 
     @Test
@@ -1017,6 +1340,14 @@ public class EventsSearchMaintenanceTaskTest
                 will(returnValue(Arrays.asList(deletionDataSetA, deletionDataSetB, deletionDataSetC)));
                 one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNonNull(Date.class)), with(any(Integer.class)));
                 will(returnValue(Collections.emptyList()));
+
+                for (EntityType entityType : EnumSet.of(EntityType.MATERIAL,
+                        EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                        EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
+                {
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    will(returnValue(Collections.emptyList()));
+                }
 
                 allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
                 will(new CustomAction("collect events")

@@ -109,6 +109,13 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                 processSampleDeletions(lastTimestamps, snapshots);
                 processDataSetDeletions(lastTimestamps, snapshots);
 
+                processGenericDeletions(lastTimestamps, EntityType.MATERIAL);
+                processGenericDeletions(lastTimestamps, EntityType.ATTACHMENT);
+                processGenericDeletions(lastTimestamps, EntityType.PROPERTY_TYPE);
+                processGenericDeletions(lastTimestamps, EntityType.VOCABULARY);
+                processGenericDeletions(lastTimestamps, EntityType.AUTHORIZATION_GROUP);
+                processGenericDeletions(lastTimestamps, EntityType.METAPROJECT);
+
                 return null;
             } catch (Throwable e)
             {
@@ -977,6 +984,71 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             newEvent.identifier = dataSetPermId;
             newEvent.content = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(dataSetEntries);
             newEvents.add(newEvent);
+        }
+    }
+
+    private void processGenericDeletions(LastTimestamps lastTimestamps, EntityType entityType)
+    {
+        final Date lastSeenTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, entityType);
+        final MutableObject<Date> latestLastSeenTimestamp = new MutableObject<>(lastSeenTimestampOrNull);
+
+        while (true)
+        {
+            final List<EventPE> deletions =
+                    dataSource.loadEvents(EventType.DELETION, entityType, latestLastSeenTimestamp.getValue(), BATCH_SIZE);
+
+            if (deletions.isEmpty())
+            {
+                break;
+            }
+
+            dataSource.executeInNewTransaction((TransactionCallback<Void>) status -> {
+                List<NewEvent> newEvents = new LinkedList<>();
+
+                for (EventPE deletion : deletions)
+                {
+                    try
+                    {
+                        processGenericDeletion(deletion, newEvents);
+
+                        if (latestLastSeenTimestamp.getValue() == null || deletion.getRegistrationDateInternal()
+                                .after(latestLastSeenTimestamp.getValue()))
+                        {
+                            latestLastSeenTimestamp.setValue(deletion.getRegistrationDateInternal());
+                        }
+                    } catch (Exception e)
+                    {
+                        throw new RuntimeException(String.format("Processing of deletion failed: %s", deletion), e);
+                    }
+                }
+
+                for (NewEvent newEvent : newEvents)
+                {
+                    try
+                    {
+                        dataSource.createEventsSearch(newEvent.toNewEventPE());
+
+                    } catch (Exception e)
+                    {
+                        throw new RuntimeException(String.format("Processing of deletion failed: %s", newEvent), e);
+                    }
+                }
+
+                return null;
+            });
+        }
+    }
+
+    private void processGenericDeletion(EventPE deletion, List<NewEvent> newEvents) throws Exception
+    {
+        if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
+        {
+            for (String dataSetPermId : deletion.getIdentifiers())
+            {
+                NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
+                newEvent.identifier = dataSetPermId;
+                newEvents.add(newEvent);
+            }
         }
     }
 
