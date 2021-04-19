@@ -219,7 +219,6 @@ public class MaintenancePlugin
 
         private void doRun()
         {
-            acquireLockIfNecessary();
             String className = task.getClass().getCanonicalName();
             int retryCounter = 1;
             try
@@ -228,7 +227,14 @@ public class MaintenancePlugin
                 {
                     try
                     {
-                        task.execute();
+                        acquireLockIfNecessary();
+                        try
+                        {
+                            task.execute();
+                        } finally
+                        {
+                            releaseLockIfNecessay();
+                        }
                         return;
                     } catch (Throwable th)
                     {
@@ -248,9 +254,6 @@ public class MaintenancePlugin
             } catch (Throwable th)
             {
                 operationLog.error("Exception when running maintenance task '" + className + "'.", th);
-            } finally
-            {
-                releaseLockIfNecessay();
             }
         }
 
