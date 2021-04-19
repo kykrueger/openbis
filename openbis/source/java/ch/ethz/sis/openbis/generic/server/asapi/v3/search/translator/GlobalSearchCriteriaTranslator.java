@@ -931,15 +931,17 @@ public class GlobalSearchCriteriaTranslator
                 : new String[] {stringValue.getValue().toLowerCase()};
         if (forAttributes)
         {
-            buildAttributesMatchSelection(sqlBuilder, stringValue.getClass(), criterionValues, tableMapper, args);
+            final Class<? extends AbstractStringValue> stringValueClass = stringValue.getClass();
+            buildCodeMatch(sqlBuilder, criterionValues, stringValueClass, tableMapper, args);
+            buildPermIdMatch(sqlBuilder, stringValueClass, criterionValues, tableMapper, args);
             sqlBuilder.append(COMMA).append(NL);
 
             if (tableMapper == SAMPLE)
             {
                 final String sampleIdentifierColumnReference = MAIN_TABLE_ALIAS + PERIOD + SAMPLE_IDENTIFIER_COLUMN;
-                buildCaseWhenIn(sqlBuilder, args, criterionValues,
-                        new String[] { sampleIdentifierColumnReference },
-                        sampleIdentifierColumnReference, NULL);
+                buildCaseWhen(sqlBuilder, new String[] { makeCondition(sampleIdentifierColumnReference, args,
+                        criterionValues, stringValueClass) },
+                        new String[] { sampleIdentifierColumnReference }, NULL);
             } else
             {
                 sqlBuilder.append(NULL);
@@ -1085,37 +1087,20 @@ public class GlobalSearchCriteriaTranslator
         args.add(toTsQueryText(stringValue));
     }
 
-    /**
-     * Appends selection text for the attributes that they may match.
-     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
-     * @param stringValueClass
-     * @param criterionValues full text search values to be put to the full text search matching function.
-     * @param tableMapper the table mapper.
-     * @param args query arguments.
-     */
-    private static void buildAttributesMatchSelection(final StringBuilder sqlBuilder,
+    private static void buildPermIdMatch(final StringBuilder sqlBuilder,
             final Class<? extends AbstractStringValue> stringValueClass,
-            final String[] criterionValues,
-            final TableMapper tableMapper, final List<Object> args)
+            final String[] criterionValues, final TableMapper tableMapper, final List<Object> args)
     {
-        buildCodeMatch(sqlBuilder, criterionValues, stringValueClass, tableMapper, args);
-
         switch (tableMapper)
         {
             case SAMPLE:
             case EXPERIMENT:
             {
 
-                sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP).append(LOWER).append(LP);
-                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(RP);
-                sqlBuilder.append(SP).append(IN).append(SP).append(LP)
-                        .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
-                        .append(RP);
-                sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD)
-                        .append(PERM_ID_COLUMN);
-                sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
-
-                args.add(criterionValues);
+                final String samplePermIdColumnReference = MAIN_TABLE_ALIAS + PERIOD + PERM_ID_COLUMN;
+                buildCaseWhen(sqlBuilder, new String[] { makeCondition(samplePermIdColumnReference, args,
+                        criterionValues, stringValueClass) },
+                        new String[] { samplePermIdColumnReference }, NULL);
                 break;
             }
             default:
@@ -1145,32 +1130,50 @@ public class GlobalSearchCriteriaTranslator
                         return splitValues.length > 1 ? Stream.of(value, splitValues[0], splitValues[1])
                                 : Stream.of(value);
                     }).collect(Collectors.toList()).toArray(new String[0]);
-            buildCaseWhenIn(thenValueBuilder, args, modifiedCriterionValues, new String[] { mainTableCode },
-                    mainTableCode, NULL);
+
+            buildCaseWhen(thenValueBuilder, new String[] {
+                            makeCondition(mainTableCode, args, modifiedCriterionValues, stringValueClass) },
+                    new String[] { mainTableCode }, NULL);
 
             final StringBuilder elseValueBuilder = new StringBuilder();
 
             final String[] conditionValues = { createSubstrCall('/', null), mainTableCode, createSubstrCall('/', ':') };
             buildCaseWhen(elseValueBuilder, new String[] {
-                            makeInCondition(conditionValues[0], args, modifiedCriterionValues),
-                            makeInCondition(conditionValues[1], args, modifiedCriterionValues),
-                            makeInCondition(conditionValues[2], args, modifiedCriterionValues) },
+                            makeCondition(conditionValues[0], args, modifiedCriterionValues, stringValueClass),
+                            makeCondition(conditionValues[1], args, modifiedCriterionValues, stringValueClass),
+                            makeCondition(conditionValues[2], args, modifiedCriterionValues, stringValueClass) },
                     conditionValues, NULL);
 
             buildCaseWhen(sqlBuilder, new String[] { MAIN_TABLE_ALIAS + PERIOD + PART_OF_SAMPLE_COLUMN + SP + IS + SP
                     + NULL }, new String[] { thenValueBuilder.toString() }, elseValueBuilder.toString());
         } else
         {
-            buildCaseWhenIn(sqlBuilder, args, criterionValues, new String[] { mainTableCode }, mainTableCode, NULL);
+//            buildCaseWhenIn(sqlBuilder, args, criterionValues, new String[] { mainTableCode }, mainTableCode, NULL);
+            buildCaseWhen(sqlBuilder, new String[] {
+                    makeCondition(mainTableCode, args, criterionValues, stringValueClass) },
+                    new String[] { mainTableCode }, NULL);
         }
 
         sqlBuilder.append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
     }
 
-    private static String makeInCondition(final String str, final List<Object> args, final String[] criterionValues)
+    private static String makeCondition(final String matchingColumn, final List<Object> args,
+            final String[] criterionValues, final Class<? extends AbstractStringValue> stringValueClass)
     {
         final StringBuilder result = new StringBuilder();
-        appendMatchingColumnCondition(result, str, args, criterionValues);
+
+        final ConditionAppender conditionAppender;
+        if (StringStartsWithValue.class.isAssignableFrom(stringValueClass))
+        {
+            conditionAppender = GlobalSearchCriteriaTranslator::appendTsVectorPrefixMatchCondition;
+        } else if (StringMatchesValue.class.isAssignableFrom(stringValueClass))
+        {
+            conditionAppender = GlobalSearchCriteriaTranslator::appendTsVectorFullMatchCondition;
+        } else {
+            conditionAppender = GlobalSearchCriteriaTranslator::appendInCondition;
+        }
+        conditionAppender.appendCondition(result, matchingColumn, args, criterionValues, stringValueClass);
+
         return result.toString();
     }
 
@@ -1256,13 +1259,13 @@ public class GlobalSearchCriteriaTranslator
 
         final Spliterator<String> spliterator = Arrays.stream(matchingColumns).spliterator();
 
-        if (spliterator.tryAdvance(matchingColumn -> appendMatchingColumnCondition(sqlBuilder, matchingColumn, args,
-                criterionValues)))
+        if (spliterator.tryAdvance(matchingColumn -> appendInCondition(sqlBuilder, matchingColumn, args,
+                criterionValues, null)))
         {
             spliterator.forEachRemaining(matchingColumn ->
             {
                 sqlBuilder.append(SP).append(OR).append(SP);
-                appendMatchingColumnCondition(sqlBuilder, matchingColumn, args, criterionValues);
+                appendInCondition(sqlBuilder, matchingColumn, args, criterionValues, null);
             });
         }
     }
@@ -1270,21 +1273,125 @@ public class GlobalSearchCriteriaTranslator
     /**
      * Builds the following part of the query and adds the corresponding array of values to the query arguments list.
      * <pre>
-     *     matchingColumns[0] IN (SELECT UNNEST(?))
+     *     matchingColumn IN (SELECT UNNEST(?))
      * </pre>
      * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
      * @param matchingColumn column which should be equal to one of values in the query parameter ('?').
      * @param args query arguments.
      * @param criterionValues full text search values to be put to the full text search matching function.
      */
-    private static void appendMatchingColumnCondition(final StringBuilder sqlBuilder,
-            final String matchingColumn, final List<Object> args, final String[] criterionValues)
+    private static void appendInCondition(final StringBuilder sqlBuilder,
+            final String matchingColumn, final List<Object> args, final String[] criterionValues,
+            final Class<? extends AbstractStringValue> stringValueClass)
     {
         sqlBuilder.append(LOWER).append(SP).append(LP).append(matchingColumn).append(RP);
         sqlBuilder.append(SP).append(IN).append(SP).append(LP)
                 .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
                 .append(RP);
         args.add(criterionValues);
+    }
+
+    /**
+     * Builds the following part of the query and adds the corresponding value to the query arguments list.
+     * <pre>
+     *     to_tsvector(matchingColumn) @@ to_tsquery(? || ':*') OR
+     *     to_tsvector(matchingColumn) @@ to_tsquery(? || ':*') OR
+     *     ...
+     * </pre>
+     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
+     * @param matchingColumn column which should be equal to one of values in the query parameter ('?').
+     * @param args query arguments.
+     * @param criterionValues full text search values to be put to the full text search matching function, should
+     * contain exactly 1 value.
+     */
+    private static void appendTsVectorPrefixMatchCondition(final StringBuilder sqlBuilder,
+            final String matchingColumn, final List<Object> args, final String[] criterionValues,
+            final Class<? extends AbstractStringValue> stringValueClass)
+    {
+        appendTsVectorMatchCondition(sqlBuilder, matchingColumn, args, criterionValues, stringValueClass, true);
+    }
+
+    /**
+     * Builds the following part of the query and adds the corresponding value to the query arguments list.
+     * <pre>
+     *     to_tsvector(matchingColumn) @@ to_tsquery(?) OR
+     *     to_tsvector(matchingColumn) @@ to_tsquery(?) OR
+     *     ...
+     * </pre>
+     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
+     * @param matchingColumn column which should be equal to one of values in the query parameter ('?').
+     * @param args query arguments.
+     * @param criterionValues full text search values to be put to the full text search matching function, should
+     * contain exactly 1 value.
+     */
+    private static void appendTsVectorFullMatchCondition(final StringBuilder sqlBuilder,
+            final String matchingColumn, final List<Object> args, final String[] criterionValues,
+            final Class<? extends AbstractStringValue> stringValueClass)
+    {
+        appendTsVectorMatchCondition(sqlBuilder, matchingColumn, args, criterionValues, stringValueClass, false);
+    }
+
+    /**
+     * Builds the following part of the query and adds the corresponding value to the query arguments list.
+     * <pre>
+     *     to_tsvector(matchingColumn) @@ to_tsquery(?[ || ':*']) OR
+     *     to_tsvector(matchingColumn) @@ to_tsquery(?[ || ':*']) OR
+     *     ...
+     * </pre>
+     * where the part <pre>[|| ':*']</pre> is absent when {@code prefixMatch == false}.
+     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
+     * @param matchingColumn column which should be equal to one of values in the query parameter ('?').
+     * @param args query arguments.
+     * @param criterionValues full text search values to be put to the full text search matching function, should
+     * contain exactly 1 value.
+     * @param prefixMatch whether this is a prefix match.
+     */
+    private static void appendTsVectorMatchCondition(final StringBuilder sqlBuilder,
+            final String matchingColumn, final List<Object> args, final String[] criterionValues,
+            final Class<? extends AbstractStringValue> stringValueClass, final boolean prefixMatch)
+    {
+        final Spliterator<String> spliterator = Arrays.stream(criterionValues).spliterator();
+        if (spliterator.tryAdvance(criterionValue -> appendTsVectorSingleMatchCondition(sqlBuilder, matchingColumn,
+                args, criterionValue, stringValueClass, prefixMatch)))
+        {
+            spliterator.forEachRemaining(criterionValue ->
+            {
+                sqlBuilder.append(SP).append(OR).append(SP);
+                appendTsVectorSingleMatchCondition(sqlBuilder, matchingColumn, args, criterionValue, stringValueClass,
+                        prefixMatch);
+            });
+        }
+    }
+
+    /**
+     * Builds the following part of the query and adds the corresponding value to the query arguments list.
+     * <pre>
+     *     to_tsvector(matchingColumn) @@ to_tsquery(?[ || ':*'])
+     * </pre>
+     * where the part <pre>[|| ':*']</pre> is absent when {@code prefixMatch == false}.
+     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
+     * @param matchingColumn column which should be equal to one of values in the query parameter ('?').
+     * @param args query arguments.
+     * @param criterionValue full text search value to be put to the full text search matching function.
+     * @param prefixMatch whether this is a prefix match.
+     */
+    private static void appendTsVectorSingleMatchCondition(final StringBuilder sqlBuilder,
+            final String matchingColumn, final List<Object> args, final String criterionValue,
+            final Class<? extends AbstractStringValue> stringValueClass, final boolean prefixMatch)
+    {
+        sqlBuilder.append(TO_TSVECTOR).append(LP).append(matchingColumn).append(RP);
+        sqlBuilder.append(SP).append(DOUBLE_AT).append(SP).append(TO_TSQUERY).append(LP);
+        sqlBuilder.append(SQ).append(REG_CONFIG).append(SQ).append(COMMA).append(SP);
+        sqlBuilder.append(QU);
+
+        if (prefixMatch)
+        {
+            sqlBuilder.append(PREFIX_MATCH_SUFFIX);
+        }
+
+        sqlBuilder.append(RP);
+
+        args.add(toTsQueryText(criterionValue, stringValueClass));
     }
 
     private static void buildDetailsFrom(final StringBuilder sqlBuilder, final TableMapper tableMapper,
@@ -1505,6 +1612,14 @@ public class GlobalSearchCriteriaTranslator
                 ? " | " + value.toLowerCase().replaceAll("['&|:!()<>]", " ").trim().replaceAll("\\s+", " | ")
                 : "";
         return ('\'' + fullValue + '\'') + splitValues;
+    }
+
+    private interface ConditionAppender
+    {
+
+        void appendCondition(final StringBuilder sqlBuilder, final String matchingColumn, final List<Object> args,
+                final String[] criterionValues, final Class<? extends AbstractStringValue> stringValueClass);
+
     }
 
 }
