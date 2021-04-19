@@ -36,6 +36,7 @@ import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.lang3.StringUtils;
 
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.mail.EMailAddress;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.maintenance.INextTimestampProvider;
@@ -190,7 +191,8 @@ public class UsageReportingTask extends AbstractMaintenanceTask
             }
         } catch (IOException e)
         {
-            notificationLog.error("Couldn't sent usage report", e);
+            notificationLog.error("Couldn't sent usage report:" + e);
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
     }
 
