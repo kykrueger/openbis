@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class SampleSnapshots extends AbstractSnapshots<SampleSnapshot>
+class SampleSnapshots extends AbstractSnapshots
 {
 
     public SampleSnapshots(IDataSource dataSource)
@@ -25,9 +25,14 @@ class SampleSnapshots extends AbstractSnapshots<SampleSnapshot>
         super(dataSource);
     }
 
-    protected List<SampleSnapshot> doLoad(Collection<String> samplePermIds)
+    @Override protected String getKey(Snapshot snapshot)
     {
-        List<SampleSnapshot> snapshots = new ArrayList<>();
+        return snapshot.entityPermId;
+    }
+
+    protected List<Snapshot> doLoad(Collection<String> samplePermIds)
+    {
+        List<Snapshot> snapshots = new ArrayList<>();
 
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withSpace();
@@ -52,9 +57,9 @@ class SampleSnapshots extends AbstractSnapshots<SampleSnapshot>
                     if (SampleRelationType.SPACE.equals(relationType) || SampleRelationType.PROJECT.equals(relationType)
                             || SampleRelationType.EXPERIMENT.equals(relationType))
                     {
-                        SampleSnapshot snapshot = new SampleSnapshot();
-                        snapshot.sampleCode = sample.getCode();
-                        snapshot.samplePermId = sample.getPermId().getPermId();
+                        Snapshot snapshot = new Snapshot();
+                        snapshot.entityCode = sample.getCode();
+                        snapshot.entityPermId = sample.getPermId().getPermId();
                         snapshot.from = relationHistoryEntry.getValidFrom();
                         snapshot.to = relationHistoryEntry.getValidTo();
 
@@ -79,9 +84,9 @@ class SampleSnapshots extends AbstractSnapshots<SampleSnapshot>
                 }
             }
 
-            SampleSnapshot snapshot = new SampleSnapshot();
-            snapshot.sampleCode = sample.getCode();
-            snapshot.samplePermId = sample.getPermId().getPermId();
+            Snapshot snapshot = new Snapshot();
+            snapshot.entityCode = sample.getCode();
+            snapshot.entityPermId = sample.getPermId().getPermId();
 
             if (sample.getExperiment() != null)
             {

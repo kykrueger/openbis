@@ -2,22 +2,26 @@ package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
 import java.util.*;
 
-abstract class AbstractSnapshots<T extends AbstractSnapshot>
+abstract class AbstractSnapshots
 {
     protected final IDataSource dataSource;
 
     private final Set<String> loadedKeys = new HashSet<>();
 
-    private final Map<String, TreeMap<Date, T>> snapshots = new HashMap<>();
+    private final Map<String, TreeMap<Date, Snapshot>> snapshots = new HashMap<>();
 
     public AbstractSnapshots(IDataSource dataSource)
     {
         this.dataSource = dataSource;
     }
 
-    public void put(String key, T snapshot)
+    protected abstract String getKey(Snapshot snapshot);
+
+    protected abstract List<Snapshot> doLoad(Collection<String> keysToLoad);
+
+    public void put(String key, Snapshot snapshot)
     {
-        TreeMap<Date, T> snapshotsForKey = snapshots.computeIfAbsent(key, k -> new TreeMap<>());
+        TreeMap<Date, Snapshot> snapshotsForKey = snapshots.computeIfAbsent(key, k -> new TreeMap<>());
         snapshotsForKey.put(snapshot.from, snapshot);
     }
 
@@ -28,24 +32,22 @@ abstract class AbstractSnapshots<T extends AbstractSnapshot>
 
         if (notLoaded.size() > 0)
         {
-            List<T> snapshots = doLoad(notLoaded);
-            for (T snapshot : snapshots)
+            List<Snapshot> snapshots = doLoad(notLoaded);
+            for (Snapshot snapshot : snapshots)
             {
-                put(snapshot.getKey(), snapshot);
+                put(getKey(snapshot), snapshot);
             }
             loadedKeys.addAll(notLoaded);
         }
     }
 
-    protected abstract List<T> doLoad(Collection<String> keysToLoad);
-
-    public Collection<T> get(Collection<String> keys)
+    public Collection<Snapshot> get(Collection<String> keys)
     {
-        Collection<T> snapshotsForKeys = new ArrayList<>();
+        Collection<Snapshot> snapshotsForKeys = new ArrayList<>();
 
         for (String key : keys)
         {
-            TreeMap<Date, T> snapshotsForKey = snapshots.get(key);
+            TreeMap<Date, Snapshot> snapshotsForKey = snapshots.get(key);
 
             if (snapshotsForKey != null)
             {
@@ -56,17 +58,17 @@ abstract class AbstractSnapshots<T extends AbstractSnapshot>
         return snapshotsForKeys;
     }
 
-    public T get(String key, Date date)
+    public Snapshot get(String key, Date date)
     {
-        TreeMap<Date, T> snapshotsForKey = snapshots.get(key);
+        TreeMap<Date, Snapshot> snapshotsForKey = snapshots.get(key);
 
         if (snapshotsForKey != null)
         {
-            Map.Entry<Date, T> potentialEntry = snapshotsForKey.floorEntry(date);
+            Map.Entry<Date, Snapshot> potentialEntry = snapshotsForKey.floorEntry(date);
 
             if (potentialEntry != null)
             {
-                T potentialSnapshot = potentialEntry.getValue();
+                Snapshot potentialSnapshot = potentialEntry.getValue();
                 if (potentialSnapshot.to == null || date.compareTo(potentialSnapshot.to) <= 0)
                 {
                     return potentialSnapshot;

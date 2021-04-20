@@ -36,7 +36,7 @@ class Snapshots
     {
         projectSnapshots.load(projectPermIds);
 
-        Collection<ProjectSnapshot> snapshots = projectSnapshots.get(projectPermIds);
+        Collection<Snapshot> snapshots = projectSnapshots.get(projectPermIds);
         Set<String> spaceCodes = snapshots.stream().map(snapshot -> snapshot.spaceCode).collect(Collectors.toSet());
 
         loadExistingSpaces(spaceCodes);
@@ -46,7 +46,7 @@ class Snapshots
     {
         experimentSnapshots.load(experimentPermIds);
 
-        Collection<ExperimentSnapshot> snapshots = experimentSnapshots.get(experimentPermIds);
+        Collection<Snapshot> snapshots = experimentSnapshots.get(experimentPermIds);
         Set<String> projectPermIds = snapshots.stream().map(snapshot -> snapshot.projectPermId).collect(Collectors.toSet());
 
         loadExistingProjects(projectPermIds);
@@ -56,7 +56,7 @@ class Snapshots
     {
         sampleSnapshots.load(samplePermIds);
 
-        Collection<SampleSnapshot> snapshots = sampleSnapshots.get(samplePermIds);
+        Collection<Snapshot> snapshots = sampleSnapshots.get(samplePermIds);
 
         Set<String> spaceCodes =
                 snapshots.stream().map(snapshot -> snapshot.spaceCode).filter(Objects::nonNull).collect(Collectors.toSet());
@@ -70,60 +70,60 @@ class Snapshots
         loadExistingExperiments(experimentPermIds);
     }
 
-    public void putDeletedSpace(SpaceSnapshot snapshot)
+    public void putDeletedSpace(Snapshot snapshot)
     {
-        spaceSnapshots.put(snapshot.spaceCode, snapshot);
+        spaceSnapshots.put(snapshot.entityCode, snapshot);
     }
 
-    public void putDeletedProject(ProjectSnapshot snapshot)
+    public void putDeletedProject(Snapshot snapshot)
     {
-        projectSnapshots.put(snapshot.projectPermId, snapshot);
+        projectSnapshots.put(snapshot.entityPermId, snapshot);
     }
 
-    public void putDeletedExperiment(ExperimentSnapshot snapshot)
+    public void putDeletedExperiment(Snapshot snapshot)
     {
-        experimentSnapshots.put(snapshot.experimentPermId, snapshot);
+        experimentSnapshots.put(snapshot.entityPermId, snapshot);
     }
 
-    public void putDeletedSample(SampleSnapshot snapshot)
+    public void putDeletedSample(Snapshot snapshot)
     {
-        sampleSnapshots.put(snapshot.samplePermId, snapshot);
+        sampleSnapshots.put(snapshot.entityPermId, snapshot);
     }
 
-    public SpaceSnapshot getSpace(String spaceCode, Date date)
+    public Snapshot getSpace(String spaceCode, Date date)
     {
         return spaceSnapshots.get(spaceCode, date);
     }
 
-    public ProjectSnapshot getProject(String projectPermId, Date date)
+    public Snapshot getProject(String projectPermId, Date date)
     {
         return projectSnapshots.get(projectPermId, date);
     }
 
-    public ExperimentSnapshot getExperiment(String experimentPermId, Date date)
+    public Snapshot getExperiment(String experimentPermId, Date date)
     {
         return experimentSnapshots.get(experimentPermId, date);
     }
 
-    public SampleSnapshot getSample(String samplePermId, Date date)
+    public Snapshot getSample(String samplePermId, Date date)
     {
         return sampleSnapshots.get(samplePermId, date);
     }
 
     public void fillBySpaceCode(String spaceCode, NewEvent newEvent)
     {
-        SpaceSnapshot spaceSnapshot = spaceSnapshots.get(spaceCode, newEvent.registrationTimestamp);
+        Snapshot spaceSnapshot = spaceSnapshots.get(spaceCode, newEvent.registrationTimestamp);
 
         if (spaceSnapshot != null)
         {
-            newEvent.entitySpaceCode = spaceSnapshot.spaceCode;
-            newEvent.entitySpacePermId = spaceSnapshot.spaceTechId != null ? String.valueOf(spaceSnapshot.spaceTechId) : null;
+            newEvent.entitySpaceCode = spaceSnapshot.entityCode;
+            newEvent.entitySpacePermId = spaceSnapshot.entityPermId;
         }
     }
 
     public void fillByProjectPermId(String projectPermId, NewEvent newEvent)
     {
-        ProjectSnapshot projectSnapshot = projectSnapshots.get(projectPermId, newEvent.registrationTimestamp);
+        Snapshot projectSnapshot = projectSnapshots.get(projectPermId, newEvent.registrationTimestamp);
 
         if (projectSnapshot != null)
         {
@@ -133,14 +133,14 @@ class Snapshots
 
             if (newEvent.entitySpaceCode != null)
             {
-                newEvent.entityProject = new ProjectIdentifier(newEvent.entitySpaceCode, projectSnapshot.projectCode).toString();
+                newEvent.entityProject = new ProjectIdentifier(newEvent.entitySpaceCode, projectSnapshot.entityCode).toString();
             }
         }
     }
 
     public void fillByExperimentPermId(String experimentPermId, NewEvent newEvent)
     {
-        ExperimentSnapshot experimentSnapshot = experimentSnapshots.get(experimentPermId, newEvent.registrationTimestamp);
+        Snapshot experimentSnapshot = experimentSnapshots.get(experimentPermId, newEvent.registrationTimestamp);
 
         if (experimentSnapshot != null)
         {
@@ -150,7 +150,7 @@ class Snapshots
 
     public void fillBySamplePermId(String samplePermId, NewEvent newEvent)
     {
-        SampleSnapshot sampleSnapshot = sampleSnapshots.get(samplePermId, newEvent.registrationTimestamp);
+        Snapshot sampleSnapshot = sampleSnapshots.get(samplePermId, newEvent.registrationTimestamp);
 
         if (sampleSnapshot != null)
         {

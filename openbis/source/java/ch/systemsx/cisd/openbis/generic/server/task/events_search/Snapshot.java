@@ -1,15 +1,15 @@
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-class SampleSnapshot extends AbstractSnapshot
+class Snapshot
 {
+    public String entityCode;
 
-    public String sampleCode;
-
-    public String samplePermId;
+    public String entityPermId;
 
     public String spaceCode;
 
@@ -19,15 +19,14 @@ class SampleSnapshot extends AbstractSnapshot
 
     public String unknownPermId;
 
-    @Override protected String getKey()
-    {
-        return samplePermId;
-    }
+    public Date from;
 
-    public static Set<String> getSpaceCodesOrUnknown(Collection<SampleSnapshot> snapshots)
+    public Date to;
+
+    public static Set<String> getSpaceCodesOrUnknown(Collection<Snapshot> snapshots)
     {
         Set<String> result = new HashSet<>();
-        for (SampleSnapshot snapshot : snapshots)
+        for (Snapshot snapshot : snapshots)
         {
             if (snapshot.spaceCode != null)
             {
@@ -40,10 +39,10 @@ class SampleSnapshot extends AbstractSnapshot
         return result;
     }
 
-    public static Set<String> getProjectPermIdsOrUnknown(Collection<SampleSnapshot> snapshots)
+    public static Set<String> getProjectPermIdsOrUnknown(Collection<Snapshot> snapshots)
     {
         Set<String> result = new HashSet<>();
-        for (SampleSnapshot snapshot : snapshots)
+        for (Snapshot snapshot : snapshots)
         {
             if (snapshot.projectPermId != null)
             {
@@ -56,10 +55,10 @@ class SampleSnapshot extends AbstractSnapshot
         return result;
     }
 
-    public static Set<String> getExperimentPermIdsOrUnknown(Collection<SampleSnapshot> snapshots)
+    public static Set<String> getExperimentPermIdsOrUnknown(Collection<Snapshot> snapshots)
     {
         Set<String> result = new HashSet<>();
-        for (SampleSnapshot snapshot : snapshots)
+        for (Snapshot snapshot : snapshots)
         {
             if (snapshot.experimentPermId != null)
             {

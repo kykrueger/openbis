@@ -39,7 +39,7 @@ class ProjectDeletionProcessor extends EntityDeletionProcessor
 
             dataSource.executeInNewTransaction((TransactionCallback<Void>) status -> {
                 List<NewEvent> newEvents = new LinkedList<>();
-                List<ProjectSnapshot> newSnapshots = new LinkedList<>();
+                List<Snapshot> newSnapshots = new LinkedList<>();
 
                 for (EventPE deletion : deletions)
                 {
@@ -58,16 +58,16 @@ class ProjectDeletionProcessor extends EntityDeletionProcessor
                     }
                 }
 
-                snapshots.loadExistingSpaces(ProjectSnapshot.getSpaceCodesOrUnknown(newSnapshots));
+                snapshots.loadExistingSpaces(Snapshot.getSpaceCodesOrUnknown(newSnapshots));
 
-                for (ProjectSnapshot newSnapshot : newSnapshots)
+                for (Snapshot newSnapshot : newSnapshots)
                 {
                     if (newSnapshot.unknownPermId == null)
                     {
                         snapshots.putDeletedProject(newSnapshot);
                     } else
                     {
-                        SpaceSnapshot spaceSnapshot = snapshots.getSpace(newSnapshot.unknownPermId, newSnapshot.from);
+                        Snapshot spaceSnapshot = snapshots.getSpace(newSnapshot.unknownPermId, newSnapshot.from);
                         if (spaceSnapshot != null)
                         {
                             newSnapshot.spaceCode = newSnapshot.unknownPermId;
@@ -95,7 +95,7 @@ class ProjectDeletionProcessor extends EntityDeletionProcessor
     }
 
     private void process(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents,
-            List<ProjectSnapshot> newSnapshots) throws Exception
+            List<Snapshot> newSnapshots) throws Exception
     {
         final Date lastSeenProjectTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, EventPE.EntityType.PROJECT);
 
@@ -103,8 +103,8 @@ class ProjectDeletionProcessor extends EntityDeletionProcessor
         {
             for (String projectPermId : deletion.getIdentifiers())
             {
-                ProjectSnapshot snapshot = new ProjectSnapshot();
-                snapshot.projectPermId = projectPermId;
+                Snapshot snapshot = new Snapshot();
+                snapshot.entityPermId = projectPermId;
                 snapshot.from = new Date(0);
                 snapshot.to = deletion.getRegistrationDateInternal();
                 newSnapshots.add(snapshot);
@@ -149,7 +149,7 @@ class ProjectDeletionProcessor extends EntityDeletionProcessor
                 }
             }
 
-            ProjectSnapshot lastSnapshot = null;
+            Snapshot lastSnapshot = null;
 
             for (Map<String, String> projectEntry : projectEntries)
             {
@@ -164,9 +164,9 @@ class ProjectDeletionProcessor extends EntityDeletionProcessor
                         String validFrom = projectEntry.get("validFrom");
                         String validUntil = projectEntry.get("validUntil");
 
-                        ProjectSnapshot snapshot = new ProjectSnapshot();
-                        snapshot.projectCode = projectCode;
-                        snapshot.projectPermId = projectPermId;
+                        Snapshot snapshot = new Snapshot();
+                        snapshot.entityCode = projectCode;
+                        snapshot.entityPermId = projectPermId;
 
                         if ("SPACE".equals(entityType))
                         {
@@ -197,9 +197,9 @@ class ProjectDeletionProcessor extends EntityDeletionProcessor
 
             if (lastSnapshot == null)
             {
-                ProjectSnapshot snapshot = new ProjectSnapshot();
-                snapshot.projectCode = projectCode;
-                snapshot.projectPermId = projectPermId;
+                Snapshot snapshot = new Snapshot();
+                snapshot.entityCode = projectCode;
+                snapshot.entityPermId = projectPermId;
                 snapshot.from = registrationTimestamp;
                 snapshot.to = deletion.getRegistrationDateInternal();
 

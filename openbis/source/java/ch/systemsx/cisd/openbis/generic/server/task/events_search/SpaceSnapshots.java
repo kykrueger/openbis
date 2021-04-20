@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class SpaceSnapshots extends AbstractSnapshots<SpaceSnapshot>
+class SpaceSnapshots extends AbstractSnapshots
 {
 
     public SpaceSnapshots(IDataSource dataSource)
@@ -14,17 +14,22 @@ class SpaceSnapshots extends AbstractSnapshots<SpaceSnapshot>
         super(dataSource);
     }
 
-    protected List<SpaceSnapshot> doLoad(Collection<String> spaceCodes)
+    @Override protected String getKey(Snapshot snapshot)
     {
-        List<SpaceSnapshot> snapshots = new ArrayList<>();
+        return snapshot.entityCode;
+    }
+
+    protected List<Snapshot> doLoad(Collection<String> spaceCodes)
+    {
+        List<Snapshot> snapshots = new ArrayList<>();
 
         List<SpacePE> spaces = dataSource.loadSpaces(new ArrayList<>(spaceCodes));
         for (SpacePE space : spaces)
         {
-            SpaceSnapshot snapshot = new SpaceSnapshot();
+            Snapshot snapshot = new Snapshot();
             snapshot.from = space.getRegistrationDateInternal();
-            snapshot.spaceCode = space.getCode();
-            snapshot.spaceTechId = space.getId();
+            snapshot.entityCode = space.getCode();
+            snapshot.entityPermId = space.getId().toString();
             snapshots.add(snapshot);
         }
 

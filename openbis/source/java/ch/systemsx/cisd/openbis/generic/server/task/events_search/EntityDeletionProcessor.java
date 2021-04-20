@@ -2,7 +2,7 @@ package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
 import java.text.SimpleDateFormat;
 
-abstract class EntityDeletionProcessor<SNAPSHOT extends AbstractSnapshot> extends EventProcessor
+abstract class EntityDeletionProcessor extends EventProcessor
 {
 
     protected static final SimpleDateFormat REGISTRATION_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");

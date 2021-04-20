@@ -37,7 +37,7 @@ class ExperimentDeletionProcessor extends EntityDeletionProcessor
 
             dataSource.executeInNewTransaction((TransactionCallback<Void>) status -> {
                 List<NewEvent> newEvents = new LinkedList<>();
-                List<ExperimentSnapshot> newSnapshots = new LinkedList<>();
+                List<Snapshot> newSnapshots = new LinkedList<>();
 
                 for (EventPE deletion : deletions)
                 {
@@ -56,16 +56,16 @@ class ExperimentDeletionProcessor extends EntityDeletionProcessor
                     }
                 }
 
-                snapshots.loadExistingProjects(ExperimentSnapshot.getProjectPermIdsOrUnknown(newSnapshots));
+                snapshots.loadExistingProjects(Snapshot.getProjectPermIdsOrUnknown(newSnapshots));
 
-                for (ExperimentSnapshot newSnapshot : newSnapshots)
+                for (Snapshot newSnapshot : newSnapshots)
                 {
                     if (newSnapshot.unknownPermId == null)
                     {
                         snapshots.putDeletedExperiment(newSnapshot);
                     } else
                     {
-                        ProjectSnapshot projectSnapshot = snapshots.getProject(newSnapshot.unknownPermId, newSnapshot.from);
+                        Snapshot projectSnapshot = snapshots.getProject(newSnapshot.unknownPermId, newSnapshot.from);
                         if (projectSnapshot != null)
                         {
                             newSnapshot.projectPermId = newSnapshot.unknownPermId;
@@ -93,7 +93,7 @@ class ExperimentDeletionProcessor extends EntityDeletionProcessor
     }
 
     private void process(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents,
-            List<ExperimentSnapshot> newSnapshots) throws Exception
+            List<Snapshot> newSnapshots) throws Exception
     {
         final Date lastSeenExperimentTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, EventPE.EntityType.EXPERIMENT);
 
@@ -101,8 +101,8 @@ class ExperimentDeletionProcessor extends EntityDeletionProcessor
         {
             for (String experimentPermId : deletion.getIdentifiers())
             {
-                ExperimentSnapshot snapshot = new ExperimentSnapshot();
-                snapshot.experimentPermId = experimentPermId;
+                Snapshot snapshot = new Snapshot();
+                snapshot.entityPermId = experimentPermId;
                 snapshot.from = new Date(0);
                 snapshot.to = deletion.getRegistrationDateInternal();
                 newSnapshots.add(snapshot);
@@ -148,7 +148,7 @@ class ExperimentDeletionProcessor extends EntityDeletionProcessor
                 }
             }
 
-            ExperimentSnapshot lastSnapshot = null;
+            Snapshot lastSnapshot = null;
 
             for (Map<String, String> experimentEntry : experimentEntries)
             {
@@ -163,9 +163,9 @@ class ExperimentDeletionProcessor extends EntityDeletionProcessor
                         String validFrom = experimentEntry.get("validFrom");
                         String validUntil = experimentEntry.get("validUntil");
 
-                        ExperimentSnapshot snapshot = new ExperimentSnapshot();
-                        snapshot.experimentCode = experimentCode;
-                        snapshot.experimentPermId = experimentPermId;
+                        Snapshot snapshot = new Snapshot();
+                        snapshot.entityCode = experimentCode;
+                        snapshot.entityPermId = experimentPermId;
 
                         if ("PROJECT".equals(entityType))
                         {
@@ -196,9 +196,9 @@ class ExperimentDeletionProcessor extends EntityDeletionProcessor
 
             if (lastSnapshot == null)
             {
-                ExperimentSnapshot snapshot = new ExperimentSnapshot();
-                snapshot.experimentCode = experimentCode;
-                snapshot.experimentPermId = experimentPermId;
+                Snapshot snapshot = new Snapshot();
+                snapshot.entityCode = experimentCode;
+                snapshot.entityPermId = experimentPermId;
                 snapshot.from = registrationTimestamp;
                 snapshot.to = deletion.getRegistrationDateInternal();
 

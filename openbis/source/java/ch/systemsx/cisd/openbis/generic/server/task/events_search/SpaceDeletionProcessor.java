@@ -86,8 +86,8 @@ class SpaceDeletionProcessor extends EventProcessor
 
         for (EventPE latestDeletion : latestDeletions.values())
         {
-            SpaceSnapshot snapshot = new SpaceSnapshot();
-            snapshot.spaceCode = latestDeletion.getIdentifiers().get(0);
+            Snapshot snapshot = new Snapshot();
+            snapshot.entityCode = latestDeletion.getIdentifiers().get(0);
             snapshot.from = new Date(0);
             snapshot.to = latestDeletion.getRegistrationDateInternal();
             snapshots.putDeletedSpace(snapshot);

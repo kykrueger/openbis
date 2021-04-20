@@ -37,7 +37,7 @@ class SampleDeletionProcessor extends EntityDeletionProcessor
 
             dataSource.executeInNewTransaction((TransactionCallback<Void>) status -> {
                 List<NewEvent> newEvents = new LinkedList<>();
-                List<SampleSnapshot> newSnapshots = new LinkedList<>();
+                List<Snapshot> newSnapshots = new LinkedList<>();
 
                 for (EventPE deletion : deletions)
                 {
@@ -56,32 +56,32 @@ class SampleDeletionProcessor extends EntityDeletionProcessor
                     }
                 }
 
-                snapshots.loadExistingSpaces(SampleSnapshot.getSpaceCodesOrUnknown(newSnapshots));
-                snapshots.loadExistingProjects(SampleSnapshot.getProjectPermIdsOrUnknown(newSnapshots));
-                snapshots.loadExistingExperiments(SampleSnapshot.getExperimentPermIdsOrUnknown(newSnapshots));
+                snapshots.loadExistingSpaces(Snapshot.getSpaceCodesOrUnknown(newSnapshots));
+                snapshots.loadExistingProjects(Snapshot.getProjectPermIdsOrUnknown(newSnapshots));
+                snapshots.loadExistingExperiments(Snapshot.getExperimentPermIdsOrUnknown(newSnapshots));
 
-                for (SampleSnapshot newSnapshot : newSnapshots)
+                for (Snapshot newSnapshot : newSnapshots)
                 {
                     if (newSnapshot.unknownPermId == null)
                     {
                         snapshots.putDeletedSample(newSnapshot);
                     } else
                     {
-                        ExperimentSnapshot experimentSnapshot = snapshots.getExperiment(newSnapshot.unknownPermId, newSnapshot.from);
+                        Snapshot experimentSnapshot = snapshots.getExperiment(newSnapshot.unknownPermId, newSnapshot.from);
                         if (experimentSnapshot != null)
                         {
                             newSnapshot.experimentPermId = newSnapshot.unknownPermId;
                             snapshots.putDeletedSample(newSnapshot);
                         } else
                         {
-                            ProjectSnapshot projectSnapshot = snapshots.getProject(newSnapshot.unknownPermId, newSnapshot.from);
+                            Snapshot projectSnapshot = snapshots.getProject(newSnapshot.unknownPermId, newSnapshot.from);
                             if (projectSnapshot != null)
                             {
                                 newSnapshot.projectPermId = newSnapshot.unknownPermId;
                                 snapshots.putDeletedSample(newSnapshot);
                             } else
                             {
-                                SpaceSnapshot spaceSnapshot = snapshots.getSpace(newSnapshot.unknownPermId, newSnapshot.from);
+                                Snapshot spaceSnapshot = snapshots.getSpace(newSnapshot.unknownPermId, newSnapshot.from);
                                 if (spaceSnapshot != null)
                                 {
                                     newSnapshot.spaceCode = newSnapshot.unknownPermId;
@@ -111,7 +111,7 @@ class SampleDeletionProcessor extends EntityDeletionProcessor
     }
 
     private void process(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents,
-            List<SampleSnapshot> newSnapshots)
+            List<Snapshot> newSnapshots)
             throws Exception
     {
         final Date lastSeenSampleTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, EventPE.EntityType.SAMPLE);
@@ -120,8 +120,8 @@ class SampleDeletionProcessor extends EntityDeletionProcessor
         {
             for (String samplePermId : deletion.getIdentifiers())
             {
-                SampleSnapshot snapshot = new SampleSnapshot();
-                snapshot.samplePermId = samplePermId;
+                Snapshot snapshot = new Snapshot();
+                snapshot.entityPermId = samplePermId;
                 snapshot.from = new Date(0);
                 snapshot.to = deletion.getRegistrationDateInternal();
                 newSnapshots.add(snapshot);
@@ -167,7 +167,7 @@ class SampleDeletionProcessor extends EntityDeletionProcessor
                 }
             }
 
-            SampleSnapshot lastSnapshot = null;
+            Snapshot lastSnapshot = null;
 
             for (Map<String, String> sampleEntry : sampleEntries)
             {
@@ -180,9 +180,9 @@ class SampleDeletionProcessor extends EntityDeletionProcessor
                     if ("SPACE".equals(entityType) || "EXPERIMENT".equals(entityType) || "PROJECT".equals(entityType) || "UNKNOWN"
                             .equals(entityType))
                     {
-                        SampleSnapshot snapshot = new SampleSnapshot();
-                        snapshot.sampleCode = sampleCode;
-                        snapshot.samplePermId = samplePermId;
+                        Snapshot snapshot = new Snapshot();
+                        snapshot.entityCode = sampleCode;
+                        snapshot.entityPermId = samplePermId;
 
                         String value = sampleEntry.get("value");
                         if ("SPACE".equals(entityType))
@@ -222,9 +222,9 @@ class SampleDeletionProcessor extends EntityDeletionProcessor
 
             if (lastSnapshot == null)
             {
-                SampleSnapshot snapshot = new SampleSnapshot();
-                snapshot.sampleCode = sampleCode;
-                snapshot.samplePermId = samplePermId;
+                Snapshot snapshot = new Snapshot();
+                snapshot.entityCode = sampleCode;
+                snapshot.entityPermId = samplePermId;
                 snapshot.from = registrationTimestamp;
                 snapshot.to = deletion.getRegistrationDateInternal();
 

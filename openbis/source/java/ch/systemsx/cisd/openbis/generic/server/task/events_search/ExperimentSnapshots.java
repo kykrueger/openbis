@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class ExperimentSnapshots extends AbstractSnapshots<ExperimentSnapshot>
+class ExperimentSnapshots extends AbstractSnapshots
 {
 
     public ExperimentSnapshots(IDataSource dataSource)
@@ -22,9 +22,14 @@ class ExperimentSnapshots extends AbstractSnapshots<ExperimentSnapshot>
         super(dataSource);
     }
 
-    protected List<ExperimentSnapshot> doLoad(Collection<String> experimentPermIds)
+    @Override protected String getKey(Snapshot snapshot)
     {
-        List<ExperimentSnapshot> snapshots = new ArrayList<>();
+        return snapshot.entityPermId;
+    }
+
+    protected List<Snapshot> doLoad(Collection<String> experimentPermIds)
+    {
+        List<Snapshot> snapshots = new ArrayList<>();
 
         ExperimentFetchOptions fo = new ExperimentFetchOptions();
         fo.withProject();
@@ -45,9 +50,9 @@ class ExperimentSnapshots extends AbstractSnapshots<ExperimentSnapshot>
 
                     if (ExperimentRelationType.PROJECT.equals(relationHistoryEntry.getRelationType()))
                     {
-                        ExperimentSnapshot snapshot = new ExperimentSnapshot();
-                        snapshot.experimentCode = experiment.getCode();
-                        snapshot.experimentPermId = experiment.getPermId().getPermId();
+                        Snapshot snapshot = new Snapshot();
+                        snapshot.entityCode = experiment.getCode();
+                        snapshot.entityPermId = experiment.getPermId().getPermId();
                         snapshot.projectPermId = ((ProjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
                         snapshot.from = relationHistoryEntry.getValidFrom();
                         snapshot.to = relationHistoryEntry.getValidTo();
@@ -63,9 +68,9 @@ class ExperimentSnapshots extends AbstractSnapshots<ExperimentSnapshot>
                 }
             }
 
-            ExperimentSnapshot snapshot = new ExperimentSnapshot();
-            snapshot.experimentCode = experiment.getCode();
-            snapshot.experimentPermId = experiment.getPermId().getPermId();
+            Snapshot snapshot = new Snapshot();
+            snapshot.entityCode = experiment.getCode();
+            snapshot.entityPermId = experiment.getPermId().getPermId();
             snapshot.projectPermId = experiment.getProject().getPermId().getPermId();
 
             if (lastProjectRelationship != null)
@@ -81,4 +86,5 @@ class ExperimentSnapshots extends AbstractSnapshots<ExperimentSnapshot>
 
         return snapshots;
     }
+
 }

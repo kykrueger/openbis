@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class ProjectSnapshots extends AbstractSnapshots<ProjectSnapshot>
+class ProjectSnapshots extends AbstractSnapshots
 {
 
     public ProjectSnapshots(IDataSource dataSource)
@@ -22,9 +22,14 @@ class ProjectSnapshots extends AbstractSnapshots<ProjectSnapshot>
         super(dataSource);
     }
 
-    protected List<ProjectSnapshot> doLoad(Collection<String> projectPermIds)
+    @Override protected String getKey(Snapshot snapshot)
     {
-        List<ProjectSnapshot> snapshots = new ArrayList<>();
+        return snapshot.entityPermId;
+    }
+
+    protected List<Snapshot> doLoad(Collection<String> projectPermIds)
+    {
+        List<Snapshot> snapshots = new ArrayList<>();
 
         ProjectFetchOptions fo = new ProjectFetchOptions();
         fo.withSpace();
@@ -45,9 +50,9 @@ class ProjectSnapshots extends AbstractSnapshots<ProjectSnapshot>
 
                     if (ProjectRelationType.SPACE.equals(relationHistoryEntry.getRelationType()))
                     {
-                        ProjectSnapshot snapshot = new ProjectSnapshot();
-                        snapshot.projectCode = project.getCode();
-                        snapshot.projectPermId = project.getPermId().getPermId();
+                        Snapshot snapshot = new Snapshot();
+                        snapshot.entityCode = project.getCode();
+                        snapshot.entityPermId = project.getPermId().getPermId();
                         snapshot.spaceCode = ((SpacePermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
                         snapshot.from = relationHistoryEntry.getValidFrom();
                         snapshot.to = relationHistoryEntry.getValidTo();
@@ -62,9 +67,9 @@ class ProjectSnapshots extends AbstractSnapshots<ProjectSnapshot>
                 }
             }
 
-            ProjectSnapshot snapshot = new ProjectSnapshot();
-            snapshot.projectCode = project.getCode();
-            snapshot.projectPermId = project.getPermId().getPermId();
+            Snapshot snapshot = new Snapshot();
+            snapshot.entityCode = project.getCode();
+            snapshot.entityPermId = project.getPermId().getPermId();
             snapshot.spaceCode = project.getSpace().getCode();
 
             if (lastSpaceRelationship != null)
