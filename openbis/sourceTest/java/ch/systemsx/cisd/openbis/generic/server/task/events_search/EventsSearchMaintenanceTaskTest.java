@@ -1,4 +1,4 @@
-package ch.systemsx.cisd.openbis.generic.server.task;
+package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
@@ -51,14 +51,14 @@ public class EventsSearchMaintenanceTaskTest
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private EventsSearchMaintenanceTask.IDataSource dataSource;
+    private IDataSource dataSource;
 
     @BeforeMethod
     public void beforeMethod()
     {
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO);
         mockery = new Mockery();
-        dataSource = mockery.mock(EventsSearchMaintenanceTask.IDataSource.class);
+        dataSource = mockery.mock(IDataSource.class);
 
         mockery.checking(new Expectations()
         {
