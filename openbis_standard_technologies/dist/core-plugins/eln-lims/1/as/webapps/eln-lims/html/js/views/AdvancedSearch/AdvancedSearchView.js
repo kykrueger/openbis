@@ -613,9 +613,9 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	this._getEntityTypeDropdown = function() {
 		var _this = this;
 		var model = [];
-			model.push({ value : 'ALL_PARTIAL', label : "All (partial match, slower)", selected : true });
-			model.push({ value : 'ALL_PREFIX', label : "All (prefix match, faster)" });
+			model.push({ value : 'ALL_PREFIX', label : "All (prefix match, faster)", selected : true });
 			model.push({ value : 'ALL', label : "All (full word match, faster)" });
+			model.push({ value : 'ALL_PARTIAL', label : "All (partial match, slower)" });
 			model.push({ value : 'EXPERIMENT', label : ELNDictionary.getExperimentDualName() });
 			model.push({ value : 'SAMPLE', label : "" + ELNDictionary.Sample + "" });
 			model.push({ value : 'DATASET', label : "Dataset" });
@@ -627,7 +627,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			}
 
 		if(!this._advancedSearchModel.forceLoadCriteria) {
-			this._advancedSearchModel.resetModel('ALL_PARTIAL');
+			this._advancedSearchModel.resetModel('ALL_PREFIX');
 		}
 
 		var $dropdown = FormUtil.getDropdown(model, 'Select Entity Type to search for');
