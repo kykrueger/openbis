@@ -15,6 +15,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEventDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEventsSearchDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISpaceDAO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventsSearchPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
@@ -76,13 +77,13 @@ class DataSource implements IDataSource
     }
 
     @Override
-    public List<EventPE> loadEvents(EventType eventType, EventPE.EntityType entityType, Date lastSeenTimestampOrNull, Integer limit)
+    public List<EventPE> loadEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull, Integer limit)
     {
         IEventDAO eventDAO = CommonServiceProvider.getDAOFactory().getEventDAO();
         return eventDAO.listEvents(eventType, entityType, lastSeenTimestampOrNull, limit);
     }
 
-    @Override public Date loadLastEventsSearchTimestamp(EventType eventType, EventPE.EntityType entityType)
+    @Override public Date loadLastEventsSearchTimestamp(EventType eventType, EntityType entityType)
     {
         IEventsSearchDAO eventsSearchDAO = CommonServiceProvider.getDAOFactory().getEventsSearchDAO();
         return eventsSearchDAO.getLastTimestamp(eventType, entityType);

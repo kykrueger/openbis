@@ -1,6 +1,7 @@
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventsSearchPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
@@ -17,7 +18,7 @@ class NewEvent
 
     public EventType eventType;
 
-    public EventPE.EntityType entityType;
+    public EntityType entityType;
 
     public String entitySpaceCode;
 

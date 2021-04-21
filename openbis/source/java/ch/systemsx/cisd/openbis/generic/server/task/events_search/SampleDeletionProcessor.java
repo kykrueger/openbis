@@ -1,14 +1,10 @@
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
-import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
-import org.apache.commons.lang3.mutable.MutableObject;
-import org.springframework.transaction.support.TransactionCallback;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 
-import java.util.Date;
-import java.util.LinkedList;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 class SampleDeletionProcessor extends EntityDeletionProcessor
 {
@@ -18,235 +14,70 @@ class SampleDeletionProcessor extends EntityDeletionProcessor
         super(dataSource);
     }
 
-    @Override
-    public void process(LastTimestamps lastTimestamps, Snapshots snapshots)
+    @Override protected EntityType getEntityType()
     {
-        final Date lastSeenTimestampOrNull =
-                lastTimestamps.getEarliestOrNull(EventType.DELETION, EventPE.EntityType.SAMPLE, EventPE.EntityType.DATASET);
-        final MutableObject<Date> latestLastSeenTimestamp = new MutableObject<>(lastSeenTimestampOrNull);
+        return EntityType.SAMPLE;
+    }
 
-        while (true)
+    @Override protected Set<EntityType> getAscendantEntityTypes()
+    {
+        return EnumSet.of(EntityType.SPACE, EntityType.PROJECT, EntityType.EXPERIMENT);
+    }
+
+    @Override protected Set<EntityType> getDescendantEntityTypes()
+    {
+        return EnumSet.of(EntityType.DATASET);
+    }
+
+    @Override protected void process(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents, List<Snapshot> newSnapshots)
+    {
+        snapshots.loadExistingSpaces(Snapshot.getSpaceCodesOrUnknown(newSnapshots));
+        snapshots.loadExistingProjects(Snapshot.getProjectPermIdsOrUnknown(newSnapshots));
+        snapshots.loadExistingExperiments(Snapshot.getExperimentPermIdsOrUnknown(newSnapshots));
+
+        for (Snapshot newSnapshot : newSnapshots)
         {
-            final List<EventPE> deletions =
-                    dataSource.loadEvents(EventType.DELETION, EventPE.EntityType.SAMPLE, latestLastSeenTimestamp.getValue(), BATCH_SIZE);
-
-            if (deletions.isEmpty())
+            if (newSnapshot.unknownPermId == null)
             {
-                break;
-            }
-
-            dataSource.executeInNewTransaction((TransactionCallback<Void>) status -> {
-                List<NewEvent> newEvents = new LinkedList<>();
-                List<Snapshot> newSnapshots = new LinkedList<>();
-
-                for (EventPE deletion : deletions)
+                snapshots.putDeletedSample(newSnapshot);
+            } else
+            {
+                Snapshot experimentSnapshot = snapshots.getExperiment(newSnapshot.unknownPermId, newSnapshot.from);
+                if (experimentSnapshot != null)
                 {
-                    try
-                    {
-                        process(lastTimestamps, deletion, newEvents, newSnapshots);
-
-                        if (latestLastSeenTimestamp.getValue() == null || deletion.getRegistrationDateInternal()
-                                .after(latestLastSeenTimestamp.getValue()))
-                        {
-                            latestLastSeenTimestamp.setValue(deletion.getRegistrationDateInternal());
-                        }
-                    } catch (Exception e)
-                    {
-                        throw new RuntimeException(String.format("Processing of deletion failed: %s", deletion), e);
-                    }
-                }
-
-                snapshots.loadExistingSpaces(Snapshot.getSpaceCodesOrUnknown(newSnapshots));
-                snapshots.loadExistingProjects(Snapshot.getProjectPermIdsOrUnknown(newSnapshots));
-                snapshots.loadExistingExperiments(Snapshot.getExperimentPermIdsOrUnknown(newSnapshots));
-
-                for (Snapshot newSnapshot : newSnapshots)
+                    newSnapshot.experimentPermId = newSnapshot.unknownPermId;
+                    snapshots.putDeletedSample(newSnapshot);
+                } else
                 {
-                    if (newSnapshot.unknownPermId == null)
+                    Snapshot projectSnapshot = snapshots.getProject(newSnapshot.unknownPermId, newSnapshot.from);
+                    if (projectSnapshot != null)
                     {
+                        newSnapshot.projectPermId = newSnapshot.unknownPermId;
                         snapshots.putDeletedSample(newSnapshot);
                     } else
                     {
-                        Snapshot experimentSnapshot = snapshots.getExperiment(newSnapshot.unknownPermId, newSnapshot.from);
-                        if (experimentSnapshot != null)
+                        Snapshot spaceSnapshot = snapshots.getSpace(newSnapshot.unknownPermId, newSnapshot.from);
+                        if (spaceSnapshot != null)
                         {
-                            newSnapshot.experimentPermId = newSnapshot.unknownPermId;
+                            newSnapshot.spaceCode = newSnapshot.unknownPermId;
                             snapshots.putDeletedSample(newSnapshot);
-                        } else
-                        {
-                            Snapshot projectSnapshot = snapshots.getProject(newSnapshot.unknownPermId, newSnapshot.from);
-                            if (projectSnapshot != null)
-                            {
-                                newSnapshot.projectPermId = newSnapshot.unknownPermId;
-                                snapshots.putDeletedSample(newSnapshot);
-                            } else
-                            {
-                                Snapshot spaceSnapshot = snapshots.getSpace(newSnapshot.unknownPermId, newSnapshot.from);
-                                if (spaceSnapshot != null)
-                                {
-                                    newSnapshot.spaceCode = newSnapshot.unknownPermId;
-                                    snapshots.putDeletedSample(newSnapshot);
-                                }
-                            }
                         }
                     }
                 }
-
-                for (NewEvent newEvent : newEvents)
-                {
-                    try
-                    {
-                        snapshots.fillBySamplePermId(newEvent.identifier, newEvent);
-                        dataSource.createEventsSearch(newEvent.toNewEventPE());
-
-                    } catch (Exception e)
-                    {
-                        throw new RuntimeException(String.format("Processing of deletion failed: %s", newEvent), e);
-                    }
-                }
-
-                return null;
-            });
-        }
-    }
-
-    private void process(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents,
-            List<Snapshot> newSnapshots)
-            throws Exception
-    {
-        final Date lastSeenSampleTimestampOrNull = lastTimestamps.getEarliestOrNull(EventType.DELETION, EventPE.EntityType.SAMPLE);
-
-        if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
-        {
-            for (String samplePermId : deletion.getIdentifiers())
-            {
-                Snapshot snapshot = new Snapshot();
-                snapshot.entityPermId = samplePermId;
-                snapshot.from = new Date(0);
-                snapshot.to = deletion.getRegistrationDateInternal();
-                newSnapshots.add(snapshot);
-
-                NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
-                newEvent.identifier = samplePermId;
-                newEvents.add(newEvent);
             }
-
-            return;
         }
 
-        @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
-                (Map<String, Object>) objectMapper.readValue(deletion.getContent(), Object.class);
-
-        for (String samplePermId : parsedContent.keySet())
+        for (NewEvent newEvent : newEvents)
         {
-            @SuppressWarnings("unchecked") List<Map<String, String>> sampleEntries =
-                    (List<Map<String, String>>) parsedContent.get(samplePermId);
-
-            String sampleCode = null;
-            String registerer = null;
-            Date registrationTimestamp = null;
-
-            for (Map<String, String> sampleEntry : sampleEntries)
+            try
             {
-                String type = sampleEntry.get("type");
-                String key = sampleEntry.get("key");
-                String value = sampleEntry.get("value");
+                snapshots.fillBySamplePermId(newEvent.identifier, newEvent);
+                dataSource.createEventsSearch(newEvent.toNewEventPE());
 
-                if ("ATTRIBUTE".equals(type))
-                {
-                    if ("CODE".equals(key))
-                    {
-                        sampleCode = value;
-                    } else if ("REGISTRATOR".equals(key))
-                    {
-                        registerer = value;
-                    } else if ("REGISTRATION_TIMESTAMP".equals(key))
-                    {
-                        registrationTimestamp = REGISTRATION_TIMESTAMP_FORMAT.parse(value);
-                    }
-                }
-            }
-
-            Snapshot lastSnapshot = null;
-
-            for (Map<String, String> sampleEntry : sampleEntries)
+            } catch (Exception e)
             {
-                String type = sampleEntry.get("type");
-
-                if ("RELATIONSHIP".equals(type))
-                {
-                    String entityType = sampleEntry.get("entityType");
-
-                    if ("SPACE".equals(entityType) || "EXPERIMENT".equals(entityType) || "PROJECT".equals(entityType) || "UNKNOWN"
-                            .equals(entityType))
-                    {
-                        Snapshot snapshot = new Snapshot();
-                        snapshot.entityCode = sampleCode;
-                        snapshot.entityPermId = samplePermId;
-
-                        String value = sampleEntry.get("value");
-                        if ("SPACE".equals(entityType))
-                        {
-                            snapshot.spaceCode = value;
-                        } else if ("PROJECT".equals(entityType))
-                        {
-                            snapshot.projectPermId = value;
-                        } else if ("EXPERIMENT".equals(entityType))
-                        {
-                            snapshot.experimentPermId = value;
-                        } else
-                        {
-                            snapshot.unknownPermId = value;
-                        }
-
-                        String validFrom = sampleEntry.get("validFrom");
-                        if (validFrom != null)
-                        {
-                            snapshot.from = VALID_TIMESTAMP_FORMAT.parse(validFrom);
-                        }
-
-                        String validUntil = sampleEntry.get("validUntil");
-                        if (validUntil != null)
-                        {
-                            snapshot.to = VALID_TIMESTAMP_FORMAT.parse(validUntil);
-                        } else
-                        {
-                            snapshot.to = deletion.getRegistrationDateInternal();
-                            lastSnapshot = snapshot;
-                        }
-
-                        newSnapshots.add(snapshot);
-                    }
-                }
-            }
-
-            if (lastSnapshot == null)
-            {
-                Snapshot snapshot = new Snapshot();
-                snapshot.entityCode = sampleCode;
-                snapshot.entityPermId = samplePermId;
-                snapshot.from = registrationTimestamp;
-                snapshot.to = deletion.getRegistrationDateInternal();
-
-                newSnapshots.add(snapshot);
-                lastSnapshot = snapshot;
-            }
-
-            if (lastSeenSampleTimestampOrNull == null || deletion.getRegistrationDateInternal()
-                    .after(lastSeenSampleTimestampOrNull))
-            {
-                NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
-                newEvent.entitySpaceCode = lastSnapshot.spaceCode;
-                newEvent.entityProjectPermId = lastSnapshot.projectPermId;
-                newEvent.entityExperimentPermId = lastSnapshot.experimentPermId;
-                newEvent.entityUnknownPermId = lastSnapshot.unknownPermId;
-                newEvent.entityRegisterer = registerer;
-                newEvent.entityRegistrationTimestamp = registrationTimestamp;
-                newEvent.identifier = samplePermId;
-                newEvent.content = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(sampleEntries);
-                newEvents.add(newEvent);
+                throw new RuntimeException(String.format("Processing of deletion failed: %s", newEvent), e);
             }
         }
     }
-
 }

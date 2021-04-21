@@ -17,6 +17,8 @@ class Snapshot
 
     public String experimentPermId;
 
+    public String samplePermId;
+
     public String unknownPermId;
 
     public Date from;

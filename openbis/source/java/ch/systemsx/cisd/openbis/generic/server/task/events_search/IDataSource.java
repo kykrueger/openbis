@@ -10,6 +10,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventsSearchPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
@@ -31,9 +32,9 @@ interface IDataSource
 
     List<Sample> loadSamples(List<ISampleId> ids, SampleFetchOptions fo);
 
-    List<EventPE> loadEvents(EventType eventType, EventPE.EntityType entityType, Date lastSeenTimestampOrNull, Integer limit);
+    List<EventPE> loadEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull, Integer limit);
 
-    Date loadLastEventsSearchTimestamp(EventType eventType, EventPE.EntityType entityType);
+    Date loadLastEventsSearchTimestamp(EventType eventType, EntityType entityType);
 
     void createEventsSearch(EventsSearchPE eventsSearch);
 
