@@ -15,9 +15,7 @@ abstract class AbstractSnapshots
         this.dataSource = dataSource;
     }
 
-    protected abstract String getKey(Snapshot snapshot);
-
-    protected abstract List<Snapshot> doLoad(Collection<String> keysToLoad);
+    protected abstract void doLoad(Collection<String> keysToLoad);
 
     public void put(String key, Snapshot snapshot)
     {
@@ -32,11 +30,7 @@ abstract class AbstractSnapshots
 
         if (notLoaded.size() > 0)
         {
-            List<Snapshot> snapshots = doLoad(notLoaded);
-            for (Snapshot snapshot : snapshots)
-            {
-                put(getKey(snapshot), snapshot);
-            }
+            doLoad(notLoaded);
             loadedKeys.addAll(notLoaded);
         }
     }

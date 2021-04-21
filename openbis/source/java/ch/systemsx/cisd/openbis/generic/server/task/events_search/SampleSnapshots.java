@@ -12,7 +12,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,15 +24,8 @@ class SampleSnapshots extends AbstractSnapshots
         super(dataSource);
     }
 
-    @Override protected String getKey(Snapshot snapshot)
+    protected void doLoad(Collection<String> samplePermIds)
     {
-        return snapshot.entityPermId;
-    }
-
-    protected List<Snapshot> doLoad(Collection<String> samplePermIds)
-    {
-        List<Snapshot> snapshots = new ArrayList<>();
-
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withSpace();
         fo.withProject();
@@ -74,7 +66,7 @@ class SampleSnapshots extends AbstractSnapshots
                             snapshot.experimentPermId = ((ExperimentPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
                         }
 
-                        snapshots.add(snapshot);
+                        put(snapshot.entityPermId, snapshot);
 
                         if (lastRelationship == null || relationHistoryEntry.getValidFrom().after(lastRelationship.getValidFrom()))
                         {
@@ -107,9 +99,7 @@ class SampleSnapshots extends AbstractSnapshots
                 snapshot.from = sample.getRegistrationDate();
             }
 
-            snapshots.add(snapshot);
+            put(snapshot.entityPermId, snapshot);
         }
-
-        return snapshots;
     }
 }

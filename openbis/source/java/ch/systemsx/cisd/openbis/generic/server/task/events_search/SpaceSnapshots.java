@@ -14,15 +14,8 @@ class SpaceSnapshots extends AbstractSnapshots
         super(dataSource);
     }
 
-    @Override protected String getKey(Snapshot snapshot)
+    protected void doLoad(Collection<String> spaceCodes)
     {
-        return snapshot.entityCode;
-    }
-
-    protected List<Snapshot> doLoad(Collection<String> spaceCodes)
-    {
-        List<Snapshot> snapshots = new ArrayList<>();
-
         List<SpacePE> spaces = dataSource.loadSpaces(new ArrayList<>(spaceCodes));
         for (SpacePE space : spaces)
         {
@@ -30,9 +23,8 @@ class SpaceSnapshots extends AbstractSnapshots
             snapshot.from = space.getRegistrationDateInternal();
             snapshot.entityCode = space.getCode();
             snapshot.entityPermId = space.getId().toString();
-            snapshots.add(snapshot);
-        }
 
-        return snapshots;
+            put(snapshot.entityCode, snapshot);
+        }
     }
 }

@@ -9,7 +9,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,15 +21,8 @@ class ProjectSnapshots extends AbstractSnapshots
         super(dataSource);
     }
 
-    @Override protected String getKey(Snapshot snapshot)
+    protected void doLoad(Collection<String> projectPermIds)
     {
-        return snapshot.entityPermId;
-    }
-
-    protected List<Snapshot> doLoad(Collection<String> projectPermIds)
-    {
-        List<Snapshot> snapshots = new ArrayList<>();
-
         ProjectFetchOptions fo = new ProjectFetchOptions();
         fo.withSpace();
         fo.withHistory();
@@ -57,7 +49,7 @@ class ProjectSnapshots extends AbstractSnapshots
                         snapshot.from = relationHistoryEntry.getValidFrom();
                         snapshot.to = relationHistoryEntry.getValidTo();
 
-                        snapshots.add(snapshot);
+                        put(snapshot.entityPermId, snapshot);
 
                         if (lastSpaceRelationship == null || relationHistoryEntry.getValidFrom().after(lastSpaceRelationship.getValidFrom()))
                         {
@@ -80,9 +72,7 @@ class ProjectSnapshots extends AbstractSnapshots
                 snapshot.from = project.getRegistrationDate();
             }
 
-            snapshots.add(snapshot);
+            put(snapshot.entityPermId, snapshot);
         }
-
-        return snapshots;
     }
 }

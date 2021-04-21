@@ -3,6 +3,7 @@ package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.transaction.support.TransactionCallback;
 
@@ -10,14 +11,18 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-abstract class EntityDeletionProcessor extends EventProcessor
+abstract class DeletionEventProcessor extends EventProcessor
 {
 
-    protected static final SimpleDateFormat REGISTRATION_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+    private static final SimpleDateFormat REGISTRATION_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
 
-    protected static final SimpleDateFormat VALID_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final SimpleDateFormat VALID_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
-    EntityDeletionProcessor(IDataSource dataSource)
+    protected static final int BATCH_SIZE = 1000;
+
+    protected static final ObjectMapper objectMapper = new ObjectMapper();
+
+    DeletionEventProcessor(IDataSource dataSource)
     {
         super(dataSource);
     }
@@ -28,16 +33,17 @@ abstract class EntityDeletionProcessor extends EventProcessor
 
     protected abstract Set<EntityType> getDescendantEntityTypes();
 
-    protected abstract void process(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents, List<Snapshot> newSnapshots);
+    protected abstract void processDeletions(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents,
+            List<Snapshot> newSnapshots);
 
     @Override final public void process(LastTimestamps lastTimestamps, Snapshots snapshots)
     {
-        final Collection<EntityType> entityTypes = new HashSet<>();
-        entityTypes.add(getEntityType());
-        entityTypes.addAll(getDescendantEntityTypes());
+        final Collection<EntityType> lastSeenEntityTypes = new HashSet<>();
+        lastSeenEntityTypes.add(getEntityType());
+        lastSeenEntityTypes.addAll(getDescendantEntityTypes());
 
         final Date lastSeenTimestampOrNull =
-                lastTimestamps.getEarliestOrNull(EventType.DELETION, entityTypes.toArray(new EntityType[entityTypes.size()]));
+                lastTimestamps.getEarliestOrNull(EventType.DELETION, lastSeenEntityTypes.toArray(new EntityType[lastSeenEntityTypes.size()]));
         final MutableObject<Date> latestLastSeenTimestamp = new MutableObject<>(lastSeenTimestampOrNull);
 
         while (true)
@@ -58,7 +64,7 @@ abstract class EntityDeletionProcessor extends EventProcessor
                 {
                     try
                     {
-                        process(lastTimestamps, deletion, newEvents, newSnapshots);
+                        processDeletion(lastTimestamps, deletion, newEvents, newSnapshots);
 
                         if (latestLastSeenTimestamp.getValue() == null || deletion.getRegistrationDateInternal()
                                 .after(latestLastSeenTimestamp.getValue()))
@@ -71,14 +77,14 @@ abstract class EntityDeletionProcessor extends EventProcessor
                     }
                 }
 
-                process(lastTimestamps, snapshots, newEvents, newSnapshots);
+                processDeletions(lastTimestamps, snapshots, newEvents, newSnapshots);
 
                 return null;
             });
         }
     }
 
-    private void process(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents,
+    private void processDeletion(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents,
             List<Snapshot> newSnapshots)
             throws Exception
     {
@@ -135,7 +141,7 @@ abstract class EntityDeletionProcessor extends EventProcessor
                 }
             }
 
-            Set<String> ascendantEntityTypes = getAscendantEntityTypes().stream().map(type -> type.name()).collect(Collectors.toSet());
+            Set<String> relationshipEntityTypes = getAscendantEntityTypes().stream().map(type -> type.name()).collect(Collectors.toSet());
             Snapshot lastSnapshot = null;
 
             for (Map<String, String> entry : entries)
@@ -146,7 +152,7 @@ abstract class EntityDeletionProcessor extends EventProcessor
                 {
                     String entityType = entry.get("entityType");
 
-                    if (ascendantEntityTypes.contains(entityType) || "UNKNOWN".equals(entityType))
+                    if (relationshipEntityTypes.contains(entityType) || "UNKNOWN".equals(entityType))
                     {
                         Snapshot snapshot = new Snapshot();
                         snapshot.entityCode = entityCode;

@@ -7,7 +7,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-class DataSetDeletionProcessor extends EntityDeletionProcessor
+class DataSetDeletionProcessor extends DeletionEventProcessor
 {
     DataSetDeletionProcessor(IDataSource dataSource)
     {
@@ -29,7 +29,7 @@ class DataSetDeletionProcessor extends EntityDeletionProcessor
         return Collections.emptySet();
     }
 
-    @Override protected void process(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents, List<Snapshot> newSnapshots)
+    @Override protected void processDeletions(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents, List<Snapshot> newSnapshots)
     {
         snapshots.loadExistingExperiments(NewEvent.getEntityExperimentPermIdsOrUnknown(newEvents));
         snapshots.loadExistingSamples(NewEvent.getEntitySamplePermIdsOrUnknown(newEvents));
