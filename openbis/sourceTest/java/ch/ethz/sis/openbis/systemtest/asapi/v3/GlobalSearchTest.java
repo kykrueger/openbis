@@ -198,7 +198,8 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithOneContainsOneWord()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
-        criteria.withText().thatContains("stuff");
+        final String searchTerm = "stuff";
+        criteria.withText().thatContains(searchTerm);
 
         final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withMatch();
@@ -573,7 +574,7 @@ public class GlobalSearchTest extends AbstractTest
 
         // sample
         object = searchAndAssertOneOrNone("200902091219327-1025", MatchType.CONTAINS, GlobalSearchObjectKind.SAMPLE);
-        assertSample(object, "200902091219327-1025", "/CISD/CP-TEST-1", null, false);
+        assertSample(object, "200902091219327-1025", "/CISD/CP-TEST-1", "Perm ID: 200902091219327-1025", false);
 
         object = searchAndAssertOneOrNone("200902091219327-1025", MatchType.CONTAINS, GlobalSearchObjectKind.DATA_SET);
         assertNull(object);
@@ -648,7 +649,7 @@ public class GlobalSearchTest extends AbstractTest
 
         // sample
         object = searchAndAssertOneOrNone("200902091219327-1025", MatchType.CONTAINS);
-        assertSample(object, "200902091219327-1025", "/CISD/CP-TEST-1", null, false);
+        assertSample(object, "200902091219327-1025", "/CISD/CP-TEST-1", "Perm ID: 200902091219327-1025", false);
 
         // data set
         object = searchAndAssertOneOrNone("20081105092159111-1", MatchType.CONTAINS);
@@ -1203,14 +1204,20 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
 
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
-        criteria.withText().thatContains("B1B3:B01");
+        criteria.withText().thatContains("1B3:B0");
 
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        assertEquals(result.getObjects().size(), 1);
+        assertEquals(result.getObjects().size(), 2);
 
-        final GlobalSearchObject object = result.getObjects().get(0);
+        final GlobalSearchObject object1 = result.getObjects().stream()
+                .filter(object -> object.getObjectPermId().toString().equals("200811050924274-995")).findFirst().get();
+        final GlobalSearchObject object2 = result.getObjects().stream()
+                .filter(object -> object.getObjectPermId().toString().equals("200811050924274-996")).findFirst().get();
 
-        assertSample(object, "200811050924274-995", "/CISD/B1B3:B01", "Code: B1B3:B01", false);
+        assertSample(object1, "200811050924274-995", "/CISD/B1B3:B01", "Identifier: /CISD/B1B3:B01\nCode: B1B3:B01",
+                false);
+        assertSample(object2, "200811050924274-996", "/CISD/B1B3:B03", "Identifier: /CISD/B1B3:B03\nCode: B1B3:B03",
+                false);
     }
 
     @Test
@@ -2337,7 +2344,7 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     private void assertSample(final GlobalSearchObject object, final String permId, final String identifier,
-            final String match, final boolean checkMatchAndScore)
+            final String match, final boolean checkScore)
     {
         assertNotNull(object);
         assertEquals(object.getObjectKind(), GlobalSearchObjectKind.SAMPLE);
@@ -2349,9 +2356,10 @@ public class GlobalSearchTest extends AbstractTest
 
         assertEquals(object.getObjectIdentifier(), new SampleIdentifier(identifier));
 
-        if (checkMatchAndScore)
+        assertEquals(object.getMatch(), match);
+
+        if (checkScore)
         {
-            assertEquals(object.getMatch(), match);
             assertTrue(object.getScore() > 0);
         }
     }

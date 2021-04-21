@@ -1148,7 +1148,6 @@ public class GlobalSearchCriteriaTranslator
                     + NULL }, new String[] { thenValueBuilder.toString() }, elseValueBuilder.toString());
         } else
         {
-//            buildCaseWhenIn(sqlBuilder, args, criterionValues, new String[] { mainTableCode }, mainTableCode, NULL);
             buildCaseWhen(sqlBuilder, new String[] {
                     makeCondition(mainTableCode, args, criterionValues, stringValueClass) },
                     new String[] { mainTableCode }, NULL);
@@ -1161,19 +1160,7 @@ public class GlobalSearchCriteriaTranslator
             final String[] criterionValues, final Class<? extends AbstractStringValue> stringValueClass)
     {
         final StringBuilder result = new StringBuilder();
-
-        final ConditionAppender conditionAppender;
-        if (StringStartsWithValue.class.isAssignableFrom(stringValueClass))
-        {
-            conditionAppender = GlobalSearchCriteriaTranslator::appendTsVectorPrefixMatchCondition;
-        } else if (StringMatchesValue.class.isAssignableFrom(stringValueClass))
-        {
-            conditionAppender = GlobalSearchCriteriaTranslator::appendTsVectorFullMatchCondition;
-        } else {
-            conditionAppender = GlobalSearchCriteriaTranslator::appendInCondition;
-        }
-        conditionAppender.appendCondition(result, matchingColumn, args, criterionValues, stringValueClass);
-
+        appendFullCondition(result, matchingColumn, args, criterionValues, stringValueClass);
         return result.toString();
     }
 
@@ -1292,106 +1279,85 @@ public class GlobalSearchCriteriaTranslator
     }
 
     /**
-     * Builds the following part of the query and adds the corresponding value to the query arguments list.
-     * <pre>
-     *     to_tsvector(matchingColumn) @@ to_tsquery(? || ':*') OR
-     *     to_tsvector(matchingColumn) @@ to_tsquery(? || ':*') OR
-     *     ...
-     * </pre>
-     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
-     * @param matchingColumn column which should be equal to one of values in the query parameter ('?').
-     * @param args query arguments.
-     * @param criterionValues full text search values to be put to the full text search matching function, should
-     * contain exactly 1 value.
-     */
-    private static void appendTsVectorPrefixMatchCondition(final StringBuilder sqlBuilder,
-            final String matchingColumn, final List<Object> args, final String[] criterionValues,
-            final Class<? extends AbstractStringValue> stringValueClass)
-    {
-        appendTsVectorMatchCondition(sqlBuilder, matchingColumn, args, criterionValues, stringValueClass, true);
-    }
-
-    /**
-     * Builds the following part of the query and adds the corresponding value to the query arguments list.
-     * <pre>
-     *     to_tsvector(matchingColumn) @@ to_tsquery(?) OR
-     *     to_tsvector(matchingColumn) @@ to_tsquery(?) OR
-     *     ...
-     * </pre>
-     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
-     * @param matchingColumn column which should be equal to one of values in the query parameter ('?').
-     * @param args query arguments.
-     * @param criterionValues full text search values to be put to the full text search matching function, should
-     * contain exactly 1 value.
-     */
-    private static void appendTsVectorFullMatchCondition(final StringBuilder sqlBuilder,
-            final String matchingColumn, final List<Object> args, final String[] criterionValues,
-            final Class<? extends AbstractStringValue> stringValueClass)
-    {
-        appendTsVectorMatchCondition(sqlBuilder, matchingColumn, args, criterionValues, stringValueClass, false);
-    }
-
-    /**
-     * Builds the following part of the query and adds the corresponding value to the query arguments list.
+     * Builds one of the following parts of the query and adds the corresponding value to the query arguments list.
      * <pre>
      *     to_tsvector(matchingColumn) @@ to_tsquery(?[ || ':*']) OR
      *     to_tsvector(matchingColumn) @@ to_tsquery(?[ || ':*']) OR
      *     ...
      * </pre>
-     * where the part <pre>[|| ':*']</pre> is absent when {@code prefixMatch == false}.
+     * for the match and prefix search (where the part <pre>[|| ':*']</pre> is absent when {@code prefixMatch == false})
+     * or
+     * <pre>
+     *     matchingColumn ILIKE '%' || ? || '%' OR
+     *     matchingColumn ILIKE '%' || ? || '%' OR
+     *     ...
+     * </pre>
+     * for the contains search.
      * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
      * @param matchingColumn column which should be equal to one of values in the query parameter ('?').
      * @param args query arguments.
      * @param criterionValues full text search values to be put to the full text search matching function, should
      * contain exactly 1 value.
-     * @param prefixMatch whether this is a prefix match.
      */
-    private static void appendTsVectorMatchCondition(final StringBuilder sqlBuilder,
+    private static void appendFullCondition(final StringBuilder sqlBuilder,
             final String matchingColumn, final List<Object> args, final String[] criterionValues,
-            final Class<? extends AbstractStringValue> stringValueClass, final boolean prefixMatch)
+            final Class<? extends AbstractStringValue> stringValueClass)
     {
         final Spliterator<String> spliterator = Arrays.stream(criterionValues).spliterator();
-        if (spliterator.tryAdvance(criterionValue -> appendTsVectorSingleMatchCondition(sqlBuilder, matchingColumn,
-                args, criterionValue, stringValueClass, prefixMatch)))
+        if (spliterator.tryAdvance(criterionValue -> appendSingleCondition(sqlBuilder, matchingColumn,
+                args, criterionValue, stringValueClass)))
         {
             spliterator.forEachRemaining(criterionValue ->
             {
                 sqlBuilder.append(SP).append(OR).append(SP);
-                appendTsVectorSingleMatchCondition(sqlBuilder, matchingColumn, args, criterionValue, stringValueClass,
-                        prefixMatch);
+                appendSingleCondition(sqlBuilder, matchingColumn, args, criterionValue, stringValueClass);
             });
         }
     }
 
     /**
-     * Builds the following part of the query and adds the corresponding value to the query arguments list.
+     * Builds on of the following parts of the query and adds the corresponding value to the query arguments list.
+     * Either
      * <pre>
      *     to_tsvector(matchingColumn) @@ to_tsquery(?[ || ':*'])
      * </pre>
-     * where the part <pre>[|| ':*']</pre> is absent when {@code prefixMatch == false}.
+     * for the match and prefix search (where the part <pre>[|| ':*']</pre> is absent when {@code prefixMatch == false})
+     * or
+     * <pre>
+     *      matchingColumn ILIKE '%' || ? || '%'
+     * </pre>
+     * for the contains search.
      * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
      * @param matchingColumn column which should be equal to one of values in the query parameter ('?').
      * @param args query arguments.
      * @param criterionValue full text search value to be put to the full text search matching function.
-     * @param prefixMatch whether this is a prefix match.
      */
-    private static void appendTsVectorSingleMatchCondition(final StringBuilder sqlBuilder,
+    private static void appendSingleCondition(final StringBuilder sqlBuilder,
             final String matchingColumn, final List<Object> args, final String criterionValue,
-            final Class<? extends AbstractStringValue> stringValueClass, final boolean prefixMatch)
+            final Class<? extends AbstractStringValue> stringValueClass)
     {
-        sqlBuilder.append(TO_TSVECTOR).append(LP).append(matchingColumn).append(RP);
-        sqlBuilder.append(SP).append(DOUBLE_AT).append(SP).append(TO_TSQUERY).append(LP);
-        sqlBuilder.append(SQ).append(REG_CONFIG).append(SQ).append(COMMA).append(SP);
-        sqlBuilder.append(QU);
-
-        if (prefixMatch)
+        if (StringContainsExactlyValue.class.isAssignableFrom(stringValueClass) ||
+                StringContainsValue.class.isAssignableFrom(stringValueClass))
         {
-            sqlBuilder.append(PREFIX_MATCH_SUFFIX);
+            sqlBuilder.append(matchingColumn).append(SP).append(ILIKE).append(SP)
+                    .append(QU);
+            args.add(PERCENT + criterionValue + PERCENT);
+        } else
+        {
+            sqlBuilder.append(TO_TSVECTOR).append(LP).append(matchingColumn).append(RP);
+            sqlBuilder.append(SP).append(DOUBLE_AT).append(SP).append(TO_TSQUERY).append(LP);
+            sqlBuilder.append(SQ).append(REG_CONFIG).append(SQ).append(COMMA).append(SP);
+            sqlBuilder.append(QU);
+
+            if (StringStartsWithValue.class.isAssignableFrom(stringValueClass))
+            {
+                sqlBuilder.append(PREFIX_MATCH_SUFFIX);
+            }
+
+            sqlBuilder.append(RP);
+
+            args.add(toTsQueryText(criterionValue, stringValueClass));
         }
-
-        sqlBuilder.append(RP);
-
-        args.add(toTsQueryText(criterionValue, stringValueClass));
     }
 
     private static void buildDetailsFrom(final StringBuilder sqlBuilder, final TableMapper tableMapper,
@@ -1612,14 +1578,6 @@ public class GlobalSearchCriteriaTranslator
                 ? " | " + value.toLowerCase().replaceAll("['&|:!()<>]", " ").trim().replaceAll("\\s+", " | ")
                 : "";
         return ('\'' + fullValue + '\'') + splitValues;
-    }
-
-    private interface ConditionAppender
-    {
-
-        void appendCondition(final StringBuilder sqlBuilder, final String matchingColumn, final List<Object> args,
-                final String[] criterionValues, final Class<? extends AbstractStringValue> stringValueClass);
-
     }
 
 }
