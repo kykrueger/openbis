@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
@@ -125,6 +126,8 @@ public class SampleHistoryTranslator extends HistoryTranslator implements ISampl
             dataSetIds = dataSetValidator.validate(context.getSession().tryGetPerson(), dataSetIds);
         }
 
+        final boolean isSystemUser = context.getSession().tryGetPerson() != null && context.getSession().tryGetPerson().isSystemUser();
+
         for (SampleRelationshipRecord record : records)
         {
             boolean isValid = false;
@@ -144,6 +147,9 @@ public class SampleHistoryTranslator extends HistoryTranslator implements ISampl
             } else if (record.dataSetId != null)
             {
                 isValid = dataSetIds.contains(record.dataSetId);
+            } else
+            {
+                isValid = isSystemUser;
             }
 
             if (isValid)
@@ -202,6 +208,9 @@ public class SampleHistoryTranslator extends HistoryTranslator implements ISampl
         {
             entry.setRelationType(SampleRelationType.DATA_SET);
             entry.setRelatedObjectId(new DataSetPermId(sampleRecord.relatedObjectId));
+        } else
+        {
+            entry.setRelatedObjectId(new ObjectPermId(sampleRecord.relatedObjectId));
         }
 
         return entry;

@@ -16,16 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.history.ExperimentRelationType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
@@ -40,9 +31,12 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history.HistoryRel
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history.HistoryTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.project.IProjectAuthorizationValidator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleAuthorizationValidator;
-
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.lemnik.eodsql.QueryTool;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 /**
  * @author pkupczyk
@@ -106,6 +100,8 @@ public class ExperimentHistoryTranslator extends HistoryTranslator implements IE
             dataSetIds = dataSetValidator.validate(context.getSession().tryGetPerson(), dataSetIds);
         }
 
+        final boolean isSystemUser = context.getSession().tryGetPerson() != null && context.getSession().tryGetPerson().isSystemUser();
+
         for (ExperimentRelationshipRecord record : records)
         {
             boolean isValid = false;
@@ -119,6 +115,9 @@ public class ExperimentHistoryTranslator extends HistoryTranslator implements IE
             } else if (record.dataSetId != null)
             {
                 isValid = dataSetIds.contains(record.dataSetId);
+            } else
+            {
+                isValid = isSystemUser;
             }
 
             if (isValid)
@@ -150,6 +149,9 @@ public class ExperimentHistoryTranslator extends HistoryTranslator implements IE
         {
             entry.setRelationType(ExperimentRelationType.DATA_SET);
             entry.setRelatedObjectId(new DataSetPermId(experimentRecord.relatedObjectId));
+        } else
+        {
+            entry.setRelatedObjectId(new ObjectPermId(experimentRecord.relatedObjectId));
         }
 
         return entry;
