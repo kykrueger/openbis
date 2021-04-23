@@ -1,5 +1,6 @@
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.history.ExperimentRelationType;
@@ -96,14 +97,21 @@ class SnapshotsFacade
                 {
                     RelationHistoryEntry relationHistoryEntry = (RelationHistoryEntry) historyEntry;
 
-                    if (ProjectRelationType.SPACE.equals(relationHistoryEntry.getRelationType()))
+                    if (ProjectRelationType.SPACE.equals(relationHistoryEntry.getRelationType()) || relationHistoryEntry.getRelationType() == null)
                     {
                         Snapshot snapshot = new Snapshot();
                         snapshot.entityCode = project.getCode();
                         snapshot.entityPermId = project.getPermId().getPermId();
-                        snapshot.spaceCode = ((SpacePermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
                         snapshot.from = relationHistoryEntry.getValidFrom();
                         snapshot.to = relationHistoryEntry.getValidTo();
+
+                        if (ProjectRelationType.SPACE.equals(relationHistoryEntry.getRelationType()))
+                        {
+                            snapshot.spaceCode = ((SpacePermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
+                        } else if (relationHistoryEntry.getRelatedObjectId() != null)
+                        {
+                            snapshot.unknownPermId = ((ObjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
+                        }
 
                         snapshots.add(snapshot);
 
@@ -160,14 +168,22 @@ class SnapshotsFacade
                 {
                     RelationHistoryEntry relationHistoryEntry = (RelationHistoryEntry) historyEntry;
 
-                    if (ExperimentRelationType.PROJECT.equals(relationHistoryEntry.getRelationType()))
+                    if (ExperimentRelationType.PROJECT.equals(relationHistoryEntry.getRelationType())
+                            || relationHistoryEntry.getRelationType() == null)
                     {
                         Snapshot snapshot = new Snapshot();
                         snapshot.entityCode = experiment.getCode();
                         snapshot.entityPermId = experiment.getPermId().getPermId();
-                        snapshot.projectPermId = ((ProjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
                         snapshot.from = relationHistoryEntry.getValidFrom();
                         snapshot.to = relationHistoryEntry.getValidTo();
+
+                        if (ExperimentRelationType.PROJECT.equals(relationHistoryEntry.getRelationType()))
+                        {
+                            snapshot.projectPermId = ((ProjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
+                        } else if (relationHistoryEntry.getRelatedObjectId() != null)
+                        {
+                            snapshot.unknownPermId = ((ObjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
+                        }
 
                         snapshots.add(snapshot);
 
@@ -229,7 +245,7 @@ class SnapshotsFacade
                     IRelationType relationType = relationHistoryEntry.getRelationType();
 
                     if (SampleRelationType.SPACE.equals(relationType) || SampleRelationType.PROJECT.equals(relationType)
-                            || SampleRelationType.EXPERIMENT.equals(relationType))
+                            || SampleRelationType.EXPERIMENT.equals(relationType) || relationType == null)
                     {
                         Snapshot snapshot = new Snapshot();
                         snapshot.entityCode = sample.getCode();
@@ -243,9 +259,12 @@ class SnapshotsFacade
                         } else if (SampleRelationType.PROJECT.equals(relationType))
                         {
                             snapshot.projectPermId = ((ProjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
-                        } else
+                        } else if (SampleRelationType.EXPERIMENT.equals(relationType))
                         {
                             snapshot.experimentPermId = ((ExperimentPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
+                        } else if (relationHistoryEntry.getRelatedObjectId() != null)
+                        {
+                            snapshot.unknownPermId = ((ObjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
                         }
 
                         snapshots.add(snapshot);
