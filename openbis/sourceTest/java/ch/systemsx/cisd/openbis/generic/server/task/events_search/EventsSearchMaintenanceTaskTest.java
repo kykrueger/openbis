@@ -139,38 +139,21 @@ public class EventsSearchMaintenanceTaskTest
         spaceA.setRegistrationDate(dateTimeMillis("2000-01-01 10:00:00.000"));
 
         List<EventsSearchPE> events = new ArrayList<>();
-
-        mockery.checking(new Expectations()
         {
+            expectLoadLastTimestampsEmpty();
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, null, deletionA1, deletionA2, deletionB);
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionB.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet
+                    .of(EntityType.PROJECT, EntityType.EXPERIMENT, EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL,
+                            EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                            EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
-                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
-                will(returnValue(null));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionA1, deletionA2, deletionB)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                for (EntityType entityType : EnumSet
-                        .of(EntityType.PROJECT, EntityType.EXPERIMENT, EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL,
-                                EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
-                                EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
-                {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
-                    will(returnValue(Collections.emptyList()));
-                }
-
-                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
-                will(new CustomAction("collect events")
-                {
-                    @Override public Object invoke(Invocation invocation) throws Throwable
-                    {
-                        events.add((EventsSearchPE) invocation.getParameter(0));
-                        return null;
-                    }
-                });
+                expectLoadEvents(EventType.DELETION, entityType, null);
             }
-        });
+
+            expectCreateEvents(events);
+        }
 
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
@@ -268,46 +251,24 @@ public class EventsSearchMaintenanceTaskTest
         spaceC.setRegistrationDate(dateTimeMillis("2021-03-29 11:51:04.772"));
 
         List<EventsSearchPE> events = new ArrayList<>();
-
-        mockery.checking(new Expectations()
         {
+            expectLoadSpaces(spaceC);
+            expectLoadLastTimestampsEmpty();
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, null, deletionSpaceA, deletionSpaceB);
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionSpaceB.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA, deletionProjectB);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectB.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet
+                    .of(EntityType.EXPERIMENT, EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL,
+                            EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                            EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
-                allowing(dataSource).loadSpaces(with(any(List.class)));
-                will(returnValue(Arrays.asList(spaceC)));
-
-                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
-                will(returnValue(null));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionSpaceA, deletionSpaceB)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionProjectA, deletionProjectB)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                for (EntityType entityType : EnumSet
-                        .of(EntityType.EXPERIMENT, EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL,
-                                EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
-                                EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
-                {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
-                    will(returnValue(Collections.emptyList()));
-                }
-
-                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
-                will(new CustomAction("collect events")
-                {
-                    @Override public Object invoke(Invocation invocation) throws Throwable
-                    {
-                        events.add((EventsSearchPE) invocation.getParameter(0));
-                        return null;
-                    }
-                });
+                expectLoadEvents(EventType.DELETION, entityType, null);
             }
-        });
+
+            expectCreateEvents(events);
+        }
 
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
@@ -447,53 +408,26 @@ public class EventsSearchMaintenanceTaskTest
         projectA.setFetchOptions(projectFo);
 
         List<EventsSearchPE> events = new ArrayList<>();
-
-        mockery.checking(new Expectations()
         {
+            expectLoadSpaces(spaceA, spaceB);
+            expectLoadProjects(projectA);
+            expectLoadLastTimestampsEmpty();
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, null);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA, deletionProjectB);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectB.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null, deletionExperimentA, deletionExperimentsAB);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentsAB.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet
+                    .of(EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL,
+                            EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                            EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
-                allowing(dataSource).loadSpaces(with(any(List.class)));
-                will(returnValue(Arrays.asList(spaceA, spaceB)));
-
-                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
-                will(returnValue(Arrays.asList(projectA)));
-
-                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
-                will(returnValue(null));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionProjectA, deletionProjectB)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionExperimentA, deletionExperimentsAB)));
-                one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                for (EntityType entityType : EnumSet
-                        .of(EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL,
-                                EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
-                                EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
-                {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
-                    will(returnValue(Collections.emptyList()));
-                }
-
-                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
-                will(new CustomAction("collect events")
-                {
-                    @Override public Object invoke(Invocation invocation) throws Throwable
-                    {
-                        events.add((EventsSearchPE) invocation.getParameter(0));
-                        return null;
-                    }
-                });
+                expectLoadEvents(EventType.DELETION, entityType, null);
             }
-        });
+
+            expectCreateEvents(events);
+        }
 
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
@@ -616,54 +550,27 @@ public class EventsSearchMaintenanceTaskTest
         spaceB.setRegistrationDate(dateTimeMillis("2021-04-19 16:27:27.930"));
 
         List<EventsSearchPE> events = new ArrayList<>();
-
-        mockery.checking(new Expectations()
         {
+            expectLoadSpaces(spaceB);
+            expectLoadProjects();
+            expectLoadLastTimestampsEmpty();
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, null, deletionSpaceA);
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionSpaceA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null, deletionExperimentA);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet
+                    .of(EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL,
+                            EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                            EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
-                allowing(dataSource).loadSpaces(with(any(List.class)));
-                will(returnValue(Arrays.asList(spaceB)));
-
-                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
-                will(returnValue(null));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionSpaceA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionProjectA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionExperimentA)));
-                one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                for (EntityType entityType : EnumSet
-                        .of(EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
-                                EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
-                {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
-                    will(returnValue(Collections.emptyList()));
-                }
-
-                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
-                will(new CustomAction("collect events")
-                {
-                    @Override public Object invoke(Invocation invocation) throws Throwable
-                    {
-                        events.add((EventsSearchPE) invocation.getParameter(0));
-                        return null;
-                    }
-                });
+                expectLoadEvents(EventType.DELETION, entityType, null);
             }
-        });
+
+            expectCreateEvents(events);
+        }
 
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
@@ -842,58 +749,28 @@ public class EventsSearchMaintenanceTaskTest
         experimentB.setFetchOptions(experimentFo);
 
         List<EventsSearchPE> events = new ArrayList<>();
-
-        mockery.checking(new Expectations()
         {
+            expectLoadSpaces(spaceA, spaceB);
+            expectLoadProjects(projectA, projectB);
+            expectLoadExperiments(experimentB);
+            expectLoadLastTimestampsEmpty();
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, null);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null, deletionExperimentA);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null, deletionSampleA, deletionSampleB, deletionSampleC, deletionSampleD);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleD.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet
+                    .of(EntityType.DATASET, EntityType.MATERIAL,
+                            EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                            EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
-                allowing(dataSource).loadSpaces(with(any(List.class)));
-                will(returnValue(Arrays.asList(spaceA, spaceB)));
-
-                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
-                will(returnValue(Arrays.asList(projectA, projectB)));
-
-                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
-                will(returnValue(Arrays.asList(experimentB)));
-
-                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
-                will(returnValue(null));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionExperimentA)));
-                one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionSampleA, deletionSampleB, deletionSampleC, deletionSampleD)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                for (EntityType entityType : EnumSet.of(EntityType.DATASET, EntityType.MATERIAL,
-                        EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
-                        EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
-                {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
-                    will(returnValue(Collections.emptyList()));
-                }
-
-                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
-                will(new CustomAction("collect events")
-                {
-                    @Override public Object invoke(Invocation invocation) throws Throwable
-                    {
-                        events.add((EventsSearchPE) invocation.getParameter(0));
-                        return null;
-                    }
-                });
+                expectLoadEvents(EventType.DELETION, entityType, null);
             }
-        });
+
+            expectCreateEvents(events);
+        }
 
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
@@ -1037,60 +914,29 @@ public class EventsSearchMaintenanceTaskTest
         projectB.setFetchOptions(projectFo);
 
         List<EventsSearchPE> events = new ArrayList<>();
-
-        mockery.checking(new Expectations()
         {
+            expectLoadSpaces(spaceA, spaceB);
+            expectLoadProjects(projectB);
+            expectLoadExperiments();
+            expectLoadLastTimestampsEmpty();
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, null);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null, deletionExperimentA);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null, deletionSampleA);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet
+                    .of(EntityType.DATASET, EntityType.MATERIAL,
+                            EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                            EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
-                allowing(dataSource).loadSpaces(with(any(List.class)));
-                will(returnValue(Arrays.asList(spaceA, spaceB)));
-
-                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
-                will(returnValue(Arrays.asList(projectB)));
-
-                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
-                will(returnValue(null));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionProjectA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionExperimentA)));
-                one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionSampleA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                for (EntityType entityType : EnumSet.of(EntityType.DATASET, EntityType.MATERIAL,
-                        EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
-                        EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
-                {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
-                    will(returnValue(Collections.emptyList()));
-                }
-
-                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
-                will(new CustomAction("collect events")
-                {
-                    @Override public Object invoke(Invocation invocation) throws Throwable
-                    {
-                        events.add((EventsSearchPE) invocation.getParameter(0));
-                        return null;
-                    }
-                });
+                expectLoadEvents(EventType.DELETION, entityType, null);
             }
-        });
+
+            expectCreateEvents(events);
+        }
 
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
@@ -1191,59 +1037,29 @@ public class EventsSearchMaintenanceTaskTest
         spaceB.setRegistrationDate(dateTimeMillis("2021-04-20 10:58:14.693"));
 
         List<EventsSearchPE> events = new ArrayList<>();
-
-        mockery.checking(new Expectations()
         {
+            expectLoadSpaces(spaceB);
+            expectLoadProjects();
+            expectLoadExperiments();
+            expectLoadLastTimestampsEmpty();
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, null, deletionSpaceA);
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionSpaceA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null, deletionSampleA);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet
+                    .of(EntityType.DATASET, EntityType.MATERIAL,
+                            EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                            EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
-                allowing(dataSource).loadSpaces(with(any(List.class)));
-                will(returnValue(Arrays.asList(spaceB)));
-
-                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
-                will(returnValue(null));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionSpaceA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionProjectA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionSampleA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                for (EntityType entityType : EnumSet.of(EntityType.DATASET, EntityType.MATERIAL,
-                        EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
-                        EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
-                {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
-                    will(returnValue(Collections.emptyList()));
-                }
-
-                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
-                will(new CustomAction("collect events")
-                {
-                    @Override public Object invoke(Invocation invocation) throws Throwable
-                    {
-                        events.add((EventsSearchPE) invocation.getParameter(0));
-                        return null;
-                    }
-                });
+                expectLoadEvents(EventType.DELETION, entityType, null);
             }
-        });
+
+            expectCreateEvents(events);
+        }
 
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
@@ -1446,66 +1262,31 @@ public class EventsSearchMaintenanceTaskTest
         sampleC.setFetchOptions(sampleFo);
 
         List<EventsSearchPE> events = new ArrayList<>();
-
-        mockery.checking(new Expectations()
         {
+            expectLoadSpaces(spaceA, spaceB);
+            expectLoadProjects(projectA, projectB);
+            expectLoadExperiments(experimentB);
+            expectLoadSamples(sampleB, sampleC);
+            expectLoadLastTimestampsEmpty();
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, null);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null, deletionExperimentA);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null, deletionSampleA);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.DATASET, null, deletionDataSetA, deletionDataSetB, deletionDataSetC);
+            expectLoadEvents(EventType.DELETION, EntityType.DATASET, deletionDataSetC.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet
+                    .of(EntityType.MATERIAL,
+                            EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                            EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
-                allowing(dataSource).loadSpaces(with(any(List.class)));
-                will(returnValue(Arrays.asList(spaceA, spaceB)));
-
-                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
-                will(returnValue(Arrays.asList(projectA, projectB)));
-
-                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
-                will(returnValue(Arrays.asList(experimentB)));
-
-                allowing(dataSource).loadSamples(with(any(List.class)), with(any(SampleFetchOptions.class)));
-                will(returnValue(Arrays.asList(sampleB, sampleC)));
-
-                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
-                will(returnValue(null));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionExperimentA)));
-                one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionSampleA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionDataSetA, deletionDataSetB, deletionDataSetC)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                for (EntityType entityType : EnumSet.of(EntityType.MATERIAL,
-                        EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
-                        EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
-                {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
-                    will(returnValue(Collections.emptyList()));
-                }
-
-                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
-                will(new CustomAction("collect events")
-                {
-                    @Override public Object invoke(Invocation invocation) throws Throwable
-                    {
-                        events.add((EventsSearchPE) invocation.getParameter(0));
-                        return null;
-                    }
-                });
+                expectLoadEvents(EventType.DELETION, entityType, null);
             }
-        });
+
+            expectCreateEvents(events);
+        }
 
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
@@ -1649,66 +1430,31 @@ public class EventsSearchMaintenanceTaskTest
         projectB.setFetchOptions(projectFo);
 
         List<EventsSearchPE> events = new ArrayList<>();
-
-        mockery.checking(new Expectations()
         {
+            expectLoadSpaces(spaceA, spaceB);
+            expectLoadProjects(projectB);
+            expectLoadExperiments();
+            expectLoadSamples();
+            expectLoadLastTimestampsEmpty();
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, null);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null, deletionExperimentA);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null);
+            expectLoadEvents(EventType.DELETION, EntityType.DATASET, null, deletionDataSetA);
+            expectLoadEvents(EventType.DELETION, EntityType.DATASET, deletionDataSetA.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet
+                    .of(EntityType.MATERIAL,
+                            EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                            EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
-                allowing(dataSource).loadSpaces(with(any(List.class)));
-                will(returnValue(Arrays.asList(spaceA, spaceB)));
-
-                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
-                will(returnValue(Arrays.asList(projectB)));
-
-                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                allowing(dataSource).loadSamples(with(any(List.class)), with(any(SampleFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
-                will(returnValue(null));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionProjectA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionExperimentA)));
-                one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionDataSetA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                for (EntityType entityType : EnumSet.of(EntityType.MATERIAL,
-                        EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
-                        EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
-                {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
-                    will(returnValue(Collections.emptyList()));
-                }
-
-                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
-                will(new CustomAction("collect events")
-                {
-                    @Override public Object invoke(Invocation invocation) throws Throwable
-                    {
-                        events.add((EventsSearchPE) invocation.getParameter(0));
-                        return null;
-                    }
-                });
+                expectLoadEvents(EventType.DELETION, entityType, null);
             }
-        });
+
+            expectCreateEvents(events);
+        }
 
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
@@ -1809,65 +1555,30 @@ public class EventsSearchMaintenanceTaskTest
         spaceB.setRegistrationDate(dateTimeMillis("2021-04-20 11:41:51.801"));
 
         List<EventsSearchPE> events = new ArrayList<>();
-
-        mockery.checking(new Expectations()
         {
+            expectLoadSpaces(spaceB);
+            expectLoadProjects();
+            expectLoadExperiments();
+            expectLoadSamples();
+            expectLoadLastTimestampsEmpty();
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, null, deletionSpaceA);
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionSpaceA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null, deletionSampleA);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.DATASET, null, deletionDataSetA);
+            expectLoadEvents(EventType.DELETION, EntityType.DATASET, deletionDataSetA.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL,
+                    EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                    EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
-                allowing(dataSource).loadSpaces(with(any(List.class)));
-                will(returnValue(Arrays.asList(spaceB)));
-
-                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                allowing(dataSource).loadSamples(with(any(List.class)), with(any(SampleFetchOptions.class)));
-                will(returnValue(Collections.emptyList()));
-
-                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
-                will(returnValue(null));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionSpaceA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionSampleA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)));
-                will(returnValue(Arrays.asList(deletionDataSetA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNonNull(Date.class)));
-                will(returnValue(Collections.emptyList()));
-
-                for (EntityType entityType : EnumSet.of(EntityType.MATERIAL,
-                        EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
-                        EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
-                {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
-                    will(returnValue(Collections.emptyList()));
-                }
-
-                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
-                will(new CustomAction("collect events")
-                {
-                    @Override public Object invoke(Invocation invocation) throws Throwable
-                    {
-                        events.add((EventsSearchPE) invocation.getParameter(0));
-                        return null;
-                    }
-                });
+                expectLoadEvents(EventType.DELETION, entityType, null);
             }
-        });
+
+            expectCreateEvents(events);
+        }
 
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
@@ -1895,6 +1606,90 @@ public class EventsSearchMaintenanceTaskTest
         deletionDataSetAExpected.setIdentifier("20210420131858024-205259");
         deletionDataSetAExpected.setContent(loadFile("testDataSetWithUnknownSpace_deletionDataSetAExpected.json"));
         assertExpectedEvent(events.get(2), deletionDataSetAExpected);
+    }
+
+    private void expectLoadSpaces(SpacePE... spaces)
+    {
+        mockery.checking(new Expectations()
+        {
+            {
+                allowing(dataSource).loadSpaces(with(any(List.class)));
+                will(returnValue(Arrays.asList(spaces)));
+            }
+        });
+    }
+
+    private void expectLoadProjects(Project... projects)
+    {
+        mockery.checking(new Expectations()
+        {
+            {
+                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
+                will(returnValue(Arrays.asList(projects)));
+            }
+        });
+    }
+
+    private void expectLoadExperiments(Experiment... experiments)
+    {
+        mockery.checking(new Expectations()
+        {
+            {
+                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
+                will(returnValue(Arrays.asList(experiments)));
+            }
+        });
+    }
+
+    private void expectLoadSamples(Sample... samples)
+    {
+        mockery.checking(new Expectations()
+        {
+            {
+                allowing(dataSource).loadSamples(with(any(List.class)), with(any(SampleFetchOptions.class)));
+                will(returnValue(Arrays.asList(samples)));
+            }
+        });
+    }
+
+    private void expectLoadLastTimestampsEmpty()
+    {
+        mockery.checking(new Expectations()
+        {
+            {
+                allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
+                will(returnValue(null));
+            }
+        });
+    }
+
+    private void expectLoadEvents(EventType eventType, EntityType entityType, Date lastSeenTimestamp, EventPE... events)
+    {
+        mockery.checking(new Expectations()
+        {
+            {
+                one(dataSource).loadEvents(with(eventType), with(entityType), with(lastSeenTimestamp));
+                will(returnValue(Arrays.asList(events)));
+            }
+        });
+    }
+
+    private void expectCreateEvents(final List<EventsSearchPE> events)
+    {
+        mockery.checking(new Expectations()
+        {
+            {
+                allowing(dataSource).createEventsSearch(with(any(EventsSearchPE.class)));
+                will(new CustomAction("collect events")
+                {
+                    @Override public Object invoke(Invocation invocation) throws Throwable
+                    {
+                        events.add((EventsSearchPE) invocation.getParameter(0));
+                        return null;
+                    }
+                });
+            }
+        });
     }
 
     private EventsSearchPE createExpectedEvent(EventPE originalEvent)
