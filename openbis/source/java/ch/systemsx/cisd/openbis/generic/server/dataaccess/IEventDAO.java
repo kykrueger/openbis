@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * <i>Data Access Object</i> for {@link EventPE}.
- * 
+ *
  * @author Piotr Buczek
  */
 public interface IEventDAO extends IGenericDAO<EventPE>
@@ -44,9 +44,8 @@ public interface IEventDAO extends IGenericDAO<EventPE>
     public List<DeletedDataSet> listDeletedDataSets(Long lastSeenDeletionEventIdOrNull,
             Date maxDeletionDataOrNull);
 
-
     /**
      * Lists events with the specified eventType and entityType.
      */
-    public List<EventPE> listEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull, int limit);
+    public List<EventPE> listEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull);
 }

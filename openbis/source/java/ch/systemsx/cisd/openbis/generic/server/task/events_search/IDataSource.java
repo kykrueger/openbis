@@ -32,7 +32,7 @@ interface IDataSource
 
     List<Sample> loadSamples(List<ISampleId> ids, SampleFetchOptions fo);
 
-    List<EventPE> loadEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull, Integer limit);
+    List<EventPE> loadEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull);
 
     Date loadLastEventsSearchTimestamp(EventType eventType, EntityType entityType);
 

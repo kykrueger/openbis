@@ -18,9 +18,7 @@ abstract class DeletionEventProcessor extends EventProcessor
 
     private static final SimpleDateFormat VALID_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
-    protected static final int BATCH_SIZE = 1000;
-
-    protected static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     DeletionEventProcessor(IDataSource dataSource)
     {
@@ -49,7 +47,7 @@ abstract class DeletionEventProcessor extends EventProcessor
         while (true)
         {
             final List<EventPE> deletions =
-                    dataSource.loadEvents(EventType.DELETION, getEntityType(), latestLastSeenTimestamp.getValue(), BATCH_SIZE);
+                    dataSource.loadEvents(EventType.DELETION, getEntityType(), latestLastSeenTimestamp.getValue());
 
             if (deletions.isEmpty())
             {
@@ -100,16 +98,20 @@ abstract class DeletionEventProcessor extends EventProcessor
                 snapshot.to = deletion.getRegistrationDateInternal();
                 newSnapshots.add(snapshot);
 
-                NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
-                newEvent.identifier = entityPermId;
-                newEvents.add(newEvent);
+                if (lastSeenTimestampOrNull == null || deletion.getRegistrationDateInternal()
+                        .after(lastSeenTimestampOrNull))
+                {
+                    NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
+                    newEvent.identifier = entityPermId;
+                    newEvents.add(newEvent);
+                }
             }
 
             return;
         }
 
         @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
-                (Map<String, Object>) objectMapper.readValue(deletion.getContent(), Object.class);
+                (Map<String, Object>) OBJECT_MAPPER.readValue(deletion.getContent(), Object.class);
 
         for (String entityPermId : parsedContent.keySet())
         {
@@ -221,7 +223,7 @@ abstract class DeletionEventProcessor extends EventProcessor
                 newEvent.entityRegisterer = registerer;
                 newEvent.entityRegistrationTimestamp = registrationTimestamp;
                 newEvent.identifier = entityPermId;
-                newEvent.content = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(entries);
+                newEvent.content = OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(entries);
                 newEvents.add(newEvent);
             }
         }
