@@ -32,7 +32,7 @@ public class GenericDeletionProcessor extends DeletionEventProcessor
         return Collections.emptySet();
     }
 
-    @Override protected void processDeletions(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents,
+    @Override protected void processDeletions(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, List<NewEvent> newEvents,
             List<Snapshot> newSnapshots)
     {
         for (NewEvent newEvent : newEvents)

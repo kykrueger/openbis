@@ -30,15 +30,16 @@ class SpaceDeletionProcessor extends DeletionEventProcessor
         return EnumSet.of(EntityType.PROJECT, EntityType.EXPERIMENT, EntityType.SAMPLE, EntityType.DATASET);
     }
 
-    @Override protected void processDeletions(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents,
+    @Override protected void processDeletions(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, List<NewEvent> newEvents,
             List<Snapshot> newSnapshots)
     {
         for (Snapshot newSnapshot : newSnapshots)
         {
             newSnapshot.entityCode = newSnapshot.entityPermId;
             newSnapshot.entityPermId = null;
-            snapshots.putDeletedSpace(newSnapshot);
         }
+
+        snapshots.putSpaces(newSnapshots);
 
         for (NewEvent newEvent : newEvents)
         {

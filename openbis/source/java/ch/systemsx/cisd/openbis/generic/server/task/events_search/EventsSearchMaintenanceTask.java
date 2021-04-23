@@ -58,7 +58,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
             try
             {
                 LastTimestamps lastTimestamps = new LastTimestamps(dataSource);
-                Snapshots snapshots = new Snapshots(dataSource);
+                SnapshotsFacade snapshots = new SnapshotsFacade(dataSource);
 
                 List<EventProcessor> processors = Arrays.asList(
                         new SpaceDeletionProcessor(dataSource),

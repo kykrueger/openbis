@@ -1,8 +1,10 @@
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -29,43 +31,24 @@ class SampleDeletionProcessor extends DeletionEventProcessor
         return EnumSet.of(EntityType.DATASET);
     }
 
-    @Override protected void processDeletions(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents, List<Snapshot> newSnapshots)
+    @Override protected void processDeletion(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents, List<Snapshot> newSnapshots)
+            throws Exception
     {
-        snapshots.loadExistingSpaces(Snapshot.getSpaceCodesOrUnknown(newSnapshots));
-        snapshots.loadExistingProjects(Snapshot.getProjectPermIdsOrUnknown(newSnapshots));
-        snapshots.loadExistingExperiments(Snapshot.getExperimentPermIdsOrUnknown(newSnapshots));
+        List<NewEvent> events = new LinkedList<>();
+        super.processDeletion(lastTimestamps, deletion, events, newSnapshots);
 
-        for (Snapshot newSnapshot : newSnapshots)
+        for (NewEvent event : events)
         {
-            if (newSnapshot.unknownPermId == null)
-            {
-                snapshots.putDeletedSample(newSnapshot);
-            } else
-            {
-                Snapshot experimentSnapshot = snapshots.getExperiment(newSnapshot.unknownPermId, newSnapshot.from);
-                if (experimentSnapshot != null)
-                {
-                    newSnapshot.experimentPermId = newSnapshot.unknownPermId;
-                    snapshots.putDeletedSample(newSnapshot);
-                } else
-                {
-                    Snapshot projectSnapshot = snapshots.getProject(newSnapshot.unknownPermId, newSnapshot.from);
-                    if (projectSnapshot != null)
-                    {
-                        newSnapshot.projectPermId = newSnapshot.unknownPermId;
-                        snapshots.putDeletedSample(newSnapshot);
-                    } else
-                    {
-                        Snapshot spaceSnapshot = snapshots.getSpace(newSnapshot.unknownPermId, newSnapshot.from);
-                        if (spaceSnapshot != null)
-                        {
-                            newSnapshot.spaceCode = newSnapshot.unknownPermId;
-                            snapshots.putDeletedSample(newSnapshot);
-                        }
-                    }
-                }
-            }
+            event.description = event.identifier;
         }
+
+        newEvents.addAll(events);
+    }
+
+    @Override protected void processDeletions(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, List<NewEvent> newEvents,
+            List<Snapshot> newSnapshots)
+    {
+        snapshots.putSamples(newSnapshots);
 
         for (NewEvent newEvent : newEvents)
         {

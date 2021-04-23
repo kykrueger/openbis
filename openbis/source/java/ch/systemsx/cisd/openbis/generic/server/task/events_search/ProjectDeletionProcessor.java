@@ -29,25 +29,10 @@ class ProjectDeletionProcessor extends DeletionEventProcessor
         return EnumSet.of(EntityType.EXPERIMENT, EntityType.SAMPLE, EntityType.DATASET);
     }
 
-    @Override protected void processDeletions(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents, List<Snapshot> newSnapshots)
+    @Override protected void processDeletions(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, List<NewEvent> newEvents,
+            List<Snapshot> newSnapshots)
     {
-        snapshots.loadExistingSpaces(Snapshot.getSpaceCodesOrUnknown(newSnapshots));
-
-        for (Snapshot newSnapshot : newSnapshots)
-        {
-            if (newSnapshot.unknownPermId == null)
-            {
-                snapshots.putDeletedProject(newSnapshot);
-            } else
-            {
-                Snapshot spaceSnapshot = snapshots.getSpace(newSnapshot.unknownPermId, newSnapshot.from);
-                if (spaceSnapshot != null)
-                {
-                    newSnapshot.spaceCode = newSnapshot.unknownPermId;
-                    snapshots.putDeletedProject(newSnapshot);
-                }
-            }
-        }
+        snapshots.putProjects(newSnapshots);
 
         for (NewEvent newEvent : newEvents)
         {

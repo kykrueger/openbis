@@ -1,169 +1,52 @@
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
-
-import java.util.Collection;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 class Snapshots
 {
+    private final Map<String, TreeMap<Date, Snapshot>> snapshots = new HashMap<>();
 
-    private final SpaceSnapshots spaceSnapshots;
-
-    private final ProjectSnapshots projectSnapshots;
-
-    private final ExperimentSnapshots experimentSnapshots;
-
-    private final SampleSnapshots sampleSnapshots;
-
-    public Snapshots(IDataSource dataSource)
+    public void put(String key, Snapshot snapshot)
     {
-        this.spaceSnapshots = new SpaceSnapshots(dataSource);
-        this.projectSnapshots = new ProjectSnapshots(dataSource);
-        this.experimentSnapshots = new ExperimentSnapshots(dataSource);
-        this.sampleSnapshots = new SampleSnapshots(dataSource);
+        TreeMap<Date, Snapshot> snapshotsForKey = snapshots.computeIfAbsent(key, k -> new TreeMap<>());
+        snapshotsForKey.put(snapshot.from, snapshot);
     }
 
-    public void loadExistingSpaces(Collection<String> spaceCodes)
+    public Collection<Snapshot> get(Collection<String> keys)
     {
-        spaceSnapshots.load(spaceCodes);
-    }
+        Collection<Snapshot> snapshotsForKeys = new ArrayList<>();
 
-    public void loadExistingProjects(Collection<String> projectPermIds)
-    {
-        projectSnapshots.load(projectPermIds);
-
-        Collection<Snapshot> snapshots = projectSnapshots.get(projectPermIds);
-        Set<String> spaceCodes = snapshots.stream().map(snapshot -> snapshot.spaceCode).collect(Collectors.toSet());
-
-        loadExistingSpaces(spaceCodes);
-    }
-
-    public void loadExistingExperiments(Collection<String> experimentPermIds)
-    {
-        experimentSnapshots.load(experimentPermIds);
-
-        Collection<Snapshot> snapshots = experimentSnapshots.get(experimentPermIds);
-        Set<String> projectPermIds = snapshots.stream().map(snapshot -> snapshot.projectPermId).collect(Collectors.toSet());
-
-        loadExistingProjects(projectPermIds);
-    }
-
-    public void loadExistingSamples(Collection<String> samplePermIds)
-    {
-        sampleSnapshots.load(samplePermIds);
-
-        Collection<Snapshot> snapshots = sampleSnapshots.get(samplePermIds);
-
-        Set<String> spaceCodes =
-                snapshots.stream().map(snapshot -> snapshot.spaceCode).filter(Objects::nonNull).collect(Collectors.toSet());
-        Set<String> projectPermIds =
-                snapshots.stream().map(snapshot -> snapshot.projectPermId).filter(Objects::nonNull).collect(Collectors.toSet());
-        Set<String> experimentPermIds =
-                snapshots.stream().map(snapshot -> snapshot.experimentPermId).filter(Objects::nonNull).collect(Collectors.toSet());
-
-        loadExistingSpaces(spaceCodes);
-        loadExistingProjects(projectPermIds);
-        loadExistingExperiments(experimentPermIds);
-    }
-
-    public void putDeletedSpace(Snapshot snapshot)
-    {
-        spaceSnapshots.put(snapshot.entityCode, snapshot);
-    }
-
-    public void putDeletedProject(Snapshot snapshot)
-    {
-        projectSnapshots.put(snapshot.entityPermId, snapshot);
-    }
-
-    public void putDeletedExperiment(Snapshot snapshot)
-    {
-        experimentSnapshots.put(snapshot.entityPermId, snapshot);
-    }
-
-    public void putDeletedSample(Snapshot snapshot)
-    {
-        sampleSnapshots.put(snapshot.entityPermId, snapshot);
-    }
-
-    public Snapshot getSpace(String spaceCode, Date date)
-    {
-        return spaceSnapshots.get(spaceCode, date);
-    }
-
-    public Snapshot getProject(String projectPermId, Date date)
-    {
-        return projectSnapshots.get(projectPermId, date);
-    }
-
-    public Snapshot getExperiment(String experimentPermId, Date date)
-    {
-        return experimentSnapshots.get(experimentPermId, date);
-    }
-
-    public Snapshot getSample(String samplePermId, Date date)
-    {
-        return sampleSnapshots.get(samplePermId, date);
-    }
-
-    public void fillBySpaceCode(String spaceCode, NewEvent newEvent)
-    {
-        Snapshot spaceSnapshot = spaceSnapshots.get(spaceCode, newEvent.registrationTimestamp);
-
-        if (spaceSnapshot != null)
+        for (String key : keys)
         {
-            newEvent.entitySpaceCode = spaceSnapshot.entityCode;
-            newEvent.entitySpacePermId = spaceSnapshot.entityPermId;
-        }
-    }
+            TreeMap<Date, Snapshot> snapshotsForKey = snapshots.get(key);
 
-    public void fillByProjectPermId(String projectPermId, NewEvent newEvent)
-    {
-        Snapshot projectSnapshot = projectSnapshots.get(projectPermId, newEvent.registrationTimestamp);
-
-        if (projectSnapshot != null)
-        {
-            newEvent.entityProjectPermId = projectPermId;
-
-            fillBySpaceCode(projectSnapshot.spaceCode, newEvent);
-
-            if (newEvent.entitySpaceCode != null)
+            if (snapshotsForKey != null)
             {
-                newEvent.entityProject = new ProjectIdentifier(newEvent.entitySpaceCode, projectSnapshot.entityCode).toString();
+                snapshotsForKeys.addAll(snapshotsForKey.values());
             }
         }
+
+        return snapshotsForKeys;
     }
 
-    public void fillByExperimentPermId(String experimentPermId, NewEvent newEvent)
+    public Snapshot get(String key, Date date)
     {
-        Snapshot experimentSnapshot = experimentSnapshots.get(experimentPermId, newEvent.registrationTimestamp);
+        TreeMap<Date, Snapshot> snapshotsForKey = snapshots.get(key);
 
-        if (experimentSnapshot != null)
+        if (snapshotsForKey != null)
         {
-            fillByProjectPermId(experimentSnapshot.projectPermId, newEvent);
-        }
-    }
+            Map.Entry<Date, Snapshot> potentialEntry = snapshotsForKey.floorEntry(date);
 
-    public void fillBySamplePermId(String samplePermId, NewEvent newEvent)
-    {
-        Snapshot sampleSnapshot = sampleSnapshots.get(samplePermId, newEvent.registrationTimestamp);
-
-        if (sampleSnapshot != null)
-        {
-            if (sampleSnapshot.experimentPermId != null)
+            if (potentialEntry != null)
             {
-                fillByExperimentPermId(sampleSnapshot.experimentPermId, newEvent);
-            } else if (sampleSnapshot.projectPermId != null)
-            {
-                fillByProjectPermId(sampleSnapshot.projectPermId, newEvent);
-            } else if (sampleSnapshot.spaceCode != null)
-            {
-                fillBySpaceCode(sampleSnapshot.spaceCode, newEvent);
+                Snapshot potentialSnapshot = potentialEntry.getValue();
+                if (potentialSnapshot.to == null || date.compareTo(potentialSnapshot.to) <= 0)
+                {
+                    return potentialSnapshot;
+                }
             }
         }
+
+        return null;
     }
 }

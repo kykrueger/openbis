@@ -28,25 +28,10 @@ class ExperimentDeletionProcessor extends DeletionEventProcessor
         return EnumSet.of(EntityType.SAMPLE, EntityType.DATASET);
     }
 
-    @Override protected void processDeletions(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents, List<Snapshot> newSnapshots)
+    @Override protected void processDeletions(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, List<NewEvent> newEvents,
+            List<Snapshot> newSnapshots)
     {
-        snapshots.loadExistingProjects(Snapshot.getProjectPermIdsOrUnknown(newSnapshots));
-
-        for (Snapshot newSnapshot : newSnapshots)
-        {
-            if (newSnapshot.unknownPermId == null)
-            {
-                snapshots.putDeletedExperiment(newSnapshot);
-            } else
-            {
-                Snapshot projectSnapshot = snapshots.getProject(newSnapshot.unknownPermId, newSnapshot.from);
-                if (projectSnapshot != null)
-                {
-                    newSnapshot.projectPermId = newSnapshot.unknownPermId;
-                    snapshots.putDeletedExperiment(newSnapshot);
-                }
-            }
-        }
+        snapshots.putExperiments(newSnapshots);
 
         for (NewEvent newEvent : newEvents)
         {

@@ -31,10 +31,10 @@ abstract class DeletionEventProcessor extends EventProcessor
 
     protected abstract Set<EntityType> getDescendantEntityTypes();
 
-    protected abstract void processDeletions(LastTimestamps lastTimestamps, Snapshots snapshots, List<NewEvent> newEvents,
+    protected abstract void processDeletions(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, List<NewEvent> newEvents,
             List<Snapshot> newSnapshots);
 
-    @Override final public void process(LastTimestamps lastTimestamps, Snapshots snapshots)
+    @Override final public void process(LastTimestamps lastTimestamps, SnapshotsFacade snapshots)
     {
         final Collection<EntityType> lastSeenEntityTypes = new HashSet<>();
         lastSeenEntityTypes.add(getEntityType());
@@ -82,7 +82,7 @@ abstract class DeletionEventProcessor extends EventProcessor
         }
     }
 
-    private void processDeletion(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents,
+    protected void processDeletion(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents,
             List<Snapshot> newSnapshots)
             throws Exception
     {

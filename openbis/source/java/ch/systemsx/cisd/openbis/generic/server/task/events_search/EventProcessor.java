@@ -10,5 +10,5 @@ abstract class EventProcessor
         this.dataSource = dataSource;
     }
 
-    abstract void process(LastTimestamps lastTimestamps, Snapshots snapshots);
+    abstract void process(LastTimestamps lastTimestamps, SnapshotsFacade snapshots);
 }
