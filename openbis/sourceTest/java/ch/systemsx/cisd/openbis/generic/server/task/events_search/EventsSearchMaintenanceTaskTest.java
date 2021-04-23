@@ -146,9 +146,9 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionA1, deletionA2, deletionB)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
                 for (EntityType entityType : EnumSet
@@ -156,7 +156,7 @@ public class EventsSearchMaintenanceTaskTest
                                 EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                                 EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
                 {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
                     will(returnValue(Collections.emptyList()));
                 }
 
@@ -278,14 +278,14 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionSpaceA, deletionSpaceB)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionProjectA, deletionProjectB)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
                 for (EntityType entityType : EnumSet
@@ -293,7 +293,7 @@ public class EventsSearchMaintenanceTaskTest
                                 EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                                 EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
                 {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
                     will(returnValue(Collections.emptyList()));
                 }
 
@@ -460,18 +460,18 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionProjectA, deletionProjectB)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionExperimentA, deletionExperimentsAB)));
                 one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
                 for (EntityType entityType : EnumSet
@@ -479,7 +479,7 @@ public class EventsSearchMaintenanceTaskTest
                                 EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                                 EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
                 {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
                     will(returnValue(Collections.emptyList()));
                 }
 
@@ -629,27 +629,27 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionSpaceA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionProjectA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionExperimentA)));
                 one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
                 for (EntityType entityType : EnumSet
                         .of(EntityType.SAMPLE, EntityType.DATASET, EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                                 EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
                 {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
                     will(returnValue(Collections.emptyList()));
                 }
 
@@ -743,7 +743,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleA.setEventType(EventType.DELETION);
         deletionSampleA.setEntityType(EntityType.SAMPLE);
         deletionSampleA.setIdentifiers(Collections.singletonList("20210401151915172-205200"));
-        deletionSampleA.setDescription("Description Sample A");
+        deletionSampleA.setDescription("20210401151915172-205200");
         deletionSampleA.setReason("Reason Sample A");
         deletionSampleA.setContent(loadFile("testSamples_deletionSampleA.json"));
         deletionSampleA.setRegistrator(deleterSampleA);
@@ -754,7 +754,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleB.setEventType(EventType.DELETION);
         deletionSampleB.setEntityType(EntityType.SAMPLE);
         deletionSampleB.setIdentifiers(Collections.singletonList("20210401152005699-205201"));
-        deletionSampleB.setDescription("Description Sample B");
+        deletionSampleB.setDescription("20210401152005699-205201");
         deletionSampleB.setReason("Reason Sample B");
         deletionSampleB.setContent(loadFile("testSamples_deletionSampleB.json"));
         deletionSampleB.setRegistrator(deleterSampleB);
@@ -765,7 +765,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleC.setEventType(EventType.DELETION);
         deletionSampleC.setEntityType(EntityType.SAMPLE);
         deletionSampleC.setIdentifiers(Collections.singletonList("20210401152124191-205202"));
-        deletionSampleC.setDescription("Description Sample C");
+        deletionSampleC.setDescription("20210401152124191-205202");
         deletionSampleC.setReason("Reason Sample C");
         deletionSampleC.setContent(loadFile("testSamples_deletionSampleC.json"));
         deletionSampleC.setRegistrator(deleterSampleC);
@@ -787,7 +787,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleD.setEventType(EventType.DELETION);
         deletionSampleD.setEntityType(EntityType.SAMPLE);
         deletionSampleD.setIdentifiers(Collections.singletonList("20210401152213749-205203"));
-        deletionSampleD.setDescription("Description Sample D");
+        deletionSampleD.setDescription("20210401152213749-205203");
         deletionSampleD.setReason("Reason Sample D");
         deletionSampleD.setContent(loadFile("testSamples_deletionSampleD.json"));
         deletionSampleD.setRegistrator(deleterSampleD);
@@ -858,28 +858,28 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionExperimentA)));
                 one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionSampleA, deletionSampleB, deletionSampleC, deletionSampleD)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
                 for (EntityType entityType : EnumSet.of(EntityType.DATASET, EntityType.MATERIAL,
                         EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                         EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
                 {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
                     will(returnValue(Collections.emptyList()));
                 }
 
@@ -983,7 +983,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleA.setEventType(EventType.DELETION);
         deletionSampleA.setEntityType(EntityType.SAMPLE);
         deletionSampleA.setIdentifiers(Collections.singletonList("20210419173140752-205246"));
-        deletionSampleA.setDescription("Description Sample A");
+        deletionSampleA.setDescription("20210419173140752-205246");
         deletionSampleA.setReason("Reason Sample A");
         deletionSampleA.setContent(loadFile("testSampleWithUnknownProject_deletionSampleA.json"));
         deletionSampleA.setRegistrator(deleterSampleA);
@@ -1053,30 +1053,30 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionProjectA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionExperimentA)));
                 one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionSampleA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
                 for (EntityType entityType : EnumSet.of(EntityType.DATASET, EntityType.MATERIAL,
                         EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                         EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
                 {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
                     will(returnValue(Collections.emptyList()));
                 }
 
@@ -1158,7 +1158,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleA.setEventType(EventType.DELETION);
         deletionSampleA.setEntityType(EntityType.SAMPLE);
         deletionSampleA.setIdentifiers(Collections.singletonList("20210420105858331-205249"));
-        deletionSampleA.setDescription("Description Sample A");
+        deletionSampleA.setDescription("20210420105858331-205249");
         deletionSampleA.setReason("Reason Sample A");
         deletionSampleA.setContent(loadFile("testSampleWithUnknownSpace_deletionSampleA.json"));
         deletionSampleA.setRegistrator(deleterSampleA);
@@ -1207,29 +1207,29 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionSpaceA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionProjectA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionSampleA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
                 for (EntityType entityType : EnumSet.of(EntityType.DATASET, EntityType.MATERIAL,
                         EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                         EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
                 {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
                     will(returnValue(Collections.emptyList()));
                 }
 
@@ -1325,7 +1325,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionDataSetA.setEventType(EventType.DELETION);
         deletionDataSetA.setEntityType(EntityType.DATASET);
         deletionDataSetA.setIdentifiers(Collections.singletonList("20210407141933487-205216"));
-        deletionDataSetA.setDescription("Description DataSet A");
+        deletionDataSetA.setDescription("/STANDARD/1/6633CE8F-DD6E-450B-815B-7910CCF91726/e2/62/cb/20210407141933487-205216");
         deletionDataSetA.setReason("Reason DataSet A");
         deletionDataSetA.setContent(loadFile("testDataSets_deletionDataSetA.json"));
         deletionDataSetA.setRegistrator(deleterDataSetA);
@@ -1336,7 +1336,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionDataSetB.setEventType(EventType.DELETION);
         deletionDataSetB.setEntityType(EntityType.DATASET);
         deletionDataSetB.setIdentifiers(Collections.singletonList("20210407152453960-205217"));
-        deletionDataSetB.setDescription("Description DataSet B");
+        deletionDataSetB.setDescription("/STANDARD/1/6633CE8F-DD6E-450B-815B-7910CCF91726/ac/06/b7/20210407152453960-205217");
         deletionDataSetB.setReason("Reason DataSet B");
         deletionDataSetB.setContent(loadFile("testDataSets_deletionDataSetB.json"));
         deletionDataSetB.setRegistrator(deleterDataSetB);
@@ -1347,7 +1347,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleA.setEventType(EventType.DELETION);
         deletionSampleA.setEntityType(EntityType.SAMPLE);
         deletionSampleA.setIdentifiers(Collections.singletonList("20210407141248879-205213"));
-        deletionSampleA.setDescription("Description Sample A");
+        deletionSampleA.setDescription("20210407141248879-205213");
         deletionSampleA.setReason("Reason Sample A");
         deletionSampleA.setContent(loadFile("testDataSets_deletionSampleA.json"));
         deletionSampleA.setRegistrator(deleterSampleA);
@@ -1369,7 +1369,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionDataSetC.setEventType(EventType.DELETION);
         deletionDataSetC.setEntityType(EntityType.DATASET);
         deletionDataSetC.setIdentifiers(Collections.singletonList("20210407152643902-205218"));
-        deletionDataSetC.setDescription("Description DataSet C");
+        deletionDataSetC.setDescription("/STANDARD/1/6633CE8F-DD6E-450B-815B-7910CCF91726/2e/9c/b2/20210407152643902-205218");
         deletionDataSetC.setReason("Reason DataSet C");
         deletionDataSetC.setContent(loadFile("testDataSets_deletionDataSetC.json"));
         deletionDataSetC.setRegistrator(deleterDataSetC);
@@ -1465,33 +1465,33 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionExperimentA)));
                 one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionSampleA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionDataSetA, deletionDataSetB, deletionDataSetC)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
                 for (EntityType entityType : EnumSet.of(EntityType.MATERIAL,
                         EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                         EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
                 {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
                     will(returnValue(Collections.emptyList()));
                 }
 
@@ -1595,7 +1595,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionDataSetA.setEventType(EventType.DELETION);
         deletionDataSetA.setEntityType(EntityType.DATASET);
         deletionDataSetA.setIdentifiers(Collections.singletonList("20210420114435382-205253"));
-        deletionDataSetA.setDescription("Description DataSet A");
+        deletionDataSetA.setDescription("/STANDARD/1/6633CE8F-DD6E-450B-815B-7910CCF91726/0e/c5/9e/20210420114435382-205253");
         deletionDataSetA.setReason("Reason DataSet A");
         deletionDataSetA.setContent(loadFile("testDataSetWithUnknownProject_deletionDataSetA.json"));
         deletionDataSetA.setRegistrator(deleterDataSetA);
@@ -1668,33 +1668,33 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionProjectA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionExperimentA)));
                 one(dataSource)
-                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)), with(any(Integer.class)));
+                        .loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionDataSetA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
                 for (EntityType entityType : EnumSet.of(EntityType.MATERIAL,
                         EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                         EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
                 {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
                     will(returnValue(Collections.emptyList()));
                 }
 
@@ -1776,7 +1776,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionDataSetA.setEventType(EventType.DELETION);
         deletionDataSetA.setEntityType(EntityType.DATASET);
         deletionDataSetA.setIdentifiers(Collections.singletonList("20210420131858024-205259"));
-        deletionDataSetA.setDescription("Description DataSet A");
+        deletionDataSetA.setDescription("/STANDARD/1/6633CE8F-DD6E-450B-815B-7910CCF91726/a8/b5/68/20210420131858024-205259");
         deletionDataSetA.setReason("Reason DataSet A");
         deletionDataSetA.setContent(loadFile("testDataSetWithUnknownSpace_deletionDataSetA.json"));
         deletionDataSetA.setRegistrator(deleterDataSetA);
@@ -1797,7 +1797,7 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleA.setEventType(EventType.DELETION);
         deletionSampleA.setEntityType(EntityType.SAMPLE);
         deletionSampleA.setIdentifiers(Collections.singletonList("20210420131737031-205258"));
-        deletionSampleA.setDescription("Description Sample A");
+        deletionSampleA.setDescription("20210420131737031-205258");
         deletionSampleA.setReason("Reason Sample A");
         deletionSampleA.setContent(loadFile("testDataSetWithUnknownSpace_deletionSampleA.json"));
         deletionSampleA.setRegistrator(deleterSampleA);
@@ -1828,32 +1828,32 @@ public class EventsSearchMaintenanceTaskTest
                 allowing(dataSource).loadLastEventsSearchTimestamp(with(any(EventType.class)), with(any(EntityType.class)));
                 will(returnValue(null));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionSpaceA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SPACE), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.PROJECT), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.EXPERIMENT), with(aNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionSampleA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.SAMPLE), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNull(Date.class)));
                 will(returnValue(Arrays.asList(deletionDataSetA)));
-                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNonNull(Date.class)), with(any(Integer.class)));
+                one(dataSource).loadEvents(with(EventType.DELETION), with(EntityType.DATASET), with(aNonNull(Date.class)));
                 will(returnValue(Collections.emptyList()));
 
                 for (EntityType entityType : EnumSet.of(EntityType.MATERIAL,
                         EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                         EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
                 {
-                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)), with(any(Integer.class)));
+                    one(dataSource).loadEvents(with(EventType.DELETION), with(entityType), with(aNull(Date.class)));
                     will(returnValue(Collections.emptyList()));
                 }
 
