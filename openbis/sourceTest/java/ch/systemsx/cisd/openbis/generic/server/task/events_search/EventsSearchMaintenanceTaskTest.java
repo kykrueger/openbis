@@ -25,6 +25,7 @@ import org.jmock.lib.action.CustomAction;
 import org.springframework.transaction.support.TransactionCallback;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.text.DateFormat;
@@ -1656,6 +1657,114 @@ public class EventsSearchMaintenanceTaskTest
         deletionDataSetAExpected.setIdentifier("20210420131858024-205259");
         deletionDataSetAExpected.setContent(loadFile("testDataSetWithUnknownSpace_deletionDataSetAExpected.json"));
         assertExpectedEvent(events.get(2), deletionDataSetAExpected);
+    }
+
+    private static final String PROVIDE_GENERIC_ENTITY_TYPES = "provide-generic-entity-types";
+
+    @DataProvider(name = PROVIDE_GENERIC_ENTITY_TYPES)
+    private static Object[][] provideGenericEntityTypes()
+    {
+        return new Object[][] { { EntityType.MATERIAL }, { EntityType.METAPROJECT }, { EntityType.AUTHORIZATION_GROUP }, { EntityType.VOCABULARY },
+                { EntityType.PROPERTY_TYPE }, { EntityType.ATTACHMENT } };
+    }
+
+    @Test(dataProvider = PROVIDE_GENERIC_ENTITY_TYPES)
+    public void testGeneric(EntityType entityType)
+    {
+        // Tests the following scenario:
+        // - create object A
+        // - create object B
+        // - create object C
+        // - delete object A
+        // - delete object B
+        // - delete object C
+
+        PersonPE deleterA = new PersonPE();
+        deleterA.setUserId("deleter_A");
+
+        PersonPE deleterB = new PersonPE();
+        deleterB.setUserId("deleter_B");
+
+        PersonPE deleterC = new PersonPE();
+        deleterC.setUserId("deleter_C");
+
+        EventPE deletionA = new EventPE();
+        deletionA.setId(1L);
+        deletionA.setEventType(EventType.DELETION);
+        deletionA.setEntityType(entityType);
+        deletionA.setIdentifiers(Collections.singletonList("A"));
+        deletionA.setDescription("Description A");
+        deletionA.setReason("Reason A");
+        deletionA.setRegistrator(deleterA);
+        deletionA.setRegistrationDate(dateTimeMillis("2000-01-01 01:00:00.000"));
+
+        EventPE deletionB = new EventPE();
+        deletionB.setId(2L);
+        deletionB.setEventType(EventType.DELETION);
+        deletionB.setEntityType(entityType);
+        deletionB.setIdentifiers(Collections.singletonList("B"));
+        deletionB.setDescription("Description B");
+        deletionB.setReason("Reason B");
+        deletionB.setRegistrator(deleterB);
+        deletionB.setRegistrationDate(dateTimeMillis("2000-01-01 02:00:00.000"));
+
+        EventPE deletionC = new EventPE();
+        deletionC.setId(3L);
+        deletionC.setEventType(EventType.DELETION);
+        deletionC.setEntityType(entityType);
+        deletionC.setIdentifiers(Collections.singletonList("C"));
+        deletionC.setDescription("Description C");
+        deletionC.setReason("Reason C");
+        deletionC.setRegistrator(deleterC);
+        deletionC.setRegistrationDate(dateTimeMillis("2000-01-01 03:00:00.000"));
+
+        List<EventsSearchPE> events = new ArrayList<>();
+        {
+            expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
+
+            expectLoadLastTimestamp(EventType.DELETION, entityType, dateTimeMillis("2000-01-01 00:30:00.000"));
+            expectLoadEvents(EventType.DELETION, entityType, dateTimeMillis("2000-01-01 00:30:00.000"), deletionA);
+            expectLoadEvents(EventType.DELETION, entityType, deletionA.getRegistrationDateInternal(), deletionB, deletionC);
+            expectLoadEvents(EventType.DELETION, entityType, deletionC.getRegistrationDateInternal());
+
+            for (EntityType specialEntityType : EnumSet.of(EntityType.SPACE, EntityType.PROJECT, EntityType.EXPERIMENT,
+                    EntityType.SAMPLE, EntityType.DATASET))
+            {
+                expectLoadLastTimestamp(EventType.DELETION, specialEntityType, null);
+                expectLoadEvents(EventType.DELETION, specialEntityType, null);
+            }
+
+            EnumSet<EntityType> otherGenericEntityTypes = EnumSet.of(EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+                    EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT);
+
+            otherGenericEntityTypes.remove(entityType);
+
+            for (EntityType otherGenericEntityType : otherGenericEntityTypes)
+            {
+                Date randomTimestamp = new Date((long) (Math.random() * 10000));
+                expectLoadLastTimestamp(EventType.DELETION, otherGenericEntityType, randomTimestamp);
+                expectLoadEvents(EventType.DELETION, otherGenericEntityType, randomTimestamp);
+            }
+
+            expectCreateEvents(events);
+        }
+
+        EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
+        task.execute();
+
+        assertEquals(events.size(), 3);
+
+        EventsSearchPE deletionAExpected = createExpectedEvent(deletionA);
+        deletionAExpected.setIdentifier("A");
+        assertExpectedEvent(events.get(0), deletionAExpected);
+
+        EventsSearchPE deletionBExpected = createExpectedEvent(deletionB);
+        deletionBExpected.setIdentifier("B");
+        assertExpectedEvent(events.get(1), deletionBExpected);
+
+        EventsSearchPE deletionCExpected = createExpectedEvent(deletionC);
+        deletionCExpected.setIdentifier("C");
+        assertExpectedEvent(events.get(2), deletionCExpected);
     }
 
     private void expectLoadSpaces(SpacePE... spaces)
