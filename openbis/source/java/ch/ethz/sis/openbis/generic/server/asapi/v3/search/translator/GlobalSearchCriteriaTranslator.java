@@ -352,6 +352,8 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(WHERE).append(SP);
         AnyFieldSearchConditionTranslator.translateAnyField(globalSearchTextCriterion, useWildcards, tableMapper,
                 translationContext.getArgs(), sqlBuilder, getJoinInformationMap(tableMapper));
+        translateAuthorisation(sqlBuilder, translationContext, tableMapper);
+        sqlBuilder.append(NL);
     }
 
     private static Map<String, JoinInformation> getJoinInformationMap(final TableMapper tableMapper)
@@ -1247,12 +1249,12 @@ public class GlobalSearchCriteriaTranslator
         final Spliterator<String> spliterator = Arrays.stream(matchingColumns).spliterator();
 
         if (spliterator.tryAdvance(matchingColumn -> appendInCondition(sqlBuilder, matchingColumn, args,
-                criterionValues, null)))
+                criterionValues)))
         {
             spliterator.forEachRemaining(matchingColumn ->
             {
                 sqlBuilder.append(SP).append(OR).append(SP);
-                appendInCondition(sqlBuilder, matchingColumn, args, criterionValues, null);
+                appendInCondition(sqlBuilder, matchingColumn, args, criterionValues);
             });
         }
     }
@@ -1268,8 +1270,7 @@ public class GlobalSearchCriteriaTranslator
      * @param criterionValues full text search values to be put to the full text search matching function.
      */
     private static void appendInCondition(final StringBuilder sqlBuilder,
-            final String matchingColumn, final List<Object> args, final String[] criterionValues,
-            final Class<? extends AbstractStringValue> stringValueClass)
+            final String matchingColumn, final List<Object> args, final String[] criterionValues)
     {
         sqlBuilder.append(LOWER).append(SP).append(LP).append(matchingColumn).append(RP);
         sqlBuilder.append(SP).append(IN).append(SP).append(LP)

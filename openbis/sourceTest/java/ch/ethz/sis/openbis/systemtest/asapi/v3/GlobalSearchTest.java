@@ -104,10 +104,36 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithContainsAuthorized()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContains("200902091219327-1025");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        assertEquals(result.getObjects().size(), 1);
+
+        final GlobalSearchObject object = result.getObjects().get(0);
+        assertSample(object, "200902091219327-1025", "/CISD/CP-TEST-1", "Perm ID: 200902091219327-1025", false);
+    }
+
+    @Test
     public void testSearchSamplesUnauthorized()
     {
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatMatches("200902091219327-1025");
+
+        SearchResult<GlobalSearchObject> result = search(TEST_SPACE_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
+        assertEquals(result.getObjects().size(), 0);
+    }
+
+    @Test
+    public void testSearchSamplesWithContainsUnauthorized()
+    {
+        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContains("200902091219327-1025");
 
         SearchResult<GlobalSearchObject> result = search(TEST_SPACE_USER, criteria,
                 new GlobalSearchObjectFetchOptions());
