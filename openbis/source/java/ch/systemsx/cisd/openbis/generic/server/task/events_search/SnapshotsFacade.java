@@ -31,6 +31,14 @@ class SnapshotsFacade
 
     private final IDataSource dataSource;
 
+    private final Set<String> loadedSpaceCodes = new HashSet<>();
+
+    private final Set<String> loadedProjectPermIds = new HashSet<>();
+
+    private final Set<String> loadedExperimentPermIds = new HashSet<>();
+
+    private final Set<String> loadedSamplePermIds = new HashSet<>();
+
     private final Snapshots spaceSnapshots;
 
     private final Snapshots projectSnapshots;
@@ -51,14 +59,24 @@ class SnapshotsFacade
         this.dataSetSnapshots = new Snapshots();
     }
 
+    private static Set<String> addToLoaded(Set<String> loaded, Collection<String> candidatesToLoad)
+    {
+        Set<String> toLoad = new HashSet<>(candidatesToLoad);
+        toLoad.removeAll(loaded);
+        loaded.addAll(toLoad);
+        return toLoad;
+    }
+
     public void loadExistingSpaces(Collection<String> spaceCodes)
     {
-        if (spaceCodes.isEmpty())
+        Set<String> toLoad = addToLoaded(loadedSpaceCodes, spaceCodes);
+
+        if (toLoad.isEmpty())
         {
             return;
         }
 
-        List<SpacePE> spaces = dataSource.loadSpaces(new ArrayList<>(spaceCodes));
+        List<SpacePE> spaces = dataSource.loadSpaces(new ArrayList<>(toLoad));
 
         for (SpacePE space : spaces)
         {
@@ -73,7 +91,9 @@ class SnapshotsFacade
 
     public void loadExistingProjects(Collection<String> projectPermIds)
     {
-        if (projectPermIds.isEmpty())
+        Set<String> toLoad = addToLoaded(loadedProjectPermIds, projectPermIds);
+
+        if (toLoad.isEmpty())
         {
             return;
         }
@@ -84,7 +104,7 @@ class SnapshotsFacade
         fo.withSpace();
         fo.withHistory();
 
-        List<IProjectId> ids = projectPermIds.stream().map(ProjectPermId::new).collect(Collectors.toList());
+        List<IProjectId> ids = toLoad.stream().map(ProjectPermId::new).collect(Collectors.toList());
         List<Project> projects = dataSource.loadProjects(ids, fo);
 
         for (Project project : projects)
@@ -144,7 +164,9 @@ class SnapshotsFacade
 
     public void loadExistingExperiments(Collection<String> experimentPermIds)
     {
-        if (experimentPermIds.isEmpty())
+        Set<String> toLoad = addToLoaded(loadedExperimentPermIds, experimentPermIds);
+
+        if (toLoad.isEmpty())
         {
             return;
         }
@@ -155,7 +177,7 @@ class SnapshotsFacade
         fo.withProject();
         fo.withHistory();
 
-        List<IExperimentId> ids = experimentPermIds.stream().map(ExperimentPermId::new).collect(Collectors.toList());
+        List<IExperimentId> ids = toLoad.stream().map(ExperimentPermId::new).collect(Collectors.toList());
         List<Experiment> experiments = dataSource.loadExperiments(ids, fo);
 
         for (Experiment experiment : experiments)
@@ -217,7 +239,9 @@ class SnapshotsFacade
 
     public void loadExistingSamples(Collection<String> samplePermIds)
     {
-        if (samplePermIds.isEmpty())
+        Set<String> toLoad = addToLoaded(loadedSamplePermIds, samplePermIds);
+
+        if (toLoad.isEmpty())
         {
             return;
         }
@@ -230,7 +254,7 @@ class SnapshotsFacade
         fo.withExperiment();
         fo.withHistory();
 
-        List<ISampleId> ids = samplePermIds.stream().map(SamplePermId::new).collect(Collectors.toList());
+        List<ISampleId> ids = toLoad.stream().map(SamplePermId::new).collect(Collectors.toList());
         List<Sample> samples = dataSource.loadSamples(ids, fo);
 
         for (Sample sample : samples)

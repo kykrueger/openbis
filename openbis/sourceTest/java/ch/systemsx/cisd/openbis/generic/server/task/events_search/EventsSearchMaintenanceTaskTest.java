@@ -3,11 +3,14 @@ package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
@@ -31,6 +34,7 @@ import org.testng.annotations.Test;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.testng.Assert.assertEquals;
 
@@ -288,7 +292,8 @@ public class EventsSearchMaintenanceTaskTest
                 expectLoadEvents(EventType.DELETION, entityType, randomTimestamp);
             }
 
-            expectLoadSpaces(spaceC);
+            expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"));
+            expectLoadSpaces(Collections.singletonList("SPACE_C"), spaceC);
 
             expectCreateEvents(events);
         }
@@ -456,8 +461,9 @@ public class EventsSearchMaintenanceTaskTest
                 expectLoadEvents(EventType.DELETION, entityType, randomTimestamp);
             }
 
-            expectLoadSpaces(spaceA, spaceB);
-            expectLoadProjects(projectA);
+            expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceA, spaceB);
+            expectLoadProjects(Arrays.asList("20210329150846687-205178", "20210329150838023-205177"));
+            expectLoadProjects(Collections.singletonList("20210329151103947-205180"), projectA);
 
             expectCreateEvents(events);
         }
@@ -584,8 +590,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadSpaces(spaceB);
-            expectLoadProjects();
             expectLoadLastTimestampsEmpty(EventType.values());
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, null, deletionSpaceA);
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionSpaceA.getRegistrationDateInternal());
@@ -601,6 +605,9 @@ public class EventsSearchMaintenanceTaskTest
             {
                 expectLoadEvents(EventType.DELETION, entityType, null);
             }
+
+            expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceB);
+            expectLoadProjects(Collections.singletonList("20210419162753803-205241"));
 
             expectCreateEvents(events);
         }
@@ -807,9 +814,13 @@ public class EventsSearchMaintenanceTaskTest
                 expectLoadEvents(EventType.DELETION, entityType, randomTimestamp);
             }
 
-            expectLoadSpaces(spaceA, spaceB);
-            expectLoadProjects(projectA, projectB);
-            expectLoadExperiments(experimentB);
+            expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceA, spaceB);
+            expectLoadSpaces(Arrays.asList("20210329151103947-205180", "20210401151815315-205197"));
+            expectLoadSpaces(Collections.singletonList("20210401151830921-205198"));
+            expectLoadProjects(Arrays.asList("20210329151103947-205180", "20210401151815315-205197"), projectA, projectB);
+            expectLoadProjects(Collections.singletonList("20210401151830921-205198"));
+            expectLoadExperiments(Arrays.asList("20210329151103947-205180", "20210401151815315-205197"));
+            expectLoadExperiments(Arrays.asList("20210401151838580-205199", "20210401151830921-205198"), experimentB);
 
             expectCreateEvents(events);
         }
@@ -957,9 +968,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadSpaces(spaceA, spaceB);
-            expectLoadProjects(projectB);
-            expectLoadExperiments();
             expectLoadLastTimestampsEmpty(EventType.values());
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, null);
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA);
@@ -976,6 +984,11 @@ public class EventsSearchMaintenanceTaskTest
             {
                 expectLoadEvents(EventType.DELETION, entityType, null);
             }
+
+            expectLoadSpaces(Collections.singletonList("SPACE_A"), spaceA);
+            expectLoadSpaces(Collections.singletonList("SPACE_B"), spaceB);
+            expectLoadProjects(Arrays.asList("20210419173058839-205244", "20210419173048021-205243"), projectB);
+            expectLoadExperiments(Collections.singletonList("20210419173116451-205245"));
 
             expectCreateEvents(events);
         }
@@ -1080,9 +1093,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadSpaces(spaceB);
-            expectLoadProjects();
-            expectLoadExperiments();
             expectLoadLastTimestampsEmpty(EventType.values());
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, null, deletionSpaceA);
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionSpaceA.getRegistrationDateInternal());
@@ -1099,6 +1109,9 @@ public class EventsSearchMaintenanceTaskTest
             {
                 expectLoadEvents(EventType.DELETION, entityType, null);
             }
+
+            expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceB);
+            expectLoadProjects(Collections.singletonList("20210420105829314-205247"));
 
             expectCreateEvents(events);
         }
@@ -1331,10 +1344,11 @@ public class EventsSearchMaintenanceTaskTest
                 expectLoadEvents(EventType.DELETION, entityType, randomTimestamp);
             }
 
-            expectLoadSpaces(spaceA, spaceB);
-            expectLoadProjects(projectA, projectB);
-            expectLoadExperiments(experimentB);
-            expectLoadSamples(sampleB, sampleC);
+            expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceA, spaceB);
+            expectLoadProjects(Arrays.asList("20210329151103947-205180", "20210401151815315-205197"), projectA, projectB);
+            expectLoadExperiments(Arrays.asList("20210407141248879-205213", "20210407141217738-205212", "20210407141206022-205211"), experimentB);
+            expectLoadSamples(Arrays.asList("20210407141248879-205213", "20210407141318103-205214"), sampleB);
+            expectLoadSamples(Collections.singletonList("20210407141206022-205211"));
 
             expectCreateEvents(events);
         }
@@ -1482,10 +1496,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadSpaces(spaceA, spaceB);
-            expectLoadProjects(projectB);
-            expectLoadExperiments();
-            expectLoadSamples();
             expectLoadLastTimestampsEmpty(EventType.values());
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, null);
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA);
@@ -1503,6 +1513,11 @@ public class EventsSearchMaintenanceTaskTest
             {
                 expectLoadEvents(EventType.DELETION, entityType, null);
             }
+
+            expectLoadSpaces(Collections.singletonList("SPACE_A"), spaceA);
+            expectLoadSpaces(Collections.singletonList("SPACE_B"), spaceB);
+            expectLoadProjects(Arrays.asList("20210420114213918-205251", "20210420114205083-205250"), projectB);
+            expectLoadExperiments(Collections.singletonList("20210420114236830-205252"));
 
             expectCreateEvents(events);
         }
@@ -1607,10 +1622,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadSpaces(spaceB);
-            expectLoadProjects();
-            expectLoadExperiments();
-            expectLoadSamples();
             expectLoadLastTimestampsEmpty(EventType.values());
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, null, deletionSpaceA);
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionSpaceA.getRegistrationDateInternal());
@@ -1627,6 +1638,11 @@ public class EventsSearchMaintenanceTaskTest
             {
                 expectLoadEvents(EventType.DELETION, entityType, null);
             }
+
+            expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceB);
+            expectLoadProjects(Collections.singletonList("SPACE_A"));
+            expectLoadExperiments(Collections.singletonList("SPACE_A"));
+            expectLoadSamples(Collections.singletonList("20210420131737031-205258"));
 
             expectCreateEvents(events);
         }
@@ -1767,45 +1783,51 @@ public class EventsSearchMaintenanceTaskTest
         assertExpectedEvent(events.get(2), deletionCExpected);
     }
 
-    private void expectLoadSpaces(SpacePE... spaces)
+    private void expectLoadSpaces(List<String> spaceCodes, SpacePE... spaces)
     {
         mockery.checking(new Expectations()
         {
             {
-                allowing(dataSource).loadSpaces(with(any(List.class)));
+                one(dataSource).loadSpaces(with(spaceCodes));
                 will(returnValue(Arrays.asList(spaces)));
             }
         });
     }
 
-    private void expectLoadProjects(Project... projects)
+    private void expectLoadProjects(List<String> projectPermIds, Project... projects)
     {
+        List<IProjectId> projectPermIdObjects = projectPermIds.stream().map(ProjectPermId::new).collect(Collectors.toList());
+
         mockery.checking(new Expectations()
         {
             {
-                allowing(dataSource).loadProjects(with(any(List.class)), with(any(ProjectFetchOptions.class)));
+                one(dataSource).loadProjects(with(projectPermIdObjects), with(any(ProjectFetchOptions.class)));
                 will(returnValue(Arrays.asList(projects)));
             }
         });
     }
 
-    private void expectLoadExperiments(Experiment... experiments)
+    private void expectLoadExperiments(List<String> experimentPermIds, Experiment... experiments)
     {
+        List<IExperimentId> experimentPermIdObjects = experimentPermIds.stream().map(ExperimentPermId::new).collect(Collectors.toList());
+
         mockery.checking(new Expectations()
         {
             {
-                allowing(dataSource).loadExperiments(with(any(List.class)), with(any(ExperimentFetchOptions.class)));
+                one(dataSource).loadExperiments(with(experimentPermIdObjects), with(any(ExperimentFetchOptions.class)));
                 will(returnValue(Arrays.asList(experiments)));
             }
         });
     }
 
-    private void expectLoadSamples(Sample... samples)
+    private void expectLoadSamples(List<String> samplePermIds, Sample... samples)
     {
+        List<ISampleId> samplePermIdObjects = samplePermIds.stream().map(SamplePermId::new).collect(Collectors.toList());
+
         mockery.checking(new Expectations()
         {
             {
-                allowing(dataSource).loadSamples(with(any(List.class)), with(any(SampleFetchOptions.class)));
+                one(dataSource).loadSamples(with(samplePermIdObjects), with(any(SampleFetchOptions.class)));
                 will(returnValue(Arrays.asList(samples)));
             }
         });

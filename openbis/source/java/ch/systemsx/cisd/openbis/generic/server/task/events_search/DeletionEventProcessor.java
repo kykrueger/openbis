@@ -149,8 +149,9 @@ abstract class DeletionEventProcessor extends EventProcessor
             for (Map<String, String> entry : entries)
             {
                 String type = entry.get("type");
+                String key = entry.get("key");
 
-                if ("RELATIONSHIP".equals(type))
+                if ("RELATIONSHIP".equals(type) && "OWNED".equals(key))
                 {
                     String entityType = entry.get("entityType");
 
