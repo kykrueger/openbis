@@ -229,7 +229,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         final AbstractCompositeSearchCriteria criteria = createEmptyCriteria(false);
         final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria(false);
         containerCriterion.setCriteria(Collections.singletonList(criteria));
-        return getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId, containerCriterion, tableMapper, idsColumnName,
+        return getSearchDAO().queryDBForIdsWithGlobalSearchMatchCriteria(userId, containerCriterion, tableMapper, idsColumnName,
                 authorisationInformation);
     }
 
