@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 ETH Zuerich, CISD
+ * Copyright 2016 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,29 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search;
 
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
-@JsonObject("as.dto.common.search.StringStartsWithValue")
-public class StringStartsWithValue extends AbstractStringValue
+@JsonObject("as.dto.common.search.TextAttributeSearchCriteria")
+public class TextAttributeSearchCriteria extends AbstractSearchCriteria
 {
+
     private static final long serialVersionUID = 1L;
 
-    private StringStartsWithValue()
+    private AbstractStringValue fieldValue;
+
+    public void thatMatches(final String string)
     {
-        super(null);
+        fieldValue = new StringMatchesValue(string);
     }
 
-    public StringStartsWithValue(String value)
+    public AbstractStringValue getFieldValue()
     {
-        super(value);
+        return fieldValue;
     }
 
     @Override
     public String toString()
     {
-        return "starts with '" + getValue() + "'";
+        return "with any text attribute '" +
+                (getFieldValue() == null ? "" : getFieldValue().toString()) + "'";
     }
+
 }

@@ -63,7 +63,7 @@ public class SearchCriteriaTranslator
 
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat(new ShortDateFormat().getFormat());
 
-    public static final String MAIN_TABLE_ALIAS = getAlias(new AtomicInteger(0));
+    public static final String MAIN_TABLE_ALIAS = TranslatorUtils.getAlias(new AtomicInteger(0));
 
     private SearchCriteriaTranslator()
     {
@@ -89,11 +89,6 @@ public class SearchCriteriaTranslator
         return SELECT + SP + DISTINCT + SP + MAIN_TABLE_ALIAS + PERIOD + translationContext.getIdColumnName();
     }
 
-    private static String getAlias(final AtomicInteger num)
-    {
-        return "t" + num.getAndIncrement();
-    }
-
     private static String buildFrom(final TranslationContext translationContext)
     {
         final StringBuilder sqlBuilder = new StringBuilder();
@@ -112,7 +107,7 @@ public class SearchCriteriaTranslator
                 {
                     @SuppressWarnings("unchecked")
                     final Map<String, JoinInformation> joinInformationMap = conditionTranslator.getJoinInformationMap(criterion,
-                            tableMapper, () -> getAlias(indexCounter));
+                            tableMapper, () -> TranslatorUtils.getAlias(indexCounter));
 
                     if (joinInformationMap != null)
                     {
@@ -184,9 +179,17 @@ public class SearchCriteriaTranslator
         {
             if (subqueryManager != null)
             {
-                final String column = (criterion instanceof EntityTypeSearchCriteria)
-                        ? tableMapper.getEntityTypesAttributeTypesTableEntityTypeIdField()
-                        : CriteriaMapper.getCriteriaToInColumnMap().get(criterion.getClass());
+                final String column;
+                if (parentCriterion.getClass() == criterion.getClass())
+                {
+                    column = ID_COLUMN;
+                } else if (criterion instanceof EntityTypeSearchCriteria)
+                {
+                    column = tableMapper.getEntityTypesAttributeTypesTableEntityTypeIdField();
+                } else
+                {
+                    column = CriteriaMapper.getCriteriaToInColumnMap().get(criterion.getClass());
+                }
 
                 if (tableMapper != null)
                 {

@@ -2458,3 +2458,7 @@ Person Deletion Options
 isUseWildcards
 withWildcards
 withoutWildcards
+StringMatchesValue
+TextAttributeSearchCriteria
+thatMatches
+withTextAttribute

@@ -1317,40 +1317,31 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingRegistratorOrModifier()
+    {
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withAnyField().thatEquals("etlserver");
+        testSearch(TEST_USER, criteria1, "/CISD/RP2-A1X", "/CISD/RP1-A2X", "/CISD/RP1-B1X");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withAnyField().thatEquals("test_role");
+        testSearch(TEST_USER, criteria2, "/CISD/CL1", "/CISD/CP-TEST-1", "/TEST-SPACE/FV-TEST");
+    }
+
+    @Test
+    public void testSearchWithAnyFieldMatchingSampleType()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withAnyField().thatEquals("DYNAMIC_PLATE");
+        testSearch(TEST_USER, criteria, "/CISD/DYNA-TEST-1");
+    }
+
+    @Test
     public void testSearchWithAnyProperty()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withAnyProperty().thatStartsWith("HUM");
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1");
-    }
-
-    @Test
-    public void testSearchWithAnyProperty2()
-    {
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withAnyProperty().thatEquals("very");
-
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        SampleFetchOptions fo = new SampleFetchOptions();
-        fo.withProperties();
-
-        List<Sample> samples = searchSamples(sessionToken, criteria, fo);
-
-        for (Sample sample : samples)
-        {
-            System.out.println("-----");
-            System.out.println(sample.getCode());
-            for (Entry<String, String> entry : sample.getProperties().entrySet())
-            {
-                System.out.println(entry.getKey() + ": " + entry.getValue());
-            }
-            System.out.println("-----");
-        }
-
-        System.out.println(samples);
-        v3api.logout(sessionToken);
-
     }
 
     @Test
@@ -3225,6 +3216,86 @@ public class SearchSampleTest extends AbstractSampleTest
 
         testSearch(TEST_USER, criteria, "/CISD/MP1-MIXED:A01", "/CISD/MP1-MIXED:A02", "/CISD/MP1-MIXED:A03",
                 "/CISD/MP1-MIXED:B02", "/CISD/MP2-NO-CL:A01");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAttributeFullTextSearch()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        criteria.withTextAttribute().thatMatches("cp-test-1 cp-test-2 cp-test-3 cp-test-4");
+        criteria.withPermId().thatContains("7-");
+
+        testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1", "/CISD/CP-TEST-2", "/TEST-SPACE/CP-TEST-4");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithPropertyFullTextSearch()
+    {
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria().withAndOperator();
+
+        criteria1.withProperty("COMMENT").thatMatches("test");
+        criteria1.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria1, "/CISD/3VCP7");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria().withAndOperator();
+
+        criteria2.withProperty("DESCRIPTION").thatMatches("test");
+        criteria2.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria2, "/CISD/CL1");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithStringPropertyFullTextSearch()
+    {
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria().withAndOperator();
+
+        criteria1.withStringProperty("COMMENT").thatMatches("test");
+        criteria1.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria1, "/CISD/3VCP7");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria().withAndOperator();
+
+        criteria2.withStringProperty("DESCRIPTION").thatMatches("test");
+        criteria2.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria2, "/CISD/CL1");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAnyPropertyFullTextSearch()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        criteria.withAnyProperty().thatMatches("test");
+        criteria.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria, "/CISD/CL1", "/CISD/3VCP7");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAnyStringPropertyFullTextSearch()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        criteria.withAnyStringProperty().thatMatches("test");
+        criteria.withPermId().thatStartsWith("2008");
+
+        testSearch(TEST_USER, criteria, "/CISD/CL1", "/CISD/3VCP7");
+    }
+
+    @Test
+    public void testSearchWithPermIdWithAnyFieldFullTextSearch()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        criteria.withAnyField().thatMatches("test cp-test-1 cp-test-2");
+        criteria.withPermId().thatContains("19");
+
+        testSearch(TEST_USER, criteria, "/CISD/CL1", "/TEST-SPACE/EV-TEST", "/CISD/CP-TEST-1");
     }
 
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)

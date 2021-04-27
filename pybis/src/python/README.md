@@ -309,7 +309,7 @@ dataset_type.revoke_property('property_name')
 dataset_type.get_property_assignments()
 ```
 
-## create a experiment / collection type
+## create an experiment type / collection type
 
 The second step (after creating a **property type**, see above) is to create the **experiment type**.
 
@@ -505,6 +505,8 @@ The new name for **experiment** is **collection**. You can use boths names inter
 * `new_experiment()`  = `new_collection()`
 * `get_experiments()` = `get_collections()`
 
+### create a new experiment
+
 ```
 exp = o.new_experiment
     type='DEFAULT_EXPERIMENT',
@@ -512,7 +514,11 @@ exp = o.new_experiment
     project='YEASTS'
 )
 exp.save()
+```
 
+### search for experiments
+
+```
 experiments = o.get_experiments(
     project       = 'YEASTS',
     space         = 'MY_SPACE', 
@@ -529,18 +535,12 @@ for experiment in experiments:     # iterate over search results
 dataframe = experiments.df         # get Pandas DataFrame of result list
     
 exp = o.get_experiment('/MY_SPACE/MY_PROJECT/MY_EXPERIMENT')
+```
 
-exp.set_props({ key: value})
-exp.props
-exp.p                              # same thing as .props
-exp.p.finished_flag=True
-exp.p.my_property = "some value"   # set the value of a property (value is checked)
-exp.p + TAB                        # in IPython or Jupyter: show list of available properties
-exp.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
-exp.p['my-weird.property-name']    # accessing properties containing a dash or a dot
+### Experiment attributes
 
+```
 exp.attrs.all()                    # returns all attributes as a dict
-exp.props.all()                    # returns all properties as a dict
 
 exp.attrs.tags = ['some', 'tags']
 exp.tags = ['some', 'tags']        # same thing
@@ -549,13 +549,46 @@ exp.save()
 exp.code
 exp.description
 exp.registrator
-exp.registrationDate
-exp.modifier
-exp.modificationDate
+...
 
+exp.project = 'my_project'
+exp.space   = 'my_space'
 exp.freeze = True
 exp.freezeForDataSets = True
 exp.freezeForSamples = True
+
+exp.save()                         # needed to save/update the changed attributes and properties
+```
+
+### Experiment properties
+
+**Getting properties**
+
+```
+experiment.props == ds.p                  # you can use either .props or .p to access the properties
+experiment.p                              # in Jupyter: show all properties in a nice table
+experiment.p()                            # get all properties as a dict
+experiment.props.all()                    # get all properties as a dict
+experiment.p('prop1','prop2')             # get some properties as a dict
+experiment.p.get('$name')                 # get the value of a property
+experiment.p['property']                  # get the value of a property
+```
+
+**Setting properties**
+
+```
+experiment.experiment = 'first_exp'       # assign sample to an experiment
+experiment.project = 'my_project'         # assign sample to a project
+
+experiment.p. + TAB                       # in Jupyter/IPython: show list of available properties
+experiment.p.my_property_ + TAB           # in Jupyter/IPython: show datatype or controlled vocabulary 
+experiment.p['my_property']= "value"      # set the value of a property
+experiment.p.set('my_property, 'value')   # set the value of a property
+experiment.p.my_property = "some value"   # set the value of a property
+experiment.p.set({'my_property':'value'}) # set the values of some properties
+experiment.set_props({ key: value })      # set the values of some properties
+
+experiment.save()                         # needed to save/update the changed attributes and properties
 ```
 
 
@@ -701,20 +734,40 @@ sample.add_tags(['tag2','tag3'])
 sample.del_tags('tag1')
 ```
 
+### Sample attributes and properties
 
-### useful tricks when dealing with properties, using Jupyter or IPython
+**Getting properties**
 
 ```
-sample.p + TAB                        # in IPython or Jupyter: show list of available properties
-sample.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
-sample.p['my-weird.property-name']    # accessing properties containing a dash or a dot
+sample.attrs.all()                    # returns all attributes as a dict
+sample.attribute_name                 # return the attribute value
 
-sample.set_props({ ... })             # set properties by providing a dict
-sample.p                              # same thing as .props
+sample.props == ds.p                  # you can use either .props or .p to access the properties
+sample.p                              # in Jupyter: show all properties in a nice table
+sample.p()                            # get all properties as a dict
+sample.props.all()                    # get all properties as a dict
+sample.p('prop1','prop2')             # get some properties as a dict
+sample.p.get('$name')                 # get the value of a property
+sample.p['property']                  # get the value of a property
+```
+
+**Setting properties**
+
+```
+sample.experiment = 'first_exp'       # assign sample to an experiment
+sample.project = 'my_project'         # assign sample to a project
+
+sample.p. + TAB                       # in Jupyter/IPython: show list of available properties
+sample.p.my_property_ + TAB           # in Jupyter/IPython: show datatype or controlled vocabulary 
+sample.p['my_property']= "value"      # set the value of a property
+sample.p.set('my_property, 'value')   # set the value of a property
 sample.p.my_property = "some value"   # set the value of a property
-                                      # value is checked (type/vocabulary)
-sample.save()                         # update the sample in openBIS
+sample.p.set({'my_property':'value'}) # set the values of some properties
+sample.set_props({ key: value })      # set the values of some properties
+
+sample.save()                         # needed to save/update the attributes and properties
 ```
+
 
 ### search for samples / objects
 
@@ -728,10 +781,10 @@ samples = o.get_samples(
     tags       =['*'],                # only sample with existing tags
     start_with = 0,                   # start_with and count
     count      = 10,                  # enable paging
-    NAME       = 'some name',         # properties are always uppercase 
-                                      # to distinguish them from attributes
-    **{ "SOME.WEIRD:PROP": "value"}   # property name contains a dot or a
-                                      # colon: cannot be passed as an argument
+    where = {
+        "$SOME.WEIRD-PROP": "hello"   # only receive samples where properties match
+    }
+    
     registrationDate = "2020-01-01",  # date format: YYYY-MM-DD
     modificationDate = "<2020-12-31", # use > or < to search for specified date and later / earlier
     attrs=[                           # show these attributes in the dataFrame
@@ -851,30 +904,44 @@ ds.is_symlink()
 
 ### dataSet attributes and properties
 
-```
-ds.set_props({ key: value})
-ds.props
-ds.p                              # same thing as .props
-ds.p.my_property = "some value"   # set the value of a property
-ds.p + TAB                        # show list of available properties
-ds.p.my_property_ + TAB           # show datatype or controlled vocabulary
-ds.p['my-weird.property-name']    # accessing properties containing a dash or a dot
+**Getting properties**
 
+```
 ds.attrs.all()                    # returns all attributes as a dict
-ds.props.all()                    # returns all properties as a dict
+ds.attribute_name                 # return the attribute value
+
+ds.props == ds.p                  # you can use either .props or .p to access the properties
+ds.p                              # in Jupyter: show all properties in a nice table
+ds.p()                            # get all properties as a dict
+ds.props.all()                    # get all properties as a dict
+ds.p('prop1','prop2')             # get some properties as a dict
+ds.p.get('$name')                 # get the value of a property
+ds.p['property']                  # get the value of a property
+```
+
+**Setting properties**
+
+```
+ds.experiment = 'first_exp'       # assign dataset to an experiment
+ds.sample = 'my_sample'           # assign dataset to a sample
+
+ds.p. + TAB                       # in Jupyter/IPython: show list of available properties
+ds.p.my_property_ + TAB           # in Jupyter/IPython: show datatype or controlled vocabulary 
+ds.p['my_property']= "value"      # set the value of a property
+ds.p.set('my_property, 'value')   # set the value of a property
+ds.p.my_property = "some value"   # set the value of a property
+ds.p.set({'my_property':'value'}) # set the values of some properties
+ds.set_props({ key: value })      # set the values of some properties
 ```
 
 ### search for dataSets
 
 * The result of a search is always list, even when no items are found
 * The `.df` attribute returns the Pandas dataFrame of the results
-* properties must be in UPPERCASE to distinguish them from attributes
 
 ```
 datasets = o.get_datasets(
     type  ='MY_DATASET_TYPE',
-    NAME  = 'some name',              # properties are always uppercase 
-                                      # to distinguish them from attributes
     **{ "SOME.WEIRD:PROP": "value"},  # property name contains a dot or a
                                       # colon: cannot be passed as an argument 
     start_with = 0,                   # start_with and count

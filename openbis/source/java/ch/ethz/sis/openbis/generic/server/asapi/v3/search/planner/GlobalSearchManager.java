@@ -3,10 +3,12 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchTextCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
@@ -15,6 +17,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.*;
@@ -58,14 +61,109 @@ public class GlobalSearchManager implements IGlobalSearchManager
             final String idsColumnName, final Set<GlobalSearchObjectKind> objectKinds,
             final GlobalSearchObjectFetchOptions fetchOptions, final boolean onlyTotalCount)
     {
-        final List<Map<String, Object>> mainCriteriaIntermediateResults =
-                searchDAO.queryDBForIdsAndRanksWithNonRecursiveCriteria(
-                userId, criteria, idsColumnName, authorisationInformation, objectKinds, fetchOptions, onlyTotalCount);
+        if (objectKinds == null || objectKinds.isEmpty())
+        {
+            return createEmptyResult(onlyTotalCount);
+        }
 
-        // If we have results, we use them
-        // If we don't have results and criteria are not empty, there are no results.
-        return containsValues(mainCriteriaIntermediateResults)
-                ? mainCriteriaIntermediateResults : Collections.emptyList();
+        final boolean hasStringMatches = criteria.getCriteria().stream().anyMatch(
+                criterion -> criterion instanceof GlobalSearchTextCriteria &&
+                        (((GlobalSearchTextCriteria) criterion).getFieldValue() instanceof StringMatchesValue ||
+                        ((GlobalSearchTextCriteria) criterion).getFieldValue() instanceof StringStartsWithValue));
+
+        final List<GlobalSearchTextCriteria> stringContainsGlobalSearchTextCriteria = criteria.getCriteria().stream()
+                .filter(criterion -> criterion instanceof GlobalSearchTextCriteria &&
+                        ((((GlobalSearchTextCriteria) criterion).getFieldValue() instanceof StringContainsValue) ||
+                                ((GlobalSearchTextCriteria) criterion).getFieldValue()
+                                        instanceof StringContainsExactlyValue))
+                .map(criterion -> (GlobalSearchTextCriteria) criterion).collect(Collectors.toList());
+
+        final boolean hasStringContains = !stringContainsGlobalSearchTextCriteria.isEmpty();
+
+        if (hasStringMatches && hasStringContains)
+        {
+            throw new IllegalArgumentException("Cannot combine matches and contains criteria in global search.");
+        } else if (!hasStringMatches && !hasStringContains)
+        {
+            return createEmptyResult(onlyTotalCount);
+        } else if (hasStringMatches)
+        {
+            // String matches
+            return searchForIdsUsingMatches(userId, criteria, idsColumnName, authorisationInformation, objectKinds,
+                    fetchOptions, onlyTotalCount);
+        } else
+        {
+            // String contains
+            return searchForIdsUsingContains(userId, criteria, idsColumnName,
+                    authorisationInformation, objectKinds, fetchOptions, onlyTotalCount);
+        }
+    }
+
+    private List<Map<String, Object>> searchForIdsUsingMatches(final Long userId, final GlobalSearchCriteria criteria,
+            final String idsColumnName, final AuthorisationInformation authorisationInformation,
+            final Set<GlobalSearchObjectKind> objectKinds, final GlobalSearchObjectFetchOptions fetchOptions,
+            final boolean onlyTotalCount)
+    {
+        // Removing blank criteria because they should not affect the result for the match criteria
+        final List<ISearchCriteria> filteredCriteria = criteria.getCriteria().stream()
+                .filter(criterion -> !(criterion instanceof GlobalSearchTextCriteria) ||
+                        !((GlobalSearchTextCriteria) criterion).getFieldValue().getValue().trim().isEmpty())
+                .collect(Collectors.toList());
+        if (filteredCriteria.isEmpty())
+        {
+            return createEmptyResult(onlyTotalCount);
+        } else
+        {
+            criteria.setCriteria(filteredCriteria);
+            return searchDAO.queryDBForIdsWithGlobalSearchMatchCriteria(userId, criteria, idsColumnName,
+                    authorisationInformation, objectKinds, fetchOptions, onlyTotalCount);
+        }
+    }
+
+    private List<Map<String, Object>> searchForIdsUsingContains(final Long userId, final GlobalSearchCriteria criteria,
+            final String idsColumnName, final AuthorisationInformation authorisationInformation,
+            final Set<GlobalSearchObjectKind> objectKinds,
+            final GlobalSearchObjectFetchOptions fetchOptions, final boolean onlyTotalCount)
+    {
+        // Removing blank criteria because they should not affect the result for the match criteria
+        final List<ISearchCriteria> filteredCriteria = criteria.getCriteria().stream()
+                .filter(criterion -> !(criterion instanceof GlobalSearchTextCriteria &&
+                        ((GlobalSearchTextCriteria) criterion).getFieldValue().getValue().trim().isEmpty()))
+                .flatMap(criterion ->
+                {
+                    final AbstractStringValue fieldValue = criterion instanceof GlobalSearchTextCriteria
+                            ? ((GlobalSearchTextCriteria) criterion).getFieldValue() : null;
+                    if (fieldValue instanceof StringContainsValue)
+                    {
+                        return Arrays.stream(fieldValue.getValue().split("\\s+")).map(value ->
+                        {
+                            final StringContainsExactlyValue stringContainsExactlyValue =
+                                    new StringContainsExactlyValue(value);
+                            final GlobalSearchTextCriteria mappedCriterion = new GlobalSearchTextCriteria();
+                            mappedCriterion.setFieldValue(stringContainsExactlyValue);
+                            return mappedCriterion;
+                        });
+                    } else
+                    {
+                        return Stream.of(criterion);
+                    }
+                })
+                .collect(Collectors.toList());
+        if (filteredCriteria.isEmpty())
+        {
+            return createEmptyResult(onlyTotalCount);
+        } else
+        {
+            criteria.setCriteria(filteredCriteria);
+            return searchDAO.queryDBForIdsWithGlobalSearchContainsCriteria(userId, criteria, idsColumnName,
+                    authorisationInformation, objectKinds, fetchOptions, onlyTotalCount);
+        }
+    }
+
+    private static List<Map<String, Object>> createEmptyResult(final boolean onlyTotalCount)
+    {
+        return onlyTotalCount ? Collections.singletonList(Collections.singletonMap(TOTAL_COUNT_ALIAS, 0L))
+                : Collections.emptyList();
     }
 
     @Override
@@ -142,7 +240,9 @@ public class GlobalSearchManager implements IGlobalSearchManager
     public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records, final boolean withMatches)
     {
         return records.stream().map(stringObjectMap -> mapRecordToMatchingEntity(stringObjectMap, withMatches))
-                .collect(Collectors.toMap(MatchingEntity::getPermId, Function.identity(),
+                .collect(Collectors.toMap(
+                        matchingEntity -> matchingEntity.getEntityKind() + "-" + matchingEntity.getId(),
+                        Function.identity(),
                         (existingMatchingEntity, newMatchingEntity) ->
                                 mergeMatchingEntities(existingMatchingEntity, newMatchingEntity, withMatches),
                         LinkedHashMap::new
@@ -175,7 +275,8 @@ public class GlobalSearchManager implements IGlobalSearchManager
             matchingEntity.setSpace(space);
         }
 
-        matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
+        final Float rank = (Float) fieldsMap.get(RANK_ALIAS);
+        matchingEntity.setScore(rank != null ? rank : 0F);
 
         final List<PropertyMatch> matches = new ArrayList<>();
 

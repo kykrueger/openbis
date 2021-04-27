@@ -96,7 +96,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final AbstractCompositeSearchCriteria containerCriterion = createEmptyCriteria(negated);
             containerCriterion.withOperator(finalSearchOperator);
             containerCriterion.setCriteria(mainCriteria);
-            mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsAndRanksWithNonRecursiveCriteria(userId,
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBForIdsWithGlobalSearchMatchCriteria(userId,
                     containerCriterion, tableMapper, idsColumnName, authorisationInformation);
         } else
         {
@@ -245,7 +245,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         return getSearchDAO().findParentIDs(tableMapper, childIdSet, relationshipType);
     }
 
-    protected class CompositeEntityCriteriaVo
+    protected static class CompositeEntityCriteriaVo
     {
         private final Collection<ISearchCriteria> mainCriteria;
         private final Collection<? extends ISearchCriteria> parentsCriteria;

@@ -16,16 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.globalsearch;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
@@ -34,12 +30,16 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.GlobalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.AbstractSQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.globalsearch.IGlobalSearchObjectTranslator;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -58,6 +58,9 @@ public class SearchGloballyOperationExecutor
         extends SearchObjectsOperationExecutor<GlobalSearchObject, MatchingEntity, GlobalSearchCriteria, GlobalSearchObjectFetchOptions>
         implements ISearchGloballyOperationExecutor
 {
+
+    private static final Logger OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION,
+            SearchGloballyOperationExecutor.class);
 
     @Autowired
     private IGlobalSearchExecutor searchExecutor;
@@ -115,13 +118,17 @@ public class SearchGloballyOperationExecutor
         final Map<MatchingEntity, GlobalSearchObject> pagedResultV3DTOs = doTranslate(translationContext,
                 pagedMatchingEntities, fetchOptions);
 
-        assert pagedMatchingEntities.size() == pagedResultV3DTOs.size() : String.format(
-                "The number of results after translation should not change. " +
-                "[pagedResultPEs.size()=%d, pagedResultV3DTOs.size()=%d]",
-                pagedMatchingEntities.size(), pagedResultV3DTOs.size());
+        if (pagedMatchingEntities.size() != pagedResultV3DTOs.size())
+        {
+            throw new RuntimeException(String.format("Number of results after translation has changed. "
+                            + "Total count value will be incorrect. "
+                            + "[pagedResultPEs.size()=%d, pagedResultV3DTOs.size()=%d]",
+                    pagedMatchingEntities.size(), pagedResultV3DTOs.size()));
+        }
 
         // Reordering of pagedResultV3DTOs is needed because translation mixes the order
         final List<GlobalSearchObject> objectResults = pagedMatchingEntities.stream().map(pagedResultV3DTOs::get)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         // Sorting and paging parents and children in a "conventional" way.

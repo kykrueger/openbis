@@ -18,17 +18,17 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search;
 
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
-@JsonObject("as.dto.common.search.StringStartsWithValue")
-public class StringStartsWithValue extends AbstractStringValue
+@JsonObject("as.dto.common.search.StringMatchesValue")
+public class StringMatchesValue extends AbstractStringValue
 {
     private static final long serialVersionUID = 1L;
 
-    private StringStartsWithValue()
+    private StringMatchesValue()
     {
         super(null);
     }
 
-    public StringStartsWithValue(String value)
+    public StringMatchesValue(final String value)
     {
         super(value);
     }
@@ -36,6 +36,6 @@ public class StringStartsWithValue extends AbstractStringValue
     @Override
     public String toString()
     {
-        return "starts with '" + getValue() + "'";
+        return "matches '" + getValue() + "'";
     }
 }

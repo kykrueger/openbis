@@ -15,8 +15,6 @@ class AttrHolder():
     - experiment (sample)
     - samples (experiment)
     - dataset
-    - parents (sample, dataset)
-    - children (sample, dataset)
     - tags
     """
 
@@ -86,10 +84,14 @@ class AttrHolder():
                 self.__dict__['_' + attr] = []
                 if data[attr] is not None:
                     for item in data[attr]:
-                        if 'identifier' in item:
-                            self.__dict__['_' + attr].append(item['identifier'])
-                        elif 'permId' in item:
-                            self.__dict__['_' + attr].append(item['permId'])
+                        try:
+                            if 'identifier' in item:
+                                self.__dict__['_' + attr].append(item['identifier'])
+                            elif 'permId' in item:
+                                self.__dict__['_' + attr].append(item['permId'])
+                        except Exception:
+                            # TODO: under certain circumstances, openBIS only delivers an integer
+                            pass
 
             elif attr in ["tags"]:
                 self.add_tags(data[attr])
@@ -803,9 +805,9 @@ class AttrHolder():
 
         for tag in tags:
             for i, tag_dict in enumerate(self.__dict__['_tags']):
-                if tag in self.__dict__['_tags'][i]['code'] or \
-                   tag in self.__dict__['_tags'][i]['permId']:
-                    self.__dict__['_tags'].pop(i, None)
+                if tag in tag_dict[i]['code'] or \
+                   tag in tag_dict[i]['permId']:
+                    tag_dict.pop(i, None)
 
     def set_users(self, userIds):
         if userIds is None:
@@ -942,7 +944,7 @@ class AttrHolder():
         return html
 
     def __repr__(self):
-        """ When using iPython, this method displays a nice table
+        """ When using IPython, this method displays a nice table
         of all attributes and their values when the object is printed.
         """
 
