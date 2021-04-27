@@ -26,7 +26,7 @@ class ProjectDeletionProcessor extends DeletionEventProcessor
 
     @Override protected Set<EntityType> getDescendantEntityTypes()
     {
-        return EnumSet.of(EntityType.EXPERIMENT, EntityType.SAMPLE, EntityType.DATASET);
+        return EnumSet.of(EntityType.EXPERIMENT, EntityType.SAMPLE, EntityType.DATASET, EntityType.ATTACHMENT);
     }
 
     @Override protected void processDeletions(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, List<NewEvent> newEvents,

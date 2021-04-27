@@ -13,20 +13,33 @@ public class GenericEventProcessor extends EventProcessor
 {
     private final EventType eventType;
 
+    private final EntityType entityType;
+
     GenericEventProcessor(IDataSource dataSource, EventType eventType)
     {
         super(dataSource);
         this.eventType = eventType;
+        this.entityType = null;
+    }
+
+    GenericEventProcessor(IDataSource dataSource, EventType eventType, EntityType entityType)
+    {
+        super(dataSource);
+        this.eventType = eventType;
+        this.entityType = entityType;
     }
 
     @Override final public void process(LastTimestamps lastTimestamps, SnapshotsFacade snapshots)
     {
-        final Date lastSeenTimestampOrNull = lastTimestamps.getEarliestOrNull(eventType, EntityType.values());
+        final Date lastSeenTimestampOrNull = entityType != null ?
+                lastTimestamps.getEarliestOrNull(eventType, entityType) :
+                lastTimestamps.getEarliestOrNull(eventType, EntityType.values());
+
         final MutableObject<Date> latestLastSeenTimestamp = new MutableObject<>(lastSeenTimestampOrNull);
 
         while (true)
         {
-            final List<EventPE> events = dataSource.loadEvents(eventType, null, latestLastSeenTimestamp.getValue());
+            final List<EventPE> events = dataSource.loadEvents(eventType, entityType, latestLastSeenTimestamp.getValue());
 
             if (events.isEmpty())
             {
@@ -41,7 +54,7 @@ public class GenericEventProcessor extends EventProcessor
                         NewEvent newEvent = NewEvent.fromOldEventPE(event);
                         newEvent.identifier = event.getIdentifiers() != null ? String.join(", ", event.getIdentifiers()) : null;
 
-                        dataSource.createEventsSearch(newEvent.toNewEventPE());
+                        process(lastTimestamps, snapshots, event, newEvent);
 
                         if (latestLastSeenTimestamp.getValue() == null || event.getRegistrationDateInternal()
                                 .after(latestLastSeenTimestamp.getValue()))
@@ -57,5 +70,10 @@ public class GenericEventProcessor extends EventProcessor
                 return null;
             });
         }
+    }
+
+    protected void process(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, EventPE oldEvent, NewEvent newEvent) throws Exception
+    {
+        dataSource.createEventsSearch(newEvent.toNewEventPE());
     }
 }

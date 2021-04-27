@@ -14,13 +14,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.utilities.TestResources;
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.log4j.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.api.Invocation;
@@ -42,13 +39,7 @@ import static org.testng.Assert.assertEquals;
 public class EventsSearchMaintenanceTaskTest
 {
 
-    private static final String INFO_PREFIX = "INFO  OPERATION." + EventsSearchMaintenanceTask.class.getSimpleName() + " - ";
-
-    private static final String ERROR_PREFIX = "ERROR OPERATION." + EventsSearchMaintenanceTask.class.getSimpleName() + " - ";
-
     private static final DateFormat DATE_TIME_MILLIS_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-
-    private BufferedAppender logRecorder;
 
     private Mockery mockery;
 
@@ -61,7 +52,6 @@ public class EventsSearchMaintenanceTaskTest
     @BeforeMethod
     public void beforeMethod()
     {
-        logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO);
         mockery = new Mockery();
         dataSource = mockery.mock(IDataSource.class);
 
@@ -150,16 +140,18 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2000-01-01 00:28:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2000-01-01 00:27:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2000-01-01 00:26:00.000"));
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2000-01-01 00:25:00.000"));
 
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2000-01-01 00:26:00.000"), deletionA1, deletionA2);
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionA2.getRegistrationDateInternal(), deletionB);
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionB.getRegistrationDateInternal());
-            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2000-01-01 00:26:00.000"));
-            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2000-01-01 00:26:00.000"));
-            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2000-01-01 00:26:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2000-01-01 00:25:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2000-01-01 00:25:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2000-01-01 00:25:00.000"));
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2000-01-01 00:26:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2000-01-01 00:25:00.000"));
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -276,17 +268,19 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:28:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-03-29 00:27:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-03-29 00:26:00.000"));
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-03-29 00:25:00.000"));
 
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-03-29 00:26:00.000"), deletionSpaceA, deletionSpaceB);
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionSpaceB.getRegistrationDateInternal());
-            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-03-29 00:26:00.000"), deletionProjectA);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-03-29 00:25:00.000"), deletionProjectA);
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectA.getRegistrationDateInternal(), deletionProjectB);
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectB.getRegistrationDateInternal());
-            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:26:00.000"));
-            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-03-29 00:26:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:25:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-03-29 00:25:00.000"));
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-03-29 00:26:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-03-29 00:25:00.000"));
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -448,17 +442,19 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:28:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-03-29 00:27:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-03-29 00:26:00.000"));
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-03-29 00:25:00.000"));
 
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-03-29 00:26:00.000"));
-            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-03-29 00:26:00.000"), deletionProjectA, deletionProjectB);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-03-29 00:25:00.000"), deletionProjectA, deletionProjectB);
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectB.getRegistrationDateInternal());
-            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:26:00.000"), deletionExperimentA);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:25:00.000"), deletionExperimentA);
             expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal(), deletionExperimentsAB);
             expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentsAB.getRegistrationDateInternal());
-            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-03-29 00:26:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-03-29 00:25:00.000"));
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-03-29 00:26:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-03-29 00:25:00.000"));
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -807,17 +803,19 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-04-01 00:28:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-04-01 00:27:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-04-01 00:26:00.000"));
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-04-01 00:25:00.000"));
 
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-04-01 00:26:00.000"));
-            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-04-01 00:26:00.000"));
-            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-04-01 00:26:00.000"), deletionExperimentA);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-04-01 00:25:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-04-01 00:25:00.000"), deletionExperimentA);
             expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
-            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-04-01 00:26:00.000"), deletionSampleA, deletionSampleB);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-04-01 00:25:00.000"), deletionSampleA, deletionSampleB);
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleB.getRegistrationDateInternal(), deletionSampleC, deletionSampleD);
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleD.getRegistrationDateInternal());
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-04-01 00:26:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-04-01 00:25:00.000"));
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -1344,19 +1342,21 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-04-07 00:28:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-04-07 00:27:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-04-07 00:26:00.000"));
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-04-07 00:25:00.000"));
 
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-04-07 00:26:00.000"));
-            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-04-07 00:26:00.000"));
-            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-04-07 00:26:00.000"), deletionExperimentA);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-04-07 00:25:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-04-07 00:25:00.000"), deletionExperimentA);
             expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
-            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-04-07 00:26:00.000"), deletionSampleA);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-04-07 00:25:00.000"), deletionSampleA);
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal());
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-04-07 00:26:00.000"), deletionDataSetA);
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, deletionDataSetA.getRegistrationDateInternal(), deletionDataSetB,
                     deletionDataSetC);
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, deletionDataSetC.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-04-07 00:25:00.000"));
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -1705,13 +1705,360 @@ public class EventsSearchMaintenanceTaskTest
         assertExpectedEvent(events.get(2), deletionDataSetAExpected);
     }
 
+    @Test
+    public void testDeletionAttachments()
+    {
+        // Tests the following scenario:
+        // - create space A
+        // - create project B in space A
+        // - create experiment C in project /A/B
+        // - create sample D in experiment /A/B/C
+        // - create attachment B1, B2 and B3 in project B
+        // - create attachment C1, C2 and C3 in experiment C
+        // - create attachment D1, D2 and D3 in sample D
+        // - delete attachment D1
+        // - delete sample D
+        // - delete attachment C2
+        // - delete experiment C
+        // - delete attachment B1
+        // - delete project B
+
+        PersonPE deleterA = new PersonPE();
+        deleterA.setUserId("deleter_A");
+
+        PersonPE deleterB = new PersonPE();
+        deleterB.setUserId("deleter_B");
+
+        PersonPE deleterC = new PersonPE();
+        deleterC.setUserId("deleter_C");
+
+        PersonPE deleterD = new PersonPE();
+        deleterD.setUserId("deleter_D");
+
+        EventPE deletionAttachmentD1 = new EventPE();
+        deletionAttachmentD1.setId(1L);
+        deletionAttachmentD1.setEventType(EventType.DELETION);
+        deletionAttachmentD1.setEntityType(EntityType.ATTACHMENT);
+        deletionAttachmentD1.setIdentifiers(Collections.singletonList("sample/20210427150007514-205272/d1.txt(1)"));
+        deletionAttachmentD1.setDescription("sample/20210427150007514-205272/d1.txt(1)");
+        deletionAttachmentD1.setReason("Reason D1");
+        deletionAttachmentD1.setContent(loadFile("testAttachments_deletionAttachmentD1.json"));
+        deletionAttachmentD1.setRegistrator(deleterD);
+        deletionAttachmentD1.setRegistrationDate(dateTimeMillis("2021-04-27 15:05:19.371"));
+
+        EventPE deletionAttachmentD2 = new EventPE();
+        deletionAttachmentD2.setId(2L);
+        deletionAttachmentD2.setEventType(EventType.DELETION);
+        deletionAttachmentD2.setEntityType(EntityType.ATTACHMENT);
+        deletionAttachmentD2.setIdentifiers(Collections.singletonList("sample/20210427150007514-205272/d2.txt(1)"));
+        deletionAttachmentD2.setDescription("sample/20210427150007514-205272/d2.txt(1)");
+        deletionAttachmentD2.setReason("Reason D2");
+        deletionAttachmentD2.setContent(loadFile("testAttachments_deletionAttachmentD2.json"));
+        deletionAttachmentD2.setRegistrator(deleterD);
+        deletionAttachmentD2.setRegistrationDate(dateTimeMillis("2021-04-27 15:05:36.239"));
+
+        EventPE deletionAttachmentD3 = new EventPE();
+        deletionAttachmentD3.setId(3L);
+        deletionAttachmentD3.setEventType(EventType.DELETION);
+        deletionAttachmentD3.setEntityType(EntityType.ATTACHMENT);
+        deletionAttachmentD3.setIdentifiers(Collections.singletonList("sample/20210427150007514-205272/d3.txt(1)"));
+        deletionAttachmentD3.setDescription("sample/20210427150007514-205272/d3.txt(1)");
+        deletionAttachmentD3.setReason("Reason D3");
+        deletionAttachmentD3.setContent(loadFile("testAttachments_deletionAttachmentD3.json"));
+        deletionAttachmentD3.setRegistrator(deleterD);
+        deletionAttachmentD3.setRegistrationDate(dateTimeMillis("2021-04-27 15:05:36.239"));
+
+        EventPE deletionSampleD = new EventPE();
+        deletionSampleD.setId(4L);
+        deletionSampleD.setEventType(EventType.DELETION);
+        deletionSampleD.setEntityType(EntityType.SAMPLE);
+        deletionSampleD.setIdentifiers(Collections.singletonList("20210427150007514-205272"));
+        deletionSampleD.setDescription("20210427150007514-205272");
+        deletionSampleD.setReason("Reason D");
+        deletionSampleD.setContent(loadFile("testAttachments_deletionSampleD.json"));
+        deletionSampleD.setRegistrator(deleterD);
+        deletionSampleD.setRegistrationDate(dateTimeMillis("2021-04-27 15:05:36.239"));
+
+        EventPE deletionAttachmentC2 = new EventPE();
+        deletionAttachmentC2.setId(5L);
+        deletionAttachmentC2.setEventType(EventType.DELETION);
+        deletionAttachmentC2.setEntityType(EntityType.ATTACHMENT);
+        deletionAttachmentC2.setIdentifiers(Collections.singletonList("experiment/20210427145943350-205271/c2.txt(1)"));
+        deletionAttachmentC2.setDescription("experiment/20210427145943350-205271/c2.txt(1)");
+        deletionAttachmentC2.setReason("Reason C2");
+        deletionAttachmentC2.setContent(loadFile("testAttachments_deletionAttachmentC2.json"));
+        deletionAttachmentC2.setRegistrator(deleterC);
+        deletionAttachmentC2.setRegistrationDate(dateTimeMillis("2021-04-27 15:05:55.282"));
+
+        EventPE deletionAttachmentC1 = new EventPE();
+        deletionAttachmentC1.setId(6L);
+        deletionAttachmentC1.setEventType(EventType.DELETION);
+        deletionAttachmentC1.setEntityType(EntityType.ATTACHMENT);
+        deletionAttachmentC1.setIdentifiers(Collections.singletonList("experiment/20210427145943350-205271/c1.txt(1)"));
+        deletionAttachmentC1.setDescription("experiment/20210427145943350-205271/c1.txt(1)");
+        deletionAttachmentC1.setReason("Reason C1");
+        deletionAttachmentC1.setContent(loadFile("testAttachments_deletionAttachmentC1.json"));
+        deletionAttachmentC1.setRegistrator(deleterC);
+        deletionAttachmentC1.setRegistrationDate(dateTimeMillis("2021-04-27 15:06:19.640"));
+
+        EventPE deletionAttachmentC3 = new EventPE();
+        deletionAttachmentC3.setId(7L);
+        deletionAttachmentC3.setEventType(EventType.DELETION);
+        deletionAttachmentC3.setEntityType(EntityType.ATTACHMENT);
+        deletionAttachmentC3.setIdentifiers(Collections.singletonList("experiment/20210427145943350-205271/c3.txt(1)"));
+        deletionAttachmentC3.setDescription("experiment/20210427145943350-205271/c3.txt(1)");
+        deletionAttachmentC3.setReason("Reason C3");
+        deletionAttachmentC3.setContent(loadFile("testAttachments_deletionAttachmentC3.json"));
+        deletionAttachmentC3.setRegistrator(deleterC);
+        deletionAttachmentC3.setRegistrationDate(dateTimeMillis("2021-04-27 15:06:19.640"));
+
+        EventPE deletionExperimentC = new EventPE();
+        deletionExperimentC.setId(8L);
+        deletionExperimentC.setEventType(EventType.DELETION);
+        deletionExperimentC.setEntityType(EntityType.EXPERIMENT);
+        deletionExperimentC.setIdentifiers(Collections.singletonList("20210427145943350-205271"));
+        deletionExperimentC.setDescription("20210427145943350-205271");
+        deletionExperimentC.setReason("Reason C");
+        deletionExperimentC.setContent(loadFile("testAttachments_deletionExperimentC.json"));
+        deletionExperimentC.setRegistrator(deleterC);
+        deletionExperimentC.setRegistrationDate(dateTimeMillis("2021-04-27 15:06:19.640"));
+
+        EventPE deletionAttachmentB1 = new EventPE();
+        deletionAttachmentB1.setId(9L);
+        deletionAttachmentB1.setEventType(EventType.DELETION);
+        deletionAttachmentB1.setEntityType(EntityType.ATTACHMENT);
+        deletionAttachmentB1.setIdentifiers(Collections.singletonList("project/20210427145921003-205270/b1.txt(1)"));
+        deletionAttachmentB1.setDescription("project/20210427145921003-205270/b1.txt(1)");
+        deletionAttachmentB1.setReason("Reason B1");
+        deletionAttachmentB1.setContent(loadFile("testAttachments_deletionAttachmentB1.json"));
+        deletionAttachmentB1.setRegistrator(deleterB);
+        deletionAttachmentB1.setRegistrationDate(dateTimeMillis("2021-04-27 15:06:43.724"));
+
+        EventPE deletionAttachmentB2 = new EventPE();
+        deletionAttachmentB2.setId(10L);
+        deletionAttachmentB2.setEventType(EventType.DELETION);
+        deletionAttachmentB2.setEntityType(EntityType.ATTACHMENT);
+        deletionAttachmentB2.setIdentifiers(Collections.singletonList("project/20210427145921003-205270/b2.txt(1)"));
+        deletionAttachmentB2.setDescription("project/20210427145921003-205270/b2.txt(1)");
+        deletionAttachmentB2.setReason("Reason B2");
+        deletionAttachmentB2.setContent(loadFile("testAttachments_deletionAttachmentB2.json"));
+        deletionAttachmentB2.setRegistrator(deleterB);
+        deletionAttachmentB2.setRegistrationDate(dateTimeMillis("2021-04-27 15:06:54.296"));
+
+        EventPE deletionAttachmentB3 = new EventPE();
+        deletionAttachmentB3.setId(11L);
+        deletionAttachmentB3.setEventType(EventType.DELETION);
+        deletionAttachmentB3.setEntityType(EntityType.ATTACHMENT);
+        deletionAttachmentB3.setIdentifiers(Collections.singletonList("project/20210427145921003-205270/b3.txt(1)"));
+        deletionAttachmentB3.setDescription("project/20210427145921003-205270/b3.txt(1)");
+        deletionAttachmentB3.setReason("Reason B3");
+        deletionAttachmentB3.setContent(loadFile("testAttachments_deletionAttachmentB3.json"));
+        deletionAttachmentB3.setRegistrator(deleterB);
+        deletionAttachmentB3.setRegistrationDate(dateTimeMillis("2021-04-27 15:06:54.296"));
+
+        EventPE deletionProjectB = new EventPE();
+        deletionProjectB.setId(8L);
+        deletionProjectB.setEventType(EventType.DELETION);
+        deletionProjectB.setEntityType(EntityType.PROJECT);
+        deletionProjectB.setIdentifiers(Collections.singletonList("20210427145921003-205270"));
+        deletionProjectB.setDescription("/SPACE_A/PROJECT_B");
+        deletionProjectB.setReason("Reason B");
+        deletionProjectB.setContent(loadFile("testAttachments_deletionProjectB.json"));
+        deletionProjectB.setRegistrator(deleterB);
+        deletionProjectB.setRegistrationDate(dateTimeMillis("2021-04-27 15:06:54.296"));
+
+        SpacePE spaceA = new SpacePE();
+        spaceA.setId(100L);
+        spaceA.setCode("SPACE_A");
+        spaceA.setRegistrationDate(dateTimeMillis("2021-04-27 14:59:08.791"));
+
+        List<EventsSearchPE> events = new ArrayList<>();
+        {
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-03-29 00:30:00.000"));
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-03-29 00:29:00.000"));
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:28:00.000"));
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-03-29 00:27:00.000"));
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-03-29 00:26:00.000"));
+            expectLoadLastTimestamp(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-03-29 00:25:00.000"));
+
+            expectLoadEvents(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-03-29 00:26:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-03-29 00:25:00.000"), deletionProjectB);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectB.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:25:00.000"), deletionExperimentC);
+            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentC.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-03-29 00:25:00.000"), deletionSampleD);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleD.getRegistrationDateInternal());
+            expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-03-29 00:26:00.000"));
+            expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-03-29 00:25:00.000"), deletionAttachmentD1,
+                    deletionAttachmentD2, deletionAttachmentD3);
+            expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, deletionAttachmentD3.getRegistrationDateInternal(), deletionAttachmentC2,
+                    deletionAttachmentC1, deletionAttachmentC3, deletionAttachmentB1, deletionAttachmentB2, deletionAttachmentB3);
+            expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, deletionAttachmentB3.getRegistrationDateInternal());
+
+            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
+                    EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
+            {
+                Date randomTimestamp = new Date((long) (Math.random() * 10000));
+                expectLoadLastTimestamp(EventType.DELETION, entityType, randomTimestamp);
+                expectLoadEvents(EventType.DELETION, entityType, randomTimestamp);
+            }
+
+            expectLoadSpaces(Collections.singletonList("SPACE_A"), spaceA);
+            expectLoadProjects(Collections.singletonList("20210427145921003-205270"));
+            expectLoadExperiments(Collections.singletonList("20210427145943350-205271"));
+
+            expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
+
+            expectCreateEvents(events);
+        }
+
+        EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
+        task.execute();
+
+        assertEquals(events.size(), 12);
+
+        EventsSearchPE deletionProjectBExpected = createExpectedEvent(deletionProjectB);
+        deletionProjectBExpected.setEntitySpace("SPACE_A");
+        deletionProjectBExpected.setEntitySpacePermId("100");
+        deletionProjectBExpected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionProjectBExpected.setEntityProjectPermId("20210427145921003-205270");
+        deletionProjectBExpected.setEntityRegisterer("registerer_B");
+        deletionProjectBExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 14:59:21.000"));
+        deletionProjectBExpected.setIdentifier("20210427145921003-205270");
+        deletionProjectBExpected.setContent(loadFile("testAttachments_deletionProjectBExpected.json"));
+        assertExpectedEvent(events.get(0), deletionProjectBExpected);
+
+        EventsSearchPE deletionExperimentCExpected = createExpectedEvent(deletionExperimentC);
+        deletionExperimentCExpected.setEntitySpace("SPACE_A");
+        deletionExperimentCExpected.setEntitySpacePermId("100");
+        deletionExperimentCExpected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionExperimentCExpected.setEntityProjectPermId("20210427145921003-205270");
+        deletionExperimentCExpected.setEntityRegisterer("registerer_C");
+        deletionExperimentCExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 14:59:43.000"));
+        deletionExperimentCExpected.setIdentifier("20210427145943350-205271");
+        deletionExperimentCExpected.setContent(loadFile("testAttachments_deletionExperimentCExpected.json"));
+        assertExpectedEvent(events.get(1), deletionExperimentCExpected);
+
+        EventsSearchPE deletionSampleDExpected = createExpectedEvent(deletionSampleD);
+        deletionSampleDExpected.setEntitySpace("SPACE_A");
+        deletionSampleDExpected.setEntitySpacePermId("100");
+        deletionSampleDExpected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionSampleDExpected.setEntityProjectPermId("20210427145921003-205270");
+        deletionSampleDExpected.setEntityRegisterer("registerer_D");
+        deletionSampleDExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 15:00:07.000"));
+        deletionSampleDExpected.setIdentifier("20210427150007514-205272");
+        deletionSampleDExpected.setContent(loadFile("testAttachments_deletionSampleDExpected.json"));
+        assertExpectedEvent(events.get(2), deletionSampleDExpected);
+
+        EventsSearchPE deletionAttachmentD1Expected = createExpectedEvent(deletionAttachmentD1);
+        deletionAttachmentD1Expected.setEntitySpace("SPACE_A");
+        deletionAttachmentD1Expected.setEntitySpacePermId("100");
+        deletionAttachmentD1Expected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionAttachmentD1Expected.setEntityProjectPermId("20210427145921003-205270");
+        deletionAttachmentD1Expected.setEntityRegisterer("registerer_D1");
+        deletionAttachmentD1Expected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 15:04:35.951"));
+        deletionAttachmentD1Expected.setIdentifier("sample/20210427150007514-205272/d1.txt(1)");
+        deletionAttachmentD1Expected.setContent(loadFile("testAttachments_deletionAttachmentD1Expected.json"));
+        assertExpectedEvent(events.get(3), deletionAttachmentD1Expected);
+
+        EventsSearchPE deletionAttachmentD2Expected = createExpectedEvent(deletionAttachmentD2);
+        deletionAttachmentD2Expected.setEntitySpace("SPACE_A");
+        deletionAttachmentD2Expected.setEntitySpacePermId("100");
+        deletionAttachmentD2Expected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionAttachmentD2Expected.setEntityProjectPermId("20210427145921003-205270");
+        deletionAttachmentD2Expected.setEntityRegisterer("registerer_D2");
+        deletionAttachmentD2Expected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 15:04:46.163"));
+        deletionAttachmentD2Expected.setIdentifier("sample/20210427150007514-205272/d2.txt(1)");
+        deletionAttachmentD2Expected.setContent(loadFile("testAttachments_deletionAttachmentD2Expected.json"));
+        assertExpectedEvent(events.get(4), deletionAttachmentD2Expected);
+
+        EventsSearchPE deletionAttachmentD3Expected = createExpectedEvent(deletionAttachmentD3);
+        deletionAttachmentD3Expected.setEntitySpace("SPACE_A");
+        deletionAttachmentD3Expected.setEntitySpacePermId("100");
+        deletionAttachmentD3Expected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionAttachmentD3Expected.setEntityProjectPermId("20210427145921003-205270");
+        deletionAttachmentD3Expected.setEntityRegisterer("registerer_D3");
+        deletionAttachmentD3Expected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 15:04:58.407"));
+        deletionAttachmentD3Expected.setIdentifier("sample/20210427150007514-205272/d3.txt(1)");
+        deletionAttachmentD3Expected.setContent(loadFile("testAttachments_deletionAttachmentD3Expected.json"));
+        assertExpectedEvent(events.get(5), deletionAttachmentD3Expected);
+
+        EventsSearchPE deletionAttachmentC2Expected = createExpectedEvent(deletionAttachmentC2);
+        deletionAttachmentC2Expected.setEntitySpace("SPACE_A");
+        deletionAttachmentC2Expected.setEntitySpacePermId("100");
+        deletionAttachmentC2Expected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionAttachmentC2Expected.setEntityProjectPermId("20210427145921003-205270");
+        deletionAttachmentC2Expected.setEntityRegisterer("registerer_C2");
+        deletionAttachmentC2Expected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 15:03:39.413"));
+        deletionAttachmentC2Expected.setIdentifier("experiment/20210427145943350-205271/c2.txt(1)");
+        deletionAttachmentC2Expected.setContent(loadFile("testAttachments_deletionAttachmentC2Expected.json"));
+        assertExpectedEvent(events.get(6), deletionAttachmentC2Expected);
+
+        EventsSearchPE deletionAttachmentC1Expected = createExpectedEvent(deletionAttachmentC1);
+        deletionAttachmentC1Expected.setEntitySpace("SPACE_A");
+        deletionAttachmentC1Expected.setEntitySpacePermId("100");
+        deletionAttachmentC1Expected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionAttachmentC1Expected.setEntityProjectPermId("20210427145921003-205270");
+        deletionAttachmentC1Expected.setEntityRegisterer("registerer_C1");
+        deletionAttachmentC1Expected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 15:03:27.997"));
+        deletionAttachmentC1Expected.setIdentifier("experiment/20210427145943350-205271/c1.txt(1)");
+        deletionAttachmentC1Expected.setContent(loadFile("testAttachments_deletionAttachmentC1Expected.json"));
+        assertExpectedEvent(events.get(7), deletionAttachmentC1Expected);
+
+        EventsSearchPE deletionAttachmentC3Expected = createExpectedEvent(deletionAttachmentC3);
+        deletionAttachmentC3Expected.setEntitySpace("SPACE_A");
+        deletionAttachmentC3Expected.setEntitySpacePermId("100");
+        deletionAttachmentC3Expected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionAttachmentC3Expected.setEntityProjectPermId("20210427145921003-205270");
+        deletionAttachmentC3Expected.setEntityRegisterer("registerer_C3");
+        deletionAttachmentC3Expected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 15:03:51.216"));
+        deletionAttachmentC3Expected.setIdentifier("experiment/20210427145943350-205271/c3.txt(1)");
+        deletionAttachmentC3Expected.setContent(loadFile("testAttachments_deletionAttachmentC3Expected.json"));
+        assertExpectedEvent(events.get(8), deletionAttachmentC3Expected);
+
+        EventsSearchPE deletionAttachmentB1Expected = createExpectedEvent(deletionAttachmentB1);
+        deletionAttachmentB1Expected.setEntitySpace("SPACE_A");
+        deletionAttachmentB1Expected.setEntitySpacePermId("100");
+        deletionAttachmentB1Expected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionAttachmentB1Expected.setEntityProjectPermId("20210427145921003-205270");
+        deletionAttachmentB1Expected.setEntityRegisterer("registerer_B1");
+        deletionAttachmentB1Expected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 15:02:26.537"));
+        deletionAttachmentB1Expected.setIdentifier("project/20210427145921003-205270/b1.txt(1)");
+        deletionAttachmentB1Expected.setContent(loadFile("testAttachments_deletionAttachmentB1Expected.json"));
+        assertExpectedEvent(events.get(9), deletionAttachmentB1Expected);
+
+        EventsSearchPE deletionAttachmentB2Expected = createExpectedEvent(deletionAttachmentB2);
+        deletionAttachmentB2Expected.setEntitySpace("SPACE_A");
+        deletionAttachmentB2Expected.setEntitySpacePermId("100");
+        deletionAttachmentB2Expected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionAttachmentB2Expected.setEntityProjectPermId("20210427145921003-205270");
+        deletionAttachmentB2Expected.setEntityRegisterer("registerer_B2");
+        deletionAttachmentB2Expected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 15:02:40.608"));
+        deletionAttachmentB2Expected.setIdentifier("project/20210427145921003-205270/b2.txt(1)");
+        deletionAttachmentB2Expected.setContent(loadFile("testAttachments_deletionAttachmentB2Expected.json"));
+        assertExpectedEvent(events.get(10), deletionAttachmentB2Expected);
+
+        EventsSearchPE deletionAttachmentB3Expected = createExpectedEvent(deletionAttachmentB3);
+        deletionAttachmentB3Expected.setEntitySpace("SPACE_A");
+        deletionAttachmentB3Expected.setEntitySpacePermId("100");
+        deletionAttachmentB3Expected.setEntityProject("/SPACE_A/PROJECT_B");
+        deletionAttachmentB3Expected.setEntityProjectPermId("20210427145921003-205270");
+        deletionAttachmentB3Expected.setEntityRegisterer("registerer_B3");
+        deletionAttachmentB3Expected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-27 15:02:52.432"));
+        deletionAttachmentB3Expected.setIdentifier("project/20210427145921003-205270/b3.txt(1)");
+        deletionAttachmentB3Expected.setContent(loadFile("testAttachments_deletionAttachmentB3Expected.json"));
+        assertExpectedEvent(events.get(11), deletionAttachmentB3Expected);
+    }
+
     private static final String PROVIDE_TEST_DELETION_GENERIC = "provideTestDeletionGeneric";
 
     @DataProvider(name = PROVIDE_TEST_DELETION_GENERIC)
     private static Object[][] provideTestDeletionGeneric()
     {
         return new Object[][] { { EntityType.MATERIAL }, { EntityType.METAPROJECT }, { EntityType.AUTHORIZATION_GROUP }, { EntityType.VOCABULARY },
-                { EntityType.PROPERTY_TYPE }, { EntityType.ATTACHMENT } };
+                { EntityType.PROPERTY_TYPE } };
     }
 
     @Test(dataProvider = PROVIDE_TEST_DELETION_GENERIC)
@@ -1772,13 +2119,13 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, entityType, deletionC.getRegistrationDateInternal());
 
             for (EntityType specialEntityType : EnumSet.of(EntityType.SPACE, EntityType.PROJECT, EntityType.EXPERIMENT,
-                    EntityType.SAMPLE, EntityType.DATASET))
+                    EntityType.SAMPLE, EntityType.DATASET, EntityType.ATTACHMENT))
             {
                 expectLoadLastTimestamp(EventType.DELETION, specialEntityType, null);
                 expectLoadEvents(EventType.DELETION, specialEntityType, null);
             }
 
-            EnumSet<EntityType> otherGenericEntityTypes = EnumSet.of(EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
+            EnumSet<EntityType> otherGenericEntityTypes = EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT);
 
             otherGenericEntityTypes.remove(entityType);

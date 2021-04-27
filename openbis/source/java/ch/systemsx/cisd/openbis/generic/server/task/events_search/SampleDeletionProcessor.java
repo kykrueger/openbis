@@ -28,7 +28,7 @@ class SampleDeletionProcessor extends DeletionEventProcessor
 
     @Override protected Set<EntityType> getDescendantEntityTypes()
     {
-        return EnumSet.of(EntityType.DATASET);
+        return EnumSet.of(EntityType.DATASET, EntityType.ATTACHMENT);
     }
 
     @Override protected void processDeletion(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents, List<Snapshot> newSnapshots)
