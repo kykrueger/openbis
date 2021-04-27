@@ -88,7 +88,7 @@ public class EventsSearchMaintenanceTaskTest
     }
 
     @Test
-    public void testSpaces()
+    public void testDeletionSpaces()
     {
         // Tests the following scenario:
         // - create space A
@@ -145,7 +145,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
             expectLoadLastTimestamp(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2000-01-01 00:30:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2000-01-01 00:29:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2000-01-01 00:28:00.000"));
@@ -167,6 +166,10 @@ public class EventsSearchMaintenanceTaskTest
                 expectLoadLastTimestamp(EventType.DELETION, entityType, randomTimestamp);
                 expectLoadEvents(EventType.DELETION, entityType, randomTimestamp);
             }
+
+            expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
 
             expectCreateEvents(events);
         }
@@ -193,7 +196,7 @@ public class EventsSearchMaintenanceTaskTest
     }
 
     @Test
-    public void testProjects()
+    public void testDeletionProjects()
     {
         // Tests the following scenario:
         // - create space A
@@ -268,7 +271,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadLastTimestampsEmpty(EventType.MOVEMENT, EventType.FREEZING);
             expectLoadLastTimestamp(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-03-29 00:30:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-03-29 00:29:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:28:00.000"));
@@ -294,6 +296,10 @@ public class EventsSearchMaintenanceTaskTest
 
             expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"));
             expectLoadSpaces(Collections.singletonList("SPACE_C"), spaceC);
+
+            expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
 
             expectCreateEvents(events);
         }
@@ -336,7 +342,7 @@ public class EventsSearchMaintenanceTaskTest
     }
 
     @Test
-    public void testExperiments()
+    public void testDeletionExperiments()
     {
         // Tests the following scenario:
         // - create space A
@@ -437,7 +443,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadLastTimestampsEmpty(EventType.MOVEMENT, EventType.FREEZING);
             expectLoadLastTimestamp(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-03-29 00:30:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-03-29 00:29:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:28:00.000"));
@@ -464,6 +469,10 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceA, spaceB);
             expectLoadProjects(Arrays.asList("20210329150846687-205178", "20210329150838023-205177"));
             expectLoadProjects(Collections.singletonList("20210329151103947-205180"), projectA);
+
+            expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
 
             expectCreateEvents(events);
         }
@@ -530,7 +539,7 @@ public class EventsSearchMaintenanceTaskTest
     }
 
     @Test
-    public void testExperimentWithUnknownSpace()
+    public void testDeletionExperimentWithUnknownSpace()
     {
         // Tests the following scenario:
         // - create space A
@@ -609,6 +618,9 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceB);
             expectLoadProjects(Collections.singletonList("20210419162753803-205241"));
 
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
+
             expectCreateEvents(events);
         }
 
@@ -645,7 +657,7 @@ public class EventsSearchMaintenanceTaskTest
     }
 
     @Test
-    public void testSamples()
+    public void testDeletionSamples()
     {
         // Tests the following scenario:
         // - create space A
@@ -790,7 +802,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadLastTimestampsEmpty(EventType.MOVEMENT, EventType.FREEZING);
             expectLoadLastTimestamp(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-04-01 00:30:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-04-01 00:29:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-04-01 00:28:00.000"));
@@ -821,6 +832,10 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadProjects(Collections.singletonList("20210401151830921-205198"));
             expectLoadExperiments(Arrays.asList("20210329151103947-205180", "20210401151815315-205197"));
             expectLoadExperiments(Arrays.asList("20210401151838580-205199", "20210401151830921-205198"), experimentB);
+
+            expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
 
             expectCreateEvents(events);
         }
@@ -885,7 +900,7 @@ public class EventsSearchMaintenanceTaskTest
     }
 
     @Test
-    public void testSampleWithUnknownProject()
+    public void testDeletionSampleWithUnknownProject()
     {
         // Tests the following scenario:
         // - create space A
@@ -990,6 +1005,9 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadProjects(Arrays.asList("20210419173058839-205244", "20210419173048021-205243"), projectB);
             expectLoadExperiments(Collections.singletonList("20210419173116451-205245"));
 
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
+
             expectCreateEvents(events);
         }
 
@@ -1033,7 +1051,7 @@ public class EventsSearchMaintenanceTaskTest
     }
 
     @Test
-    public void testSampleWithUnknownSpace()
+    public void testDeletionSampleWithUnknownSpace()
     {
         // Tests the following scenario:
         // - create space A
@@ -1113,6 +1131,9 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceB);
             expectLoadProjects(Collections.singletonList("20210420105829314-205247"));
 
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
+
             expectCreateEvents(events);
         }
 
@@ -1149,7 +1170,7 @@ public class EventsSearchMaintenanceTaskTest
     }
 
     @Test
-    public void testDataSets()
+    public void testDeletionDataSets()
     {
         // Tests the following scenario:
         // - create space A
@@ -1318,7 +1339,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadLastTimestampsEmpty(EventType.MOVEMENT, EventType.FREEZING);
             expectLoadLastTimestamp(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-04-07 00:30:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-04-07 00:29:00.000"));
             expectLoadLastTimestamp(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-04-07 00:28:00.000"));
@@ -1349,6 +1369,10 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadExperiments(Arrays.asList("20210407141248879-205213", "20210407141217738-205212", "20210407141206022-205211"), experimentB);
             expectLoadSamples(Arrays.asList("20210407141248879-205213", "20210407141318103-205214"), sampleB);
             expectLoadSamples(Collections.singletonList("20210407141206022-205211"));
+
+            expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
 
             expectCreateEvents(events);
         }
@@ -1413,7 +1437,7 @@ public class EventsSearchMaintenanceTaskTest
     }
 
     @Test
-    public void testDataSetWithUnknownProject()
+    public void testDeletionDataSetWithUnknownProject()
     {
         // Tests the following scenario:
         // - create space A
@@ -1519,6 +1543,9 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadProjects(Arrays.asList("20210420114213918-205251", "20210420114205083-205250"), projectB);
             expectLoadExperiments(Collections.singletonList("20210420114236830-205252"));
 
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
+
             expectCreateEvents(events);
         }
 
@@ -1562,7 +1589,7 @@ public class EventsSearchMaintenanceTaskTest
     }
 
     @Test
-    public void testDataSetWithUnknownSpace()
+    public void testDeletionDataSetWithUnknownSpace()
     {
         // Tests the following scenario:
         // - create space A
@@ -1644,6 +1671,9 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadExperiments(Collections.singletonList("SPACE_A"));
             expectLoadSamples(Collections.singletonList("20210420131737031-205258"));
 
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
+
             expectCreateEvents(events);
         }
 
@@ -1675,17 +1705,17 @@ public class EventsSearchMaintenanceTaskTest
         assertExpectedEvent(events.get(2), deletionDataSetAExpected);
     }
 
-    private static final String PROVIDE_GENERIC_ENTITY_TYPES = "provide-generic-entity-types";
+    private static final String PROVIDE_TEST_DELETION_GENERIC = "provideTestDeletionGeneric";
 
-    @DataProvider(name = PROVIDE_GENERIC_ENTITY_TYPES)
-    private static Object[][] provideGenericEntityTypes()
+    @DataProvider(name = PROVIDE_TEST_DELETION_GENERIC)
+    private static Object[][] provideTestDeletionGeneric()
     {
         return new Object[][] { { EntityType.MATERIAL }, { EntityType.METAPROJECT }, { EntityType.AUTHORIZATION_GROUP }, { EntityType.VOCABULARY },
                 { EntityType.PROPERTY_TYPE }, { EntityType.ATTACHMENT } };
     }
 
-    @Test(dataProvider = PROVIDE_GENERIC_ENTITY_TYPES)
-    public void testGeneric(EntityType entityType)
+    @Test(dataProvider = PROVIDE_TEST_DELETION_GENERIC)
+    public void testDeletionGeneric(EntityType entityType)
     {
         // Tests the following scenario:
         // - create object A
@@ -1736,8 +1766,6 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
-
             expectLoadLastTimestamp(EventType.DELETION, entityType, dateTimeMillis("2000-01-01 00:30:00.000"));
             expectLoadEvents(EventType.DELETION, entityType, dateTimeMillis("2000-01-01 00:30:00.000"), deletionA);
             expectLoadEvents(EventType.DELETION, entityType, deletionA.getRegistrationDateInternal(), deletionB, deletionC);
@@ -1762,6 +1790,10 @@ public class EventsSearchMaintenanceTaskTest
                 expectLoadEvents(EventType.DELETION, otherGenericEntityType, randomTimestamp);
             }
 
+            expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
+            expectLoadEvents(EventType.FREEZING, null, null);
+            expectLoadEvents(EventType.MOVEMENT, null, null);
+
             expectCreateEvents(events);
         }
 
@@ -1781,6 +1813,102 @@ public class EventsSearchMaintenanceTaskTest
         EventsSearchPE deletionCExpected = createExpectedEvent(deletionC);
         deletionCExpected.setIdentifier("C");
         assertExpectedEvent(events.get(2), deletionCExpected);
+    }
+
+    @Test
+    public void testNonDeletion()
+    {
+        PersonPE personA = new PersonPE();
+        personA.setUserId("person_A");
+
+        PersonPE personB = new PersonPE();
+        personB.setUserId("person_B");
+
+        PersonPE personC = new PersonPE();
+        personC.setUserId("person_C");
+
+        PersonPE personD = new PersonPE();
+        personD.setUserId("person_D");
+
+        EventPE eventA = new EventPE();
+        eventA.setId(1L);
+        eventA.setEventType(EventType.FREEZING);
+        eventA.setEntityType(EntityType.SAMPLE);
+        eventA.setIdentifiers(Collections.singletonList("A"));
+        eventA.setDescription("Description A");
+        eventA.setReason("Reason A");
+        eventA.setRegistrator(personA);
+        eventA.setRegistrationDate(dateTimeMillis("2000-01-01 01:00:00.000"));
+
+        EventPE eventB = new EventPE();
+        eventB.setId(2L);
+        eventB.setEventType(EventType.MOVEMENT);
+        eventB.setEntityType(EntityType.SPACE);
+        eventB.setIdentifiers(Collections.singletonList("B"));
+        eventB.setDescription("Description B");
+        eventB.setReason("Reason B");
+        eventB.setRegistrator(personB);
+        eventB.setRegistrationDate(dateTimeMillis("2000-01-01 02:00:00.000"));
+
+        EventPE eventC = new EventPE();
+        eventC.setId(3L);
+        eventC.setEventType(EventType.FREEZING);
+        eventC.setEntityType(EntityType.DATASET);
+        eventC.setIdentifiers(Collections.singletonList("C"));
+        eventC.setDescription("Description C");
+        eventC.setReason("Reason C");
+        eventC.setRegistrator(personC);
+        eventC.setRegistrationDate(dateTimeMillis("2000-01-01 03:00:00.000"));
+
+        EventPE eventD = new EventPE();
+        eventD.setId(4L);
+        eventD.setEventType(EventType.MOVEMENT);
+        eventD.setEntityType(EntityType.SPACE);
+        eventD.setIdentifiers(Collections.singletonList("D"));
+        eventD.setDescription("Description D");
+        eventD.setReason("Reason D");
+        eventD.setRegistrator(personD);
+        eventD.setRegistrationDate(dateTimeMillis("2000-01-01 03:00:00.000"));
+
+        List<EventsSearchPE> events = new ArrayList<>();
+        {
+            expectLoadLastTimestampsEmpty(EventType.values());
+
+            for (EntityType anEntityType : EntityType.values())
+            {
+                expectLoadEvents(EventType.DELETION, anEntityType, null);
+            }
+
+            expectLoadEvents(EventType.FREEZING, null, null, eventA);
+            expectLoadEvents(EventType.FREEZING, null, eventA.getRegistrationDateInternal(), eventC);
+            expectLoadEvents(EventType.FREEZING, null, eventC.getRegistrationDateInternal());
+
+            expectLoadEvents(EventType.MOVEMENT, null, null, eventB, eventD);
+            expectLoadEvents(EventType.MOVEMENT, null, eventD.getRegistrationDateInternal());
+
+            expectCreateEvents(events);
+        }
+
+        EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
+        task.execute();
+
+        assertEquals(events.size(), 4);
+
+        EventsSearchPE eventAExpected = createExpectedEvent(eventA);
+        eventAExpected.setIdentifier("A");
+        assertExpectedEvent(events.get(0), eventAExpected);
+
+        EventsSearchPE eventCExpected = createExpectedEvent(eventC);
+        eventCExpected.setIdentifier("C");
+        assertExpectedEvent(events.get(1), eventCExpected);
+
+        EventsSearchPE eventBExpected = createExpectedEvent(eventB);
+        eventBExpected.setIdentifier("B");
+        assertExpectedEvent(events.get(2), eventBExpected);
+
+        EventsSearchPE eventDExpected = createExpectedEvent(eventD);
+        eventDExpected.setIdentifier("D");
+        assertExpectedEvent(events.get(3), eventDExpected);
     }
 
     private void expectLoadSpaces(List<String> spaceCodes, SpacePE... spaces)

@@ -20,6 +20,7 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.support.TransactionCallback;
 
@@ -71,7 +72,9 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                         new GenericDeletionProcessor(dataSource, EntityType.PROPERTY_TYPE),
                         new GenericDeletionProcessor(dataSource, EntityType.VOCABULARY),
                         new GenericDeletionProcessor(dataSource, EntityType.AUTHORIZATION_GROUP),
-                        new GenericDeletionProcessor(dataSource, EntityType.METAPROJECT));
+                        new GenericDeletionProcessor(dataSource, EntityType.METAPROJECT),
+                        new GenericEventProcessor(dataSource, EventType.FREEZING),
+                        new GenericEventProcessor(dataSource, EventType.MOVEMENT));
 
                 for (EventProcessor processor : processors)
                 {

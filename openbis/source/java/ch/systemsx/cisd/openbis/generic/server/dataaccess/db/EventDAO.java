@@ -115,13 +115,17 @@ public class EventDAO extends AbstractGenericEntityDAO<EventPE> implements IEven
         return result;
     }
 
-    @Override public List<EventPE> listEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull)
+    @Override public List<EventPE> listEvents(EventType eventType, EntityType entityTypeOrNull, Date lastSeenTimestampOrNull)
     {
         final DetachedCriteria criteria = DetachedCriteria.forClass(EventPE.class);
         criteria.addOrder(Order.asc("registrationDate"));
         criteria.addOrder(Order.asc("id"));
         criteria.add(Restrictions.eq("eventType", eventType));
-        criteria.add(Restrictions.eq("entityType", entityType));
+
+        if (entityTypeOrNull != null)
+        {
+            criteria.add(Restrictions.eq("entityType", entityTypeOrNull));
+        }
 
         if (lastSeenTimestampOrNull != null)
         {
@@ -140,7 +144,7 @@ public class EventDAO extends AbstractGenericEntityDAO<EventPE> implements IEven
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format(
-                    "%s(%s, %s): %d events(s) have been found.", MethodUtils.getCurrentMethod().getName(), eventType, entityType, list.size()));
+                    "%s(%s, %s): %d events(s) have been found.", MethodUtils.getCurrentMethod().getName(), eventType, entityTypeOrNull, list.size()));
         }
 
         return list;
