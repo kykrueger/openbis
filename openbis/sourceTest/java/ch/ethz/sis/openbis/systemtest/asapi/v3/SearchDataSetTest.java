@@ -1778,7 +1778,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testNegation()
+    public void testSearchWithAttributeWithNegation()
     {
         final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
         criteria.withContainer();

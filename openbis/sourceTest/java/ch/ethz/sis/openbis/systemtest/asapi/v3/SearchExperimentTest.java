@@ -1686,6 +1686,16 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchWithAttributeWithNegation()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
+        criteria.withCode().thatContains("-TEST-");
+        criteria.withSubcriteria().negate().withCode().thatEndsWith("1");
+
+        testSearch(TEST_USER, criteria, "/CISD/NOE/EXP-TEST-2", "/TEST-SPACE/NOE/EXP-TEST-2", "/CISD/NEMO/EXP-TEST-2");
+    }
+
+    @Test(enabled = false)
     public void testSearchWithNegation()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
@@ -1699,10 +1709,11 @@ public class SearchExperimentTest extends AbstractExperimentTest
     public void testSearchWithStringPropertyNegation()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
-        criteria.withStringProperty("COMMENT").thatEndsWith("stuff");
-        criteria.withSubcriteria().negate().withStringProperty("COMMENT").thatContains("advanced");
+        criteria.withStringProperty("DESCRIPTION").thatEndsWith("experiment");
+        criteria.withSubcriteria().negate().withStringProperty("DESCRIPTION").thatContains("test");
 
-        testSearch(TEST_USER, criteria, "/CISD/CP-TEST-2");
+        testSearch(TEST_USER, criteria, "/CISD/DEFAULT/EXP-Y", "/CISD/NEMO/EXP1", "/CISD/NEMO/EXP10",
+                "/CISD/NEMO/EXP11");
     }
 
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
