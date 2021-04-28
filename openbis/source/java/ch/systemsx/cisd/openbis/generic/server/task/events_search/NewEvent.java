@@ -5,6 +5,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventsSearchPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Collection;
@@ -92,7 +93,7 @@ class NewEvent
         newEvent.entityType = oldEvent.getEntityType();
         newEvent.description = oldEvent.getDescription();
         newEvent.reason = oldEvent.getReason();
-        newEvent.attachmentContent = oldEvent.getAttachmentContent() != null ? oldEvent.getAttachmentContent().getId() : null;
+        newEvent.attachmentContent = oldEvent.getAttachmentContent() != null ? HibernateUtils.getId(oldEvent.getAttachmentContent()) : null;
         newEvent.registerer = oldEvent.getRegistrator();
         newEvent.registrationTimestamp = oldEvent.getRegistrationDateInternal();
         return newEvent;
