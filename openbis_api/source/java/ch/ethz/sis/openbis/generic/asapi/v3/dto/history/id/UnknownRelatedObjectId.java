@@ -56,4 +56,10 @@ public class UnknownRelatedObjectId implements IObjectId
     {
     }
 
+    @Override
+    public String toString()
+    {
+        return getRelatedObjectId() + " (" + getRelationType() + ")";
+    }
+
 }
