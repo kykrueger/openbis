@@ -597,7 +597,7 @@ class SnapshotsFacade
         }
     }
 
-    private static Set<String> getSpaceCodesOrUnknown(Collection<Snapshot> snapshots)
+    public static Set<String> getSpaceCodesOrUnknown(Collection<Snapshot> snapshots)
     {
         Set<String> result = new HashSet<>();
         for (Snapshot snapshot : snapshots)
@@ -613,7 +613,7 @@ class SnapshotsFacade
         return result;
     }
 
-    private static Set<String> getProjectPermIdsOrUnknown(Collection<Snapshot> snapshots)
+    public static Set<String> getProjectPermIdsOrUnknown(Collection<Snapshot> snapshots)
     {
         Set<String> result = new HashSet<>();
         for (Snapshot snapshot : snapshots)
@@ -629,7 +629,7 @@ class SnapshotsFacade
         return result;
     }
 
-    private static Set<String> getExperimentPermIdsOrUnknown(Collection<Snapshot> snapshots)
+    public static Set<String> getExperimentPermIdsOrUnknown(Collection<Snapshot> snapshots)
     {
         Set<String> result = new HashSet<>();
         for (Snapshot snapshot : snapshots)
@@ -645,7 +645,7 @@ class SnapshotsFacade
         return result;
     }
 
-    private static Set<String> getSamplePermIdsOrUnknown(Collection<Snapshot> snapshots)
+    public static Set<String> getSamplePermIdsOrUnknown(Collection<Snapshot> snapshots)
     {
         Set<String> result = new HashSet<>();
         for (Snapshot snapshot : snapshots)

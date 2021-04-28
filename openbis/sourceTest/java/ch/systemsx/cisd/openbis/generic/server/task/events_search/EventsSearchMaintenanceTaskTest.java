@@ -2078,6 +2078,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadSpaces(Collections.singletonList("SPACE_A"), spaceA);
             expectLoadProjects(Collections.singletonList("20210427145921003-205270"));
             expectLoadExperiments(Collections.singletonList("20210427145943350-205271"));
+            expectLoadSamples(Collections.singletonList("20210427150007514-205272"));
 
             expectLoadLastTimestampsEmpty(EventType.FREEZING, EventType.MOVEMENT);
             expectLoadEvents(EventType.FREEZING, null, null);

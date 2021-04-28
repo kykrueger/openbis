@@ -2,35 +2,51 @@ package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
-import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-class AttachmentDeletionProcessor extends GenericEventProcessor
+class AttachmentDeletionProcessor extends DeletionEventProcessor
 {
-
-    private static final SimpleDateFormat VALID_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     AttachmentDeletionProcessor(IDataSource dataSource)
     {
-        super(dataSource, EventType.DELETION, EntityType.ATTACHMENT);
+        super(dataSource);
     }
 
-    @Override protected void process(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, EventPE oldEvent, NewEvent newEvent) throws Exception
+    @Override protected EntityType getEntityType()
     {
-        if (oldEvent.getContent() == null || oldEvent.getContent().trim().isEmpty())
+        return EntityType.ATTACHMENT;
+    }
+
+    @Override protected Set<EntityType> getAscendantEntityTypes()
+    {
+        return Collections.emptySet();
+    }
+
+    @Override protected Set<EntityType> getDescendantEntityTypes()
+    {
+        return Collections.emptySet();
+    }
+
+    @Override protected void processDeletion(LastTimestamps lastTimestamps, EventPE deletion, List<NewEvent> newEvents, List<Snapshot> newSnapshots)
+            throws Exception
+    {
+        if (deletion.getContent() == null || deletion.getContent().trim().isEmpty())
         {
-            dataSource.createEventsSearch(newEvent.toNewEventPE());
+            for (String attachmentPath : deletion.getIdentifiers())
+            {
+                NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
+                newEvent.identifier = attachmentPath;
+                newEvents.add(newEvent);
+            }
             return;
         }
 
         @SuppressWarnings("unchecked") Map<String, Object> parsedContent =
-                (Map<String, Object>) OBJECT_MAPPER.readValue(oldEvent.getContent(), Object.class);
+                (Map<String, Object>) OBJECT_MAPPER.readValue(deletion.getContent(), Object.class);
 
         for (String attachmentPath : parsedContent.keySet())
         {
@@ -47,17 +63,24 @@ class AttachmentDeletionProcessor extends GenericEventProcessor
                     String entityType = entry.get("entityType");
                     String value = entry.get("value");
 
+                    Snapshot snapshot = new Snapshot();
                     if (EntityType.PROJECT.name().equals(entityType))
                     {
-                        snapshots.fillByProjectPermId(value, newEvent);
+                        snapshot.projectPermId = value;
                     } else if (EntityType.EXPERIMENT.name().equals(entityType))
                     {
-                        snapshots.fillByExperimentPermId(value, newEvent);
+                        snapshot.experimentPermId = value;
                     } else if (EntityType.SAMPLE.name().equals(entityType))
                     {
-                        snapshots.fillBySamplePermId(value, newEvent);
+                        snapshot.samplePermId = value;
                     }
+                    newSnapshots.add(snapshot);
 
+                    NewEvent newEvent = NewEvent.fromOldEventPE(deletion);
+                    newEvent.identifier = attachmentPath;
+                    newEvent.entityProjectPermId = snapshot.projectPermId;
+                    newEvent.entityExperimentPermId = snapshot.experimentPermId;
+                    newEvent.entitySamplePermId = snapshot.samplePermId;
                     newEvent.entityRegisterer = entry.get("userId");
                     newEvent.content = OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(entries);
 
@@ -67,10 +90,41 @@ class AttachmentDeletionProcessor extends GenericEventProcessor
                         newEvent.entityRegistrationTimestamp = VALID_TIMESTAMP_FORMAT.parse(validFrom);
                     }
 
-                    dataSource.createEventsSearch(newEvent.toNewEventPE());
-                    return;
+                    newEvents.add(newEvent);
                 }
             }
         }
     }
+
+    @Override protected void processDeletions(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, List<NewEvent> newEvents,
+            List<Snapshot> newSnapshots)
+    {
+        snapshots.loadExistingProjects(SnapshotsFacade.getProjectPermIdsOrUnknown(newSnapshots));
+        snapshots.loadExistingExperiments(SnapshotsFacade.getExperimentPermIdsOrUnknown(newSnapshots));
+        snapshots.loadExistingSamples(SnapshotsFacade.getSamplePermIdsOrUnknown(newSnapshots));
+
+        for (NewEvent newEvent : newEvents)
+        {
+            try
+            {
+                if (newEvent.entityProjectPermId != null)
+                {
+                    snapshots.fillByProjectPermId(newEvent.entityProjectPermId, newEvent);
+                } else if (newEvent.entityExperimentPermId != null)
+                {
+                    snapshots.fillByExperimentPermId(newEvent.entityExperimentPermId, newEvent);
+                } else if (newEvent.entitySamplePermId != null)
+                {
+                    snapshots.fillBySamplePermId(newEvent.entitySamplePermId, newEvent);
+                }
+
+                dataSource.createEventsSearch(newEvent.toNewEventPE());
+
+            } catch (Exception e)
+            {
+                throw new RuntimeException(String.format("Processing of deletion failed: %s", newEvent), e);
+            }
+        }
+    }
+
 }
