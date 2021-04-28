@@ -1,9 +1,11 @@
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
@@ -445,7 +447,8 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadLastTimestamp(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-03-29 00:25:00.000"));
 
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, dateTimeMillis("2021-03-29 00:26:00.000"));
-            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-03-29 00:25:00.000"), deletionProjectA, deletionProjectB);
+            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, dateTimeMillis("2021-03-29 00:25:00.000"), deletionProjectA,
+                    deletionProjectB);
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectB.getRegistrationDateInternal());
             expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-03-29 00:25:00.000"), deletionExperimentA);
             expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal(), deletionExperimentsAB);
@@ -810,7 +813,8 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, dateTimeMillis("2021-04-01 00:25:00.000"), deletionExperimentA);
             expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, dateTimeMillis("2021-04-01 00:25:00.000"), deletionSampleA, deletionSampleB);
-            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleB.getRegistrationDateInternal(), deletionSampleC, deletionSampleD);
+            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleB.getRegistrationDateInternal(), deletionSampleC,
+                    deletionSampleD);
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleD.getRegistrationDateInternal());
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-04-01 00:26:00.000"));
             expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-04-01 00:25:00.000"));
@@ -897,8 +901,8 @@ public class EventsSearchMaintenanceTaskTest
         assertExpectedEvent(events.get(4), deletionSampleDExpected);
     }
 
-    @Test
-    public void testDeletionSampleWithUnknownProject()
+    @Test(dataProvider = PROVIDE_TRUE_FALSE)
+    public void testDeletionSampleWithUnknownProject(boolean delete)
     {
         // Tests the following scenario:
         // - create space A
@@ -910,7 +914,7 @@ public class EventsSearchMaintenanceTaskTest
         // - delete sample A
         // - move experiment /A/A/A to project /B/B (it becomes /B/B/A)
         // - delete project /A/A (experiment /B/B/A relation history with project /A/A loses proj_id and will be stored as UNKNOWN)
-        // - delete experiment /B/B/A
+        // - delete experiment /B/B/A (if 'delete' flag == true)
 
         PersonPE deleterSampleA = new PersonPE();
         deleterSampleA.setUserId("deleter_sample_A");
@@ -979,14 +983,39 @@ public class EventsSearchMaintenanceTaskTest
         projectB.setHistory(Collections.emptyList());
         projectB.setFetchOptions(projectFo);
 
+        ExperimentFetchOptions experimentFo = new ExperimentFetchOptions();
+        experimentFo.withProject();
+        experimentFo.withHistory();
+
+        RelationHistoryEntry experimentAProjectARelation = new RelationHistoryEntry();
+        experimentAProjectARelation.setValidFrom(dateTimeMillis("2021-04-19 17:31:16.451"));
+        experimentAProjectARelation.setValidTo(dateTimeMillis("2021-04-19 17:32:19.732"));
+        experimentAProjectARelation.setRelatedObjectId(new ObjectPermId("20210419173048021-205243"));
+
+        Experiment experimentA = new Experiment();
+        experimentA.setCode("EXPERIMENT_A");
+        experimentA.setPermId(new ExperimentPermId("20210419173116451-205245"));
+        experimentA.setProject(projectB);
+        experimentA.setRegistrationDate(dateTimeMillis("2021-04-19 17:31:16.000"));
+        experimentA.setHistory(Collections.singletonList(experimentAProjectARelation));
+        experimentA.setFetchOptions(experimentFo);
+
         List<EventsSearchPE> events = new ArrayList<>();
         {
             expectLoadLastTimestampsEmpty(EventType.values());
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, null);
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA);
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectA.getRegistrationDateInternal());
-            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null, deletionExperimentA);
-            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
+
+            if (delete)
+            {
+                expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null, deletionExperimentA);
+                expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
+            } else
+            {
+                expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null);
+            }
+
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null, deletionSampleA);
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal());
 
@@ -1001,7 +1030,14 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadSpaces(Collections.singletonList("SPACE_A"), spaceA);
             expectLoadSpaces(Collections.singletonList("SPACE_B"), spaceB);
             expectLoadProjects(Arrays.asList("20210419173058839-205244", "20210419173048021-205243"), projectB);
-            expectLoadExperiments(Collections.singletonList("20210419173116451-205245"));
+
+            if (delete)
+            {
+                expectLoadExperiments(Collections.singletonList("20210419173116451-205245"));
+            } else
+            {
+                expectLoadExperiments(Collections.singletonList("20210419173116451-205245"), experimentA);
+            }
 
             expectLoadEvents(EventType.FREEZING, null, null);
             expectLoadEvents(EventType.MOVEMENT, null, null);
@@ -1012,8 +1048,6 @@ public class EventsSearchMaintenanceTaskTest
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
 
-        assertEquals(events.size(), 3);
-
         EventsSearchPE deletionProjectAExpected = createExpectedEvent(deletionProjectA);
         deletionProjectAExpected.setEntitySpace("SPACE_A");
         deletionProjectAExpected.setEntitySpacePermId("100");
@@ -1023,7 +1057,6 @@ public class EventsSearchMaintenanceTaskTest
         deletionProjectAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-19 17:30:48.000"));
         deletionProjectAExpected.setIdentifier("20210419173048021-205243");
         deletionProjectAExpected.setContent(loadFile("testSampleWithUnknownProject_deletionProjectAExpected.json"));
-        assertExpectedEvent(events.get(0), deletionProjectAExpected);
 
         EventsSearchPE deletionExperimentAExpected = createExpectedEvent(deletionExperimentA);
         deletionExperimentAExpected.setEntitySpace("SPACE_B");
@@ -1034,7 +1067,6 @@ public class EventsSearchMaintenanceTaskTest
         deletionExperimentAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-19 17:31:16.000"));
         deletionExperimentAExpected.setIdentifier("20210419173116451-205245");
         deletionExperimentAExpected.setContent(loadFile("testSampleWithUnknownProject_deletionExperimentAExpected.json"));
-        assertExpectedEvent(events.get(1), deletionExperimentAExpected);
 
         EventsSearchPE deletionSampleAExpected = createExpectedEvent(deletionSampleA);
         deletionSampleAExpected.setEntitySpace("SPACE_A");
@@ -1045,11 +1077,23 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-19 17:31:40.000"));
         deletionSampleAExpected.setIdentifier("20210419173140752-205246");
         deletionSampleAExpected.setContent(loadFile("testSampleWithUnknownProject_deletionSampleAExpected.json"));
-        assertExpectedEvent(events.get(2), deletionSampleAExpected);
+
+        if (delete)
+        {
+            assertEquals(events.size(), 3);
+            assertExpectedEvent(events.get(0), deletionProjectAExpected);
+            assertExpectedEvent(events.get(1), deletionExperimentAExpected);
+            assertExpectedEvent(events.get(2), deletionSampleAExpected);
+        } else
+        {
+            assertEquals(events.size(), 2);
+            assertExpectedEvent(events.get(0), deletionProjectAExpected);
+            assertExpectedEvent(events.get(1), deletionSampleAExpected);
+        }
     }
 
-    @Test
-    public void testDeletionSampleWithUnknownSpace()
+    @Test(dataProvider = PROVIDE_TRUE_FALSE)
+    public void testDeletionSampleWithUnknownSpace(boolean delete)
     {
         // Tests the following scenario:
         // - create space A
@@ -1059,7 +1103,7 @@ public class EventsSearchMaintenanceTaskTest
         // - delete sample A
         // - move project /A/A to space B (it becomes /B/A)
         // - delete space A (project /B/A relation history with space A loses space_id and will be stored as UNKNOWN)
-        // - delete project /B/A
+        // - delete project /B/A (if 'delete' flag == true)
 
         PersonPE deleterSampleA = new PersonPE();
         deleterSampleA.setUserId("deleter_sample_A");
@@ -1107,13 +1151,41 @@ public class EventsSearchMaintenanceTaskTest
         spaceB.setCode("SPACE_B");
         spaceB.setRegistrationDate(dateTimeMillis("2021-04-20 10:58:14.693"));
 
+        Space spaceBv3 = new Space();
+        spaceBv3.setCode("SPACE_B");
+
+        ProjectFetchOptions projectFo = new ProjectFetchOptions();
+        projectFo.withSpace();
+        projectFo.withHistory();
+
+        RelationHistoryEntry projectASpaceARelation = new RelationHistoryEntry();
+        projectASpaceARelation.setValidFrom(dateTimeMillis("2021-04-20 10:58:29.314"));
+        projectASpaceARelation.setValidTo(dateTimeMillis("2021-04-20 10:59:31.991"));
+        projectASpaceARelation.setRelatedObjectId(new ObjectPermId("SPACE_A"));
+
+        Project projectA = new Project();
+        projectA.setCode("PROJECT_A");
+        projectA.setPermId(new ProjectPermId("20210420105829314-205247"));
+        projectA.setSpace(spaceBv3);
+        projectA.setRegistrationDate(dateTimeMillis("2021-04-20 10:58:29.000"));
+        projectA.setHistory(Collections.singletonList(projectASpaceARelation));
+        projectA.setFetchOptions(projectFo);
+
         List<EventsSearchPE> events = new ArrayList<>();
         {
             expectLoadLastTimestampsEmpty(EventType.values());
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, null, deletionSpaceA);
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionSpaceA.getRegistrationDateInternal());
-            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA);
-            expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectA.getRegistrationDateInternal());
+
+            if (delete)
+            {
+                expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA);
+                expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectA.getRegistrationDateInternal());
+            } else
+            {
+                expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null);
+            }
+
             expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null);
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null, deletionSampleA);
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal());
@@ -1127,7 +1199,14 @@ public class EventsSearchMaintenanceTaskTest
             }
 
             expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceB);
-            expectLoadProjects(Collections.singletonList("20210420105829314-205247"));
+
+            if (delete)
+            {
+                expectLoadProjects(Collections.singletonList("20210420105829314-205247"));
+            } else
+            {
+                expectLoadProjects(Collections.singletonList("20210420105829314-205247"), projectA);
+            }
 
             expectLoadEvents(EventType.FREEZING, null, null);
             expectLoadEvents(EventType.MOVEMENT, null, null);
@@ -1138,12 +1217,9 @@ public class EventsSearchMaintenanceTaskTest
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
 
-        assertEquals(events.size(), 3);
-
         EventsSearchPE deletionSpaceAExpected = createExpectedEvent(deletionSpaceA);
         deletionSpaceAExpected.setEntitySpace("SPACE_A");
         deletionSpaceAExpected.setIdentifier("SPACE_A");
-        assertExpectedEvent(events.get(0), deletionSpaceAExpected);
 
         EventsSearchPE deletionProjectAExpected = createExpectedEvent(deletionProjectA);
         deletionProjectAExpected.setEntitySpace("SPACE_B");
@@ -1154,7 +1230,6 @@ public class EventsSearchMaintenanceTaskTest
         deletionProjectAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-20 10:58:29.000"));
         deletionProjectAExpected.setIdentifier("20210420105829314-205247");
         deletionProjectAExpected.setContent(loadFile("testSampleWithUnknownSpace_deletionProjectAExpected.json"));
-        assertExpectedEvent(events.get(1), deletionProjectAExpected);
 
         EventsSearchPE deletionSampleAExpected = createExpectedEvent(deletionSampleA);
         deletionSampleAExpected.setEntitySpace("SPACE_A");
@@ -1164,7 +1239,19 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-20 10:58:58.000"));
         deletionSampleAExpected.setIdentifier("20210420105858331-205249");
         deletionSampleAExpected.setContent(loadFile("testSampleWithUnknownSpace_deletionSampleAExpected.json"));
-        assertExpectedEvent(events.get(2), deletionSampleAExpected);
+
+        if (delete)
+        {
+            assertEquals(events.size(), 3);
+            assertExpectedEvent(events.get(0), deletionSpaceAExpected);
+            assertExpectedEvent(events.get(1), deletionProjectAExpected);
+            assertExpectedEvent(events.get(2), deletionSampleAExpected);
+        } else
+        {
+            assertEquals(events.size(), 2);
+            assertExpectedEvent(events.get(0), deletionSpaceAExpected);
+            assertExpectedEvent(events.get(1), deletionSampleAExpected);
+        }
     }
 
     @Test
@@ -1436,8 +1523,8 @@ public class EventsSearchMaintenanceTaskTest
         assertExpectedEvent(events.get(4), deletionDataSetCExpected);
     }
 
-    @Test
-    public void testDeletionDataSetWithUnknownProject()
+    @Test(dataProvider = PROVIDE_TRUE_FALSE)
+    public void testDeletionDataSetWithUnknownProject(boolean delete)
     {
         // Tests the following scenario:
         // - create space A
@@ -1449,7 +1536,7 @@ public class EventsSearchMaintenanceTaskTest
         // - delete dataset A
         // - move experiment /A/A/A to project /B/B (it becomes /B/B/A)
         // - delete project /A/A (experiment /B/B/A relation history with project /A/A loses proj_id and will be stored as UNKNOWN)
-        // - delete experiment /B/B/A
+        // - delete experiment /B/B/A (if 'delete' flag == true)
 
         PersonPE deleterDataSetA = new PersonPE();
         deleterDataSetA.setUserId("deleter_dataset_A");
@@ -1518,14 +1605,39 @@ public class EventsSearchMaintenanceTaskTest
         projectB.setHistory(Collections.emptyList());
         projectB.setFetchOptions(projectFo);
 
+        ExperimentFetchOptions experimentFo = new ExperimentFetchOptions();
+        experimentFo.withProject();
+        experimentFo.withHistory();
+
+        RelationHistoryEntry experimentAProjectARelation = new RelationHistoryEntry();
+        experimentAProjectARelation.setValidFrom(dateTimeMillis("2021-04-20 11:42:36.830"));
+        experimentAProjectARelation.setValidTo(dateTimeMillis("2021-04-20 11:46:12.388"));
+        experimentAProjectARelation.setRelatedObjectId(new ObjectPermId("20210420114205083-205250"));
+
+        Experiment experimentA = new Experiment();
+        experimentA.setCode("EXPERIMENT_A");
+        experimentA.setPermId(new ExperimentPermId("20210420114236830-205252"));
+        experimentA.setProject(projectB);
+        experimentA.setRegistrationDate(dateTimeMillis("2021-04-20 11:42:36.000"));
+        experimentA.setHistory(Collections.singletonList(experimentAProjectARelation));
+        experimentA.setFetchOptions(experimentFo);
+
         List<EventsSearchPE> events = new ArrayList<>();
         {
             expectLoadLastTimestampsEmpty(EventType.values());
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, null);
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null, deletionProjectA);
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, deletionProjectA.getRegistrationDateInternal());
-            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null, deletionExperimentA);
-            expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
+
+            if (delete)
+            {
+                expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null, deletionExperimentA);
+                expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, deletionExperimentA.getRegistrationDateInternal());
+            } else
+            {
+                expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null);
+            }
+
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null);
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, null, deletionDataSetA);
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, deletionDataSetA.getRegistrationDateInternal());
@@ -1541,7 +1653,14 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadSpaces(Collections.singletonList("SPACE_A"), spaceA);
             expectLoadSpaces(Collections.singletonList("SPACE_B"), spaceB);
             expectLoadProjects(Arrays.asList("20210420114213918-205251", "20210420114205083-205250"), projectB);
-            expectLoadExperiments(Collections.singletonList("20210420114236830-205252"));
+
+            if (delete)
+            {
+                expectLoadExperiments(Collections.singletonList("20210420114236830-205252"));
+            } else
+            {
+                expectLoadExperiments(Collections.singletonList("20210420114236830-205252"), experimentA);
+            }
 
             expectLoadEvents(EventType.FREEZING, null, null);
             expectLoadEvents(EventType.MOVEMENT, null, null);
@@ -1552,8 +1671,6 @@ public class EventsSearchMaintenanceTaskTest
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
 
-        assertEquals(events.size(), 3);
-
         EventsSearchPE deletionProjectAExpected = createExpectedEvent(deletionProjectA);
         deletionProjectAExpected.setEntitySpace("SPACE_A");
         deletionProjectAExpected.setEntitySpacePermId("100");
@@ -1563,7 +1680,6 @@ public class EventsSearchMaintenanceTaskTest
         deletionProjectAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-20 11:42:05.000"));
         deletionProjectAExpected.setIdentifier("20210420114205083-205250");
         deletionProjectAExpected.setContent(loadFile("testDataSetWithUnknownProject_deletionProjectAExpected.json"));
-        assertExpectedEvent(events.get(0), deletionProjectAExpected);
 
         EventsSearchPE deletionExperimentAExpected = createExpectedEvent(deletionExperimentA);
         deletionExperimentAExpected.setEntitySpace("SPACE_B");
@@ -1574,7 +1690,6 @@ public class EventsSearchMaintenanceTaskTest
         deletionExperimentAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-20 11:42:36.000"));
         deletionExperimentAExpected.setIdentifier("20210420114236830-205252");
         deletionExperimentAExpected.setContent(loadFile("testDataSetWithUnknownProject_deletionExperimentAExpected.json"));
-        assertExpectedEvent(events.get(1), deletionExperimentAExpected);
 
         EventsSearchPE deletionDataSetAExpected = createExpectedEvent(deletionDataSetA);
         deletionDataSetAExpected.setEntitySpace("SPACE_A");
@@ -1585,11 +1700,23 @@ public class EventsSearchMaintenanceTaskTest
         deletionDataSetAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-20 11:44:35.000"));
         deletionDataSetAExpected.setIdentifier("20210420114435382-205253");
         deletionDataSetAExpected.setContent(loadFile("testDataSetWithUnknownProject_deletionDataSetAExpected.json"));
-        assertExpectedEvent(events.get(2), deletionDataSetAExpected);
+
+        if (delete)
+        {
+            assertEquals(events.size(), 3);
+            assertExpectedEvent(events.get(0), deletionProjectAExpected);
+            assertExpectedEvent(events.get(1), deletionExperimentAExpected);
+            assertExpectedEvent(events.get(2), deletionDataSetAExpected);
+        } else
+        {
+            assertEquals(events.size(), 2);
+            assertExpectedEvent(events.get(0), deletionProjectAExpected);
+            assertExpectedEvent(events.get(1), deletionDataSetAExpected);
+        }
     }
 
-    @Test
-    public void testDeletionDataSetWithUnknownSpace()
+    @Test(dataProvider = PROVIDE_TRUE_FALSE)
+    public void testDeletionDataSetWithUnknownSpace(boolean delete)
     {
         // Tests the following scenario:
         // - create space A
@@ -1599,7 +1726,7 @@ public class EventsSearchMaintenanceTaskTest
         // - delete dataset A
         // - move sample A to space B
         // - delete space A (sample A relation history with space A loses space_id and will be stored as UNKNOWN)
-        // - delete sample A
+        // - delete sample A (if 'delete' flag == true)
 
         PersonPE deleterDataSetA = new PersonPE();
         deleterDataSetA.setUserId("deleter_dataset_A");
@@ -1647,6 +1774,28 @@ public class EventsSearchMaintenanceTaskTest
         spaceB.setCode("SPACE_B");
         spaceB.setRegistrationDate(dateTimeMillis("2021-04-20 11:41:51.801"));
 
+        Space spaceBv3 = new Space();
+        spaceBv3.setCode("SPACE_B");
+
+        SampleFetchOptions sampleFo = new SampleFetchOptions();
+        sampleFo.withSpace();
+        sampleFo.withProject();
+        sampleFo.withExperiment();
+        sampleFo.withHistory();
+
+        RelationHistoryEntry sampleASpaceARelation = new RelationHistoryEntry();
+        sampleASpaceARelation.setValidFrom(dateTimeMillis("2021-04-20 13:17:37.031"));
+        sampleASpaceARelation.setValidTo(dateTimeMillis("2021-04-20 13:19:33.768"));
+        sampleASpaceARelation.setRelatedObjectId(new ObjectPermId("SPACE_A"));
+
+        Sample sampleA = new Sample();
+        sampleA.setCode("SAMPLE_A");
+        sampleA.setPermId(new SamplePermId("20210420131737031-205258"));
+        sampleA.setSpace(spaceBv3);
+        sampleA.setRegistrationDate(dateTimeMillis("2021-04-20 13:17:37.000"));
+        sampleA.setHistory(Collections.singletonList(sampleASpaceARelation));
+        sampleA.setFetchOptions(sampleFo);
+
         List<EventsSearchPE> events = new ArrayList<>();
         {
             expectLoadLastTimestampsEmpty(EventType.values());
@@ -1654,8 +1803,16 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.SPACE, deletionSpaceA.getRegistrationDateInternal());
             expectLoadEvents(EventType.DELETION, EntityType.PROJECT, null);
             expectLoadEvents(EventType.DELETION, EntityType.EXPERIMENT, null);
-            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null, deletionSampleA);
-            expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal());
+
+            if (delete)
+            {
+                expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null, deletionSampleA);
+                expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal());
+            } else
+            {
+                expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, null);
+            }
+
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, null, deletionDataSetA);
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, deletionDataSetA.getRegistrationDateInternal());
 
@@ -1669,7 +1826,14 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadSpaces(Arrays.asList("SPACE_A", "SPACE_B"), spaceB);
             expectLoadProjects(Collections.singletonList("SPACE_A"));
             expectLoadExperiments(Collections.singletonList("SPACE_A"));
-            expectLoadSamples(Collections.singletonList("20210420131737031-205258"));
+
+            if (delete)
+            {
+                expectLoadSamples(Collections.singletonList("20210420131737031-205258"));
+            } else
+            {
+                expectLoadSamples(Collections.singletonList("20210420131737031-205258"), sampleA);
+            }
 
             expectLoadEvents(EventType.FREEZING, null, null);
             expectLoadEvents(EventType.MOVEMENT, null, null);
@@ -1680,12 +1844,9 @@ public class EventsSearchMaintenanceTaskTest
         EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(dataSource);
         task.execute();
 
-        assertEquals(events.size(), 3);
-
         EventsSearchPE deletionSpaceAExpected = createExpectedEvent(deletionSpaceA);
         deletionSpaceAExpected.setEntitySpace("SPACE_A");
         deletionSpaceAExpected.setIdentifier("SPACE_A");
-        assertExpectedEvent(events.get(0), deletionSpaceAExpected);
 
         EventsSearchPE deletionSampleAExpected = createExpectedEvent(deletionSampleA);
         deletionSampleAExpected.setEntitySpace("SPACE_B");
@@ -1694,7 +1855,6 @@ public class EventsSearchMaintenanceTaskTest
         deletionSampleAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-20 13:17:37.000"));
         deletionSampleAExpected.setIdentifier("20210420131737031-205258");
         deletionSampleAExpected.setContent(loadFile("testDataSetWithUnknownSpace_deletionSampleAExpected.json"));
-        assertExpectedEvent(events.get(1), deletionSampleAExpected);
 
         EventsSearchPE deletionDataSetAExpected = createExpectedEvent(deletionDataSetA);
         deletionDataSetAExpected.setEntitySpace("SPACE_A");
@@ -1702,7 +1862,19 @@ public class EventsSearchMaintenanceTaskTest
         deletionDataSetAExpected.setEntityRegistrationTimestamp(dateTimeMillis("2021-04-20 13:18:58.000"));
         deletionDataSetAExpected.setIdentifier("20210420131858024-205259");
         deletionDataSetAExpected.setContent(loadFile("testDataSetWithUnknownSpace_deletionDataSetAExpected.json"));
-        assertExpectedEvent(events.get(2), deletionDataSetAExpected);
+
+        if (delete)
+        {
+            assertEquals(events.size(), 3);
+            assertExpectedEvent(events.get(0), deletionSpaceAExpected);
+            assertExpectedEvent(events.get(1), deletionSampleAExpected);
+            assertExpectedEvent(events.get(2), deletionDataSetAExpected);
+        } else
+        {
+            assertEquals(events.size(), 2);
+            assertExpectedEvent(events.get(0), deletionSpaceAExpected);
+            assertExpectedEvent(events.get(1), deletionDataSetAExpected);
+        }
     }
 
     @Test
@@ -2057,7 +2229,8 @@ public class EventsSearchMaintenanceTaskTest
     @DataProvider(name = PROVIDE_TEST_DELETION_GENERIC)
     private static Object[][] provideTestDeletionGeneric()
     {
-        return new Object[][] { { EntityType.MATERIAL }, { EntityType.METAPROJECT }, { EntityType.AUTHORIZATION_GROUP }, { EntityType.VOCABULARY },
+        return new Object[][] { { EntityType.MATERIAL }, { EntityType.METAPROJECT }, { EntityType.AUTHORIZATION_GROUP },
+                { EntityType.VOCABULARY },
                 { EntityType.PROPERTY_TYPE } };
     }
 
@@ -2422,6 +2595,14 @@ public class EventsSearchMaintenanceTaskTest
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private static final String PROVIDE_TRUE_FALSE = "provideTrueFalse";
+
+    @DataProvider(name = PROVIDE_TRUE_FALSE)
+    private static Object[][] provideTrueFalse()
+    {
+        return new Object[][] { { true }, { false } };
     }
 
 }
