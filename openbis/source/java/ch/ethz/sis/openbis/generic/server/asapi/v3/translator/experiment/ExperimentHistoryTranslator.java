@@ -16,11 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.history.ExperimentRelationType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.fetchoptions.HistoryEntryFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.id.UnknownRelatedObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
@@ -151,7 +151,7 @@ public class ExperimentHistoryTranslator extends HistoryTranslator implements IE
             entry.setRelatedObjectId(new DataSetPermId(experimentRecord.relatedObjectId));
         } else
         {
-            entry.setRelatedObjectId(new ObjectPermId(experimentRecord.relatedObjectId));
+            entry.setRelatedObjectId(new UnknownRelatedObjectId(experimentRecord.relatedObjectId, experimentRecord.relationType));
         }
 
         return entry;

@@ -16,11 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.fetchoptions.HistoryEntryFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.id.UnknownRelatedObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.history.SampleRelationType;
@@ -210,7 +210,7 @@ public class SampleHistoryTranslator extends HistoryTranslator implements ISampl
             entry.setRelatedObjectId(new DataSetPermId(sampleRecord.relatedObjectId));
         } else
         {
-            entry.setRelatedObjectId(new ObjectPermId(sampleRecord.relatedObjectId));
+            entry.setRelatedObjectId(new UnknownRelatedObjectId(sampleRecord.relatedObjectId, sampleRecord.relationType));
         }
 
         return entry;
