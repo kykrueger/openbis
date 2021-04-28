@@ -1,6 +1,6 @@
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.history.ExperimentRelationType;
@@ -9,6 +9,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.IRelationType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.id.UnknownRelatedObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.history.ProjectRelationType;
@@ -117,7 +118,8 @@ class SnapshotsFacade
                 {
                     RelationHistoryEntry relationHistoryEntry = (RelationHistoryEntry) historyEntry;
 
-                    if (ProjectRelationType.SPACE.equals(relationHistoryEntry.getRelationType()) || relationHistoryEntry.getRelationType() == null)
+                    if (ProjectRelationType.SPACE.equals(relationHistoryEntry.getRelationType()) || (relationHistoryEntry.getRelationType() == null
+                            && relationHistoryEntry.getRelatedObjectId() != null))
                     {
                         Snapshot snapshot = new Snapshot();
                         snapshot.entityCode = project.getCode();
@@ -128,9 +130,17 @@ class SnapshotsFacade
                         if (ProjectRelationType.SPACE.equals(relationHistoryEntry.getRelationType()))
                         {
                             snapshot.spaceCode = ((SpacePermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
-                        } else if (relationHistoryEntry.getRelatedObjectId() != null)
+                        } else
                         {
-                            snapshot.unknownPermId = ((ObjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
+                            UnknownRelatedObjectId unknownObjectId = (UnknownRelatedObjectId) relationHistoryEntry.getRelatedObjectId();
+
+                            if ("OWNED".equals(unknownObjectId.getRelationType()))
+                            {
+                                snapshot.unknownPermId = unknownObjectId.getRelatedObjectId();
+                            } else
+                            {
+                                continue;
+                            }
                         }
 
                         snapshots.add(snapshot);
@@ -191,7 +201,7 @@ class SnapshotsFacade
                     RelationHistoryEntry relationHistoryEntry = (RelationHistoryEntry) historyEntry;
 
                     if (ExperimentRelationType.PROJECT.equals(relationHistoryEntry.getRelationType())
-                            || relationHistoryEntry.getRelationType() == null)
+                            || (relationHistoryEntry.getRelationType() == null && relationHistoryEntry.getRelatedObjectId() != null))
                     {
                         Snapshot snapshot = new Snapshot();
                         snapshot.entityCode = experiment.getCode();
@@ -202,9 +212,17 @@ class SnapshotsFacade
                         if (ExperimentRelationType.PROJECT.equals(relationHistoryEntry.getRelationType()))
                         {
                             snapshot.projectPermId = ((ProjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
-                        } else if (relationHistoryEntry.getRelatedObjectId() != null)
+                        } else
                         {
-                            snapshot.unknownPermId = ((ObjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
+                            UnknownRelatedObjectId unknownObjectId = (UnknownRelatedObjectId) relationHistoryEntry.getRelatedObjectId();
+
+                            if ("OWNED".equals(unknownObjectId.getRelationType()))
+                            {
+                                snapshot.unknownPermId = unknownObjectId.getRelatedObjectId();
+                            } else
+                            {
+                                continue;
+                            }
                         }
 
                         snapshots.add(snapshot);
@@ -267,9 +285,10 @@ class SnapshotsFacade
                 {
                     RelationHistoryEntry relationHistoryEntry = (RelationHistoryEntry) historyEntry;
                     IRelationType relationType = relationHistoryEntry.getRelationType();
+                    IObjectId relatedObjectId = relationHistoryEntry.getRelatedObjectId();
 
                     if (SampleRelationType.SPACE.equals(relationType) || SampleRelationType.PROJECT.equals(relationType)
-                            || SampleRelationType.EXPERIMENT.equals(relationType) || relationType == null)
+                            || SampleRelationType.EXPERIMENT.equals(relationType) || (relationType == null && relatedObjectId != null))
                     {
                         Snapshot snapshot = new Snapshot();
                         snapshot.entityCode = sample.getCode();
@@ -286,9 +305,17 @@ class SnapshotsFacade
                         } else if (SampleRelationType.EXPERIMENT.equals(relationType))
                         {
                             snapshot.experimentPermId = ((ExperimentPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
-                        } else if (relationHistoryEntry.getRelatedObjectId() != null)
+                        } else
                         {
-                            snapshot.unknownPermId = ((ObjectPermId) relationHistoryEntry.getRelatedObjectId()).getPermId();
+                            UnknownRelatedObjectId unknownObjectId = (UnknownRelatedObjectId) relationHistoryEntry.getRelatedObjectId();
+
+                            if ("OWNED".equals(unknownObjectId.getRelationType()))
+                            {
+                                snapshot.unknownPermId = unknownObjectId.getRelatedObjectId();
+                            } else
+                            {
+                                continue;
+                            }
                         }
 
                         snapshots.add(snapshot);

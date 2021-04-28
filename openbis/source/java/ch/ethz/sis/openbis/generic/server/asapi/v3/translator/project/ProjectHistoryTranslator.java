@@ -16,10 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.project;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.fetchoptions.HistoryEntryFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.id.UnknownRelatedObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.history.ProjectRelationType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
@@ -130,7 +130,7 @@ public class ProjectHistoryTranslator extends HistoryTranslator implements IProj
             entry.setRelatedObjectId(new ExperimentPermId(projectRecord.relatedObjectId));
         } else
         {
-            entry.setRelatedObjectId(new ObjectPermId(projectRecord.relatedObjectId));
+            entry.setRelatedObjectId(new UnknownRelatedObjectId(projectRecord.relatedObjectId, projectRecord.relationType));
         }
 
         return entry;

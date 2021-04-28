@@ -1,11 +1,11 @@
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.id.UnknownRelatedObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
@@ -990,7 +990,7 @@ public class EventsSearchMaintenanceTaskTest
         RelationHistoryEntry experimentAProjectARelation = new RelationHistoryEntry();
         experimentAProjectARelation.setValidFrom(dateTimeMillis("2021-04-19 17:31:16.451"));
         experimentAProjectARelation.setValidTo(dateTimeMillis("2021-04-19 17:32:19.732"));
-        experimentAProjectARelation.setRelatedObjectId(new ObjectPermId("20210419173048021-205243"));
+        experimentAProjectARelation.setRelatedObjectId(new UnknownRelatedObjectId("20210419173048021-205243", "OWNED"));
 
         Experiment experimentA = new Experiment();
         experimentA.setCode("EXPERIMENT_A");
@@ -1161,7 +1161,7 @@ public class EventsSearchMaintenanceTaskTest
         RelationHistoryEntry projectASpaceARelation = new RelationHistoryEntry();
         projectASpaceARelation.setValidFrom(dateTimeMillis("2021-04-20 10:58:29.314"));
         projectASpaceARelation.setValidTo(dateTimeMillis("2021-04-20 10:59:31.991"));
-        projectASpaceARelation.setRelatedObjectId(new ObjectPermId("SPACE_A"));
+        projectASpaceARelation.setRelatedObjectId(new UnknownRelatedObjectId("SPACE_A", "OWNED"));
 
         Project projectA = new Project();
         projectA.setCode("PROJECT_A");
@@ -1612,7 +1612,7 @@ public class EventsSearchMaintenanceTaskTest
         RelationHistoryEntry experimentAProjectARelation = new RelationHistoryEntry();
         experimentAProjectARelation.setValidFrom(dateTimeMillis("2021-04-20 11:42:36.830"));
         experimentAProjectARelation.setValidTo(dateTimeMillis("2021-04-20 11:46:12.388"));
-        experimentAProjectARelation.setRelatedObjectId(new ObjectPermId("20210420114205083-205250"));
+        experimentAProjectARelation.setRelatedObjectId(new UnknownRelatedObjectId("20210420114205083-205250", "OWNED"));
 
         Experiment experimentA = new Experiment();
         experimentA.setCode("EXPERIMENT_A");
@@ -1786,7 +1786,7 @@ public class EventsSearchMaintenanceTaskTest
         RelationHistoryEntry sampleASpaceARelation = new RelationHistoryEntry();
         sampleASpaceARelation.setValidFrom(dateTimeMillis("2021-04-20 13:17:37.031"));
         sampleASpaceARelation.setValidTo(dateTimeMillis("2021-04-20 13:19:33.768"));
-        sampleASpaceARelation.setRelatedObjectId(new ObjectPermId("SPACE_A"));
+        sampleASpaceARelation.setRelatedObjectId(new UnknownRelatedObjectId("SPACE_A", "OWNED"));
 
         Sample sampleA = new Sample();
         sampleA.setCode("SAMPLE_A");
