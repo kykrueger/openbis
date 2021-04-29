@@ -14,11 +14,41 @@ import java.util.stream.Collectors;
 abstract class DeletionEventProcessor extends EventProcessor
 {
 
-    protected static final SimpleDateFormat REGISTRATION_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+    protected static final SimpleDateFormat ENTRY_REGISTRATION_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
 
-    protected static final SimpleDateFormat VALID_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    protected static final SimpleDateFormat ENTRY_VALID_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     protected static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    protected static final String ENTRY_TYPE = "type";
+
+    protected static final String ENTRY_TYPE_ATTRIBUTE = "ATTRIBUTE";
+
+    protected static final String ENTRY_TYPE_RELATIONSHIP = "RELATIONSHIP";
+
+    protected static final String ENTRY_TYPE_ATTACHMENT = "ATTACHMENT";
+
+    protected static final String ENTRY_KEY = "key";
+
+    protected static final String ENTRY_KEY_CODE = "CODE";
+
+    protected static final String ENTRY_KEY_REGISTRATOR = "REGISTRATOR";
+
+    protected static final String ENTRY_KEY_REGISTRATION_TIMESTAMP = "REGISTRATION_TIMESTAMP";
+
+    protected static final String ENTRY_KEY_OWNED = "OWNED";
+
+    protected static final String ENTRY_VALUE = "value";
+
+    protected static final String ENTRY_ENTITY_TYPE = "entityType";
+
+    protected static final String ENTRY_ENTITY_TYPE_UNKNOWN = "UNKNOWN";
+
+    protected static final String ENTRY_VALID_FROM = "validFrom";
+
+    protected static final String ENTRY_VALID_UNTIL = "validUntil";
+
+    protected static final String ENTRY_USER_ID = "userId";
 
     DeletionEventProcessor(IDataSource dataSource)
     {
@@ -41,7 +71,7 @@ abstract class DeletionEventProcessor extends EventProcessor
         lastSeenEntityTypes.addAll(getDescendantEntityTypes());
 
         final Date lastSeenTimestampOrNull =
-                lastTimestamps.getEarliestOrNull(EventType.DELETION, lastSeenEntityTypes.toArray(new EntityType[lastSeenEntityTypes.size()]));
+                lastTimestamps.getEarliestOrNull(EventType.DELETION, lastSeenEntityTypes.toArray(new EntityType[0]));
         final MutableObject<Date> latestLastSeenTimestamp = new MutableObject<>(lastSeenTimestampOrNull);
 
         while (true)
@@ -124,44 +154,44 @@ abstract class DeletionEventProcessor extends EventProcessor
 
             for (Map<String, String> entry : entries)
             {
-                String type = entry.get("type");
-                String key = entry.get("key");
-                String value = entry.get("value");
+                String type = entry.get(ENTRY_TYPE);
+                String key = entry.get(ENTRY_KEY);
+                String value = entry.get(ENTRY_VALUE);
 
-                if ("ATTRIBUTE".equals(type))
+                if (ENTRY_TYPE_ATTRIBUTE.equals(type))
                 {
-                    if ("CODE".equals(key))
+                    if (ENTRY_KEY_CODE.equals(key))
                     {
                         entityCode = value;
-                    } else if ("REGISTRATOR".equals(key))
+                    } else if (ENTRY_KEY_REGISTRATOR.equals(key))
                     {
                         registerer = value;
-                    } else if ("REGISTRATION_TIMESTAMP".equals(key))
+                    } else if (ENTRY_KEY_REGISTRATION_TIMESTAMP.equals(key))
                     {
-                        registrationTimestamp = REGISTRATION_TIMESTAMP_FORMAT.parse(value);
+                        registrationTimestamp = ENTRY_REGISTRATION_TIMESTAMP_FORMAT.parse(value);
                     }
                 }
             }
 
-            Set<String> relationshipEntityTypes = getAscendantEntityTypes().stream().map(type -> type.name()).collect(Collectors.toSet());
+            Set<String> relationshipEntityTypes = getAscendantEntityTypes().stream().map(Enum::name).collect(Collectors.toSet());
             Snapshot lastSnapshot = null;
 
             for (Map<String, String> entry : entries)
             {
-                String type = entry.get("type");
-                String key = entry.get("key");
+                String type = entry.get(ENTRY_TYPE);
+                String key = entry.get(ENTRY_KEY);
 
-                if ("RELATIONSHIP".equals(type) && "OWNED".equals(key))
+                if (ENTRY_TYPE_RELATIONSHIP.equals(type) && ENTRY_KEY_OWNED.equals(key))
                 {
-                    String entityType = entry.get("entityType");
+                    String entityType = entry.get(ENTRY_ENTITY_TYPE);
 
-                    if (relationshipEntityTypes.contains(entityType) || "UNKNOWN".equals(entityType))
+                    if (relationshipEntityTypes.contains(entityType) || ENTRY_ENTITY_TYPE_UNKNOWN.equals(entityType))
                     {
                         Snapshot snapshot = new Snapshot();
                         snapshot.entityCode = entityCode;
                         snapshot.entityPermId = entityPermId;
 
-                        String value = entry.get("value");
+                        String value = entry.get(ENTRY_VALUE);
                         if (EntityType.SPACE.name().equals(entityType))
                         {
                             snapshot.spaceCode = value;
@@ -179,16 +209,16 @@ abstract class DeletionEventProcessor extends EventProcessor
                             snapshot.unknownPermId = value;
                         }
 
-                        String validFrom = entry.get("validFrom");
+                        String validFrom = entry.get(ENTRY_VALID_FROM);
                         if (validFrom != null)
                         {
-                            snapshot.from = VALID_TIMESTAMP_FORMAT.parse(validFrom);
+                            snapshot.from = ENTRY_VALID_TIMESTAMP_FORMAT.parse(validFrom);
                         }
 
-                        String validUntil = entry.get("validUntil");
+                        String validUntil = entry.get(ENTRY_VALID_UNTIL);
                         if (validUntil != null)
                         {
-                            snapshot.to = VALID_TIMESTAMP_FORMAT.parse(validUntil);
+                            snapshot.to = ENTRY_VALID_TIMESTAMP_FORMAT.parse(validUntil);
                         } else
                         {
                             snapshot.to = deletion.getRegistrationDateInternal();

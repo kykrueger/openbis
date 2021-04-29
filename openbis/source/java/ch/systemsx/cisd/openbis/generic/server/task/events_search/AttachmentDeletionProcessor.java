@@ -55,13 +55,13 @@ class AttachmentDeletionProcessor extends DeletionEventProcessor
 
             for (Map<String, String> entry : entries)
             {
-                String type = entry.get("type");
-                String key = entry.get("key");
+                String type = entry.get(ENTRY_TYPE);
+                String key = entry.get(ENTRY_KEY);
 
-                if ("ATTACHMENT".equals(type) && "OWNED".equals(key))
+                if (ENTRY_TYPE_ATTACHMENT.equals(type) && ENTRY_KEY_OWNED.equals(key))
                 {
-                    String entityType = entry.get("entityType");
-                    String value = entry.get("value");
+                    String entityType = entry.get(ENTRY_ENTITY_TYPE);
+                    String value = entry.get(ENTRY_VALUE);
 
                     Snapshot snapshot = new Snapshot();
                     if (EntityType.PROJECT.name().equals(entityType))
@@ -81,13 +81,13 @@ class AttachmentDeletionProcessor extends DeletionEventProcessor
                     newEvent.entityProjectPermId = snapshot.projectPermId;
                     newEvent.entityExperimentPermId = snapshot.experimentPermId;
                     newEvent.entitySamplePermId = snapshot.samplePermId;
-                    newEvent.entityRegisterer = entry.get("userId");
+                    newEvent.entityRegisterer = entry.get(ENTRY_USER_ID);
                     newEvent.content = OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(entries);
 
-                    String validFrom = entry.get("validFrom");
+                    String validFrom = entry.get(ENTRY_VALID_FROM);
                     if (validFrom != null)
                     {
-                        newEvent.entityRegistrationTimestamp = VALID_TIMESTAMP_FORMAT.parse(validFrom);
+                        newEvent.entityRegistrationTimestamp = ENTRY_VALID_TIMESTAMP_FORMAT.parse(validFrom);
                     }
 
                     newEvents.add(newEvent);
