@@ -1791,6 +1791,16 @@ public class SearchDataSetTest extends AbstractDataSetTest
         testSearch(TEST_USER, criteria, "CONTAINER_1", "CONTAINER_2", "COMPONENT_1A", "COMPONENT_2A");
     }
 
+    @Test
+    public void testSearchWithAnyPropertyWithNegation()
+    {
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+        criteria.withAnyProperty().thatEndsWith("comment");
+        criteria.withSubcriteria().negate().withAnyProperty().thatStartsWith("co ");
+        criteria.withSubcriteria().negate().withAnyProperty().thatStartsWith("no ");
+        testSearch(TEST_USER, criteria, "20110509092359990-11", "20110509092359990-12");
+    }
+
     private List<DataSet> search(final String sessionToken, final DataSetSearchCriteria criteria,
             final DataSetFetchOptions options)
     {
