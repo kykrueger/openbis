@@ -7,7 +7,7 @@ define([ "stjs", "util/Exceptions", "as/dto/common/id/IObjectId" ], function(stj
 		prototype['@type'] = 'as.dto.history.id.UnknownRelatedObjectId';
 		constructor.serialVersionUID = 1;
 		prototype.relatedObjectId = null;
-		prototype.relatedType = null;
+		prototype.relationType = null;
 		prototype.getRelatedObjectId = function() {
 			return this.relatedObjectId;
 		};
