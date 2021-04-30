@@ -3039,7 +3039,7 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
-    public void testSearchWithAttributeWithNegation()
+    public void testSearchWithAttributeNegation()
     {
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);

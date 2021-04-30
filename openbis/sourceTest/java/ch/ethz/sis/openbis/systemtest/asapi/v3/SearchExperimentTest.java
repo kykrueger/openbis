@@ -1686,7 +1686,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
-    public void testSearchWithAttributeWithNegation()
+    public void testSearchWithAttributeNegation()
     {
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
         criteria.withCode().thatContains("-TEST-");
@@ -1695,24 +1695,20 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, criteria, "/CISD/NOE/EXP-TEST-2", "/TEST-SPACE/NOE/EXP-TEST-2", "/CISD/NEMO/EXP-TEST-2");
     }
 
-    @Test(enabled = false)
-    public void testSearchWithNegation()
-    {
-        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
-        criteria.withStringProperty("DESCRIPTION").thatContains("esc");
-        criteria.withSubcriteria().negate().withStringProperty("DESCRIPTION").thatContains("esc1");
-
-        testSearch(TEST_USER, criteria, "/CISD/NOE/EXP-TEST-2");
-    }
-
-    @Test(enabled = false)
+    @Test
     public void testSearchWithStringPropertyNegation()
     {
-        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
-        criteria.withStringProperty("DESCRIPTION").thatEndsWith("experiment");
-        criteria.withSubcriteria().negate().withStringProperty("DESCRIPTION").thatContains("test");
+        final ExperimentSearchCriteria criteria1 = new ExperimentSearchCriteria().withAndOperator();
+        criteria1.withStringProperty("DESCRIPTION").thatContains("esc");
+        criteria1.withSubcriteria().negate().withStringProperty("DESCRIPTION").thatContains("esc1");
 
-        testSearch(TEST_USER, criteria, "/CISD/DEFAULT/EXP-Y", "/CISD/NEMO/EXP1", "/CISD/NEMO/EXP10",
+        testSearch(TEST_USER, criteria1, "/CISD/NOE/EXP-TEST-2");
+
+        final ExperimentSearchCriteria criteria2 = new ExperimentSearchCriteria().withAndOperator();
+        criteria2.withStringProperty("DESCRIPTION").thatEndsWith("experiment");
+        criteria2.withSubcriteria().negate().withStringProperty("DESCRIPTION").thatContains("test");
+
+        testSearch(TEST_USER, criteria2, "/CISD/DEFAULT/EXP-Y", "/CISD/NEMO/EXP1", "/CISD/NEMO/EXP10",
                 "/CISD/NEMO/EXP11");
     }
 

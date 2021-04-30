@@ -36,11 +36,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearch
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -81,12 +79,17 @@ public class SearchCriteriaTranslator
         final String where = buildWhere(translationContext);
         final String select = buildSelect(translationContext);
 
-        return new SelectQuery(select  + NL + from + NL + where, translationContext.getArgs());
+        final String mainQuery = select + NL + from + NL + where;
+        return new SelectQuery(translationContext.getParentCriterion().isNegated()
+                ? select + NL + from + NL + WHERE + SP + MAIN_TABLE_ALIAS + PERIOD +
+                        translationContext.getIdColumnName() + SP + NOT + SP + IN + SP + LP + NL + mainQuery + NL + RP
+                : mainQuery, translationContext.getArgs());
     }
 
     private static String buildSelect(final TranslationContext translationContext)
     {
-        return SELECT + SP + DISTINCT + SP + MAIN_TABLE_ALIAS + PERIOD + translationContext.getIdColumnName();
+        return SELECT + SP + (translationContext.getParentCriterion().isNegated() ? "" : DISTINCT) + SP +
+                MAIN_TABLE_ALIAS + PERIOD + translationContext.getIdColumnName();
     }
 
     private static String buildFrom(final TranslationContext translationContext)
@@ -129,7 +132,7 @@ public class SearchCriteriaTranslator
         final Collection<ISearchCriteria> criteria = translationContext.getCriteria();
         if (isSearchAllCriteria(criteria))
         {
-            return appendNegation(TRUE, translationContext.getParentCriterion());
+            return WHERE + SP + TRUE;
         } else
         {
             final String logicalOperator = translationContext.getOperator().toString();
@@ -140,7 +143,8 @@ public class SearchCriteriaTranslator
                     (sqlBuilder, criterion) ->
                     {
                         sqlBuilder.append(separator).append(LP);
-                        appendCriterionCondition(translationContext, translationContext.getAuthorisationInformation(), sqlBuilder, criterion);
+                        appendCriterionCondition(translationContext, translationContext.getAuthorisationInformation(),
+                                sqlBuilder, criterion);
                         sqlBuilder.append(RP);
                     },
                     StringBuilder::append
@@ -148,14 +152,8 @@ public class SearchCriteriaTranslator
 
 
             final String condition = resultSqlBuilder.substring(separator.length());
-            final AbstractCompositeSearchCriteria parentCriterion = translationContext.getParentCriterion();
-            return appendNegation(condition, parentCriterion);
+            return WHERE + SP + condition;
         }
-    }
-
-    private static String appendNegation(final String condition, final AbstractCompositeSearchCriteria parentCriterion)
-    {
-        return WHERE + SP + (parentCriterion.isNegated() ? NOT + LP + condition + RP : condition);
     }
 
     /**
