@@ -2393,14 +2393,30 @@ public class EventsSearchMaintenanceTaskTest
 
         List<EventsSearchPE> events = new ArrayList<>();
         {
-            expectLoadLastTimestampsEmpty(EventType.values());
+            for (EntityType entityType : EntityType.values())
+            {
+                expectLoadLastTimestamp(EventType.DELETION, entityType, null);
+                expectLoadLastTimestamp(EventType.MOVEMENT, entityType, null);
+
+                if (EntityType.SAMPLE.equals(entityType))
+                {
+                    expectLoadLastTimestamp(EventType.FREEZING, entityType, dateTimeMillis("2000-01-01 00:10:00.000"));
+                } else if (EntityType.EXPERIMENT.equals(entityType))
+                {
+                    expectLoadLastTimestamp(EventType.FREEZING, entityType, dateTimeMillis("2000-01-01 00:20:00.000"));
+                } else
+                {
+                    expectLoadLastTimestamp(EventType.FREEZING, entityType, null);
+
+                }
+            }
 
             for (EntityType anEntityType : EntityType.values())
             {
                 expectLoadEvents(EventType.DELETION, anEntityType, null);
             }
 
-            expectLoadEvents(EventType.FREEZING, null, null, eventA);
+            expectLoadEvents(EventType.FREEZING, null, dateTimeMillis("2000-01-01 00:20:00.000"), eventA);
             expectLoadEvents(EventType.FREEZING, null, eventA.getRegistrationDateInternal(), eventC);
             expectLoadEvents(EventType.FREEZING, null, eventC.getRegistrationDateInternal());
 

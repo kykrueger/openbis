@@ -47,4 +47,26 @@ class LastTimestamps
         return earliest;
     }
 
+    public Date getLatestOrNull(EventType eventType, EntityType... entityTypes)
+    {
+        Date latest = null;
+
+        for (EntityType entityType : entityTypes)
+        {
+            Date timestamp = timestamps.get(new ImmutablePair<>(eventType, entityType));
+
+            if (timestamp == null)
+            {
+                continue;
+            }
+
+            if (latest == null || timestamp.after(latest))
+            {
+                latest = timestamp;
+            }
+        }
+
+        return latest;
+    }
+
 }

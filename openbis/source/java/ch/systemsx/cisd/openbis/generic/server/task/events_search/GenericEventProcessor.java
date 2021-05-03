@@ -32,8 +32,8 @@ public class GenericEventProcessor extends EventProcessor
     @Override final public void process(LastTimestamps lastTimestamps, SnapshotsFacade snapshots)
     {
         final Date lastSeenTimestampOrNull = entityType != null ?
-                lastTimestamps.getEarliestOrNull(eventType, entityType) :
-                lastTimestamps.getEarliestOrNull(eventType, EntityType.values());
+                lastTimestamps.getLatestOrNull(eventType, entityType) :
+                lastTimestamps.getLatestOrNull(eventType, EntityType.values());
 
         final MutableObject<Date> latestLastSeenTimestamp = new MutableObject<>(lastSeenTimestampOrNull);
 
@@ -46,7 +46,8 @@ public class GenericEventProcessor extends EventProcessor
                 break;
             }
 
-            dataSource.executeInNewTransaction((TransactionCallback<Void>) status -> {
+            dataSource.executeInNewTransaction((TransactionCallback<Void>) status ->
+            {
                 for (EventPE event : events)
                 {
                     try
