@@ -257,7 +257,7 @@ public class Parameters
                 List<String> dirs = new ArrayList<>(new LinkedHashSet<>(Arrays.asList(incomingDirs.split(","))));
                 for (int i = 0; i < dirs.size(); i++)
                 {
-                    Properties p = new Properties(section.getProperties());
+                    Properties p = (Properties) section.getProperties().clone();
                     String incomingDir = dirs.get(i).trim();
                     p.setProperty(ThreadParameters.INCOMING_DIR, incomingDir);
                     String key = section.getKey() + "[" + (i + 1) + "]";
