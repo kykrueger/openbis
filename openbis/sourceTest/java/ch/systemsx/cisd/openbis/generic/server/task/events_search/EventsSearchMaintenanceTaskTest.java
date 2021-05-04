@@ -66,7 +66,7 @@ public class EventsSearchMaintenanceTaskTest
                     @Override public Object invoke(Invocation invocation) throws Throwable
                     {
                         ((TransactionCallback) invocation.getParameter(0)).doInTransaction(null);
-                        return null;
+                        return new Statistics();
                     }
                 });
             }

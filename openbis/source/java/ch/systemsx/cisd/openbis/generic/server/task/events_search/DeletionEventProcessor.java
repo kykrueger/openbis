@@ -84,7 +84,8 @@ abstract class DeletionEventProcessor extends EventProcessor
                 break;
             }
 
-            dataSource.executeInNewTransaction((TransactionCallback<Void>) status -> {
+            dataSource.executeInNewTransaction((TransactionCallback<Void>) status ->
+            {
                 List<NewEvent> newEvents = new LinkedList<>();
                 List<Snapshot> newSnapshots = new LinkedList<>();
 
