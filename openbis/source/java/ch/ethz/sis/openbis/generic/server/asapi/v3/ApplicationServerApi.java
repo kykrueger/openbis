@@ -88,6 +88,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.SearchEventsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.SearchEventsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.*;
@@ -1300,7 +1302,8 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     @Override public SearchResult<Event> searchEvents(final String sessionToken, final EventSearchCriteria searchCriteria,
             final EventFetchOptions fetchOptions)
     {
-        return null;
+        SearchEventsOperationResult result = executeOperation(sessionToken, new SearchEventsOperation(searchCriteria, fetchOptions));
+        return result.getSearchResult();
     }
 
     @Override
