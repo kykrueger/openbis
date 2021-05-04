@@ -2463,3 +2463,6 @@ TextAttributeSearchCriteria
 thatMatches
 withTextAttribute
 Unknown Related Object Id
+isNegated
+setNegated
+negate
