@@ -48,36 +48,6 @@ public class Statistics
         createdEvents += count;
     }
 
-    public int getLoadedSpaces()
-    {
-        return loadedSpaces;
-    }
-
-    public int getLoadedProjects()
-    {
-        return loadedProjects;
-    }
-
-    public int getLoadedExperiments()
-    {
-        return loadedExperiments;
-    }
-
-    public int getLoadedSamples()
-    {
-        return loadedSamples;
-    }
-
-    public int getLoadedEvents()
-    {
-        return loadedEvents;
-    }
-
-    public int getCreatedEvents()
-    {
-        return createdEvents;
-    }
-
     @Override
     public String toString()
     {
