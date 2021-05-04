@@ -2462,3 +2462,6 @@ StringMatchesValue
 TextAttributeSearchCriteria
 thatMatches
 withTextAttribute
+isNegated
+setNegated
+negate
