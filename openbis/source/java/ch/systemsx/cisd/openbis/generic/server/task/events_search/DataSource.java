@@ -142,10 +142,10 @@ class DataSource implements IDataSource
     }
 
     @Override
-    public List<EventPE> loadEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull)
+    public List<EventPE> loadEvents(EventType eventType, EntityType entityType, Date lastSeenTimestampOrNull, Integer limitOrNull)
     {
         IEventDAO eventDAO = CommonServiceProvider.getDAOFactory().getEventDAO();
-        List<EventPE> result = eventDAO.listEvents(eventType, entityType, lastSeenTimestampOrNull);
+        List<EventPE> result = eventDAO.listEvents(eventType, entityType, lastSeenTimestampOrNull, limitOrNull);
 
         for (Statistics statistics : statisticsStack)
         {

@@ -2528,7 +2528,7 @@ public class EventsSearchMaintenanceTaskTest
         mockery.checking(new Expectations()
         {
             {
-                one(dataSource).loadEvents(with(eventType), with(entityType), with(lastSeenTimestamp));
+                one(dataSource).loadEvents(with(eventType), with(entityType), with(lastSeenTimestamp), with(any(Integer.class)));
                 will(returnValue(Arrays.asList(events)));
             }
         });

@@ -61,6 +61,11 @@ abstract class DeletionEventProcessor extends EventProcessor
 
     protected abstract Set<EntityType> getDescendantEntityTypes();
 
+    protected int getBatchSize()
+    {
+        return DEFAULT_BATCH_SIZE;
+    }
+
     protected abstract void processDeletions(LastTimestamps lastTimestamps, SnapshotsFacade snapshots, List<NewEvent> newEvents,
             List<Snapshot> newSnapshots);
 
@@ -77,7 +82,7 @@ abstract class DeletionEventProcessor extends EventProcessor
         while (true)
         {
             final List<EventPE> deletions =
-                    dataSource.loadEvents(EventType.DELETION, getEntityType(), latestLastSeenTimestamp.getValue());
+                    dataSource.loadEvents(EventType.DELETION, getEntityType(), latestLastSeenTimestamp.getValue(), getBatchSize());
 
             if (deletions.isEmpty())
             {
