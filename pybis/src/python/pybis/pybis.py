@@ -2010,7 +2010,7 @@ class Openbis:
         if tags:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if code:
-            sub_criteria.append(_criteria_for_code(code))
+            sub_criteria.append(_subcriteria_for_code_new(code, 'sample', operator='OR'))
         if permId:
             sub_criteria.append(_criteria_for_permId(permId))
 
