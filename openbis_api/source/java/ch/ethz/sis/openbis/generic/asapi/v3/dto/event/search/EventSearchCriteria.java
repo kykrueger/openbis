@@ -15,6 +15,56 @@ public class EventSearchCriteria extends AbstractObjectSearchCriteria<IEventId>
 
     private static final long serialVersionUID = 1L;
 
+    public EventEventTypeSearchCriteria withEventType()
+    {
+        return with(new EventEventTypeSearchCriteria());
+    }
+
+    public EventEntityTypeSearchCriteria withEntityType()
+    {
+        return with(new EventEntityTypeSearchCriteria());
+    }
+
+    public EventEntitySpaceSearchCriteria withEntitySpace()
+    {
+        return with(new EventEntitySpaceSearchCriteria());
+    }
+
+    public EventEntitySpacePermIdSearchCriteria withEntitySpacePermId()
+    {
+        return with(new EventEntitySpacePermIdSearchCriteria());
+    }
+
+    public EventEntityProjectSearchCriteria withEntityProject()
+    {
+        return with(new EventEntityProjectSearchCriteria());
+    }
+
+    public EventEntityProjectPermIdSearchCriteria withEntityProjectPermId()
+    {
+        return with(new EventEntityProjectPermIdSearchCriteria());
+    }
+
+    public EventEntityRegistratorSearchCriteria withEntityRegistrator()
+    {
+        return with(new EventEntityRegistratorSearchCriteria());
+    }
+
+    public EventEntityRegistrationDateSearchCriteria withEntityRegistrationDate()
+    {
+        return with(new EventEntityRegistrationDateSearchCriteria());
+    }
+
+    public EventRegistratorSearchCriteria withRegistrator()
+    {
+        return with(new EventRegistratorSearchCriteria());
+    }
+
+    public EventRegistrationDateSearchCriteria withRegistrationDate()
+    {
+        return with(new EventRegistrationDateSearchCriteria());
+    }
+
     public EventSearchCriteria withOrOperator()
     {
         return (EventSearchCriteria) withOperator(SearchOperator.OR);
