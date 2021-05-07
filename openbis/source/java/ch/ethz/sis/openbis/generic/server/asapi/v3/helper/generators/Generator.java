@@ -19,6 +19,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.fetchoptions.EntityTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EventType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.id.IEventId;
@@ -394,12 +395,12 @@ public class Generator extends AbstractGenerator
         DtoGenerator gen = new DtoGenerator("event", "Event", EventFetchOptions.class);
         gen.addSimpleField(IEventId.class, "id");
         gen.addSimpleField(EventType.class, "eventType");
+        gen.addSimpleField(EntityType.class, "entityType");
         gen.addStringField("entitySpace");
         gen.addSimpleField(ISpaceId.class, "entitySpaceId");
         gen.addStringField("entityProject");
         gen.addSimpleField(IProjectId.class, "entityProjectId");
-        gen.addFetchedField(Person.class, "entityRegistrator", "Registrator", PersonFetchOptions.class)
-                .withInterface(IRegistratorHolder.class);
+        gen.addStringField("entityRegistrator");
         gen.addSimpleField(Date.class, "entityRegistrationDate");
         gen.addStringField("identifier");
         gen.addStringField("description");

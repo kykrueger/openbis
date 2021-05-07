@@ -21,7 +21,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
 
 /*
@@ -33,35 +32,10 @@ public class EventFetchOptions extends FetchOptions<Event> implements Serializab
     private static final long serialVersionUID = 1L;
 
     @JsonProperty
-    private PersonFetchOptions entityRegistrator;
-
-    @JsonProperty
     private PersonFetchOptions registrator;
 
     @JsonProperty
     private EventSortOptions sort;
-
-    // Method automatically generated with DtoGenerator
-    public PersonFetchOptions withEntityRegistrator()
-    {
-        if (entityRegistrator == null)
-        {
-            entityRegistrator = new PersonFetchOptions();
-        }
-        return entityRegistrator;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public PersonFetchOptions withEntityRegistratorUsing(PersonFetchOptions fetchOptions)
-    {
-        return entityRegistrator = fetchOptions;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public boolean hasEntityRegistrator()
-    {
-        return entityRegistrator != null;
-    }
 
     // Method automatically generated with DtoGenerator
     public PersonFetchOptions withRegistrator()
@@ -102,12 +76,10 @@ public class EventFetchOptions extends FetchOptions<Event> implements Serializab
     {
         return sort;
     }
-
     @Override
     protected FetchOptionsToStringBuilder getFetchOptionsStringBuilder()
     {
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("Event", this);
-        f.addFetchOption("EntityRegistrator", entityRegistrator);
         f.addFetchOption("Registrator", registrator);
         return f;
     }

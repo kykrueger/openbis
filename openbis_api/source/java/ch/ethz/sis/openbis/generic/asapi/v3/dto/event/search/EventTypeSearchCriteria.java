@@ -16,22 +16,23 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.EnumFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EventType;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author pkupczyk
  */
-@JsonObject("as.dto.event.search.EventEntitySpacePermIdSearchCriteria")
-public class EventEntitySpacePermIdSearchCriteria extends StringFieldSearchCriteria
+@JsonObject("as.dto.event.search.EventTypeSearchCriteria")
+public class EventTypeSearchCriteria extends EnumFieldSearchCriteria<EventType>
 {
 
     private static final long serialVersionUID = 1L;
 
-    public EventEntitySpacePermIdSearchCriteria()
+    public EventTypeSearchCriteria()
     {
-        super("eventEntitySpacePermId", SearchFieldType.ATTRIBUTE);
+        super("eventType", SearchFieldType.ATTRIBUTE);
     }
 
 }
