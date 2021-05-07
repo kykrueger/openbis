@@ -17,6 +17,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.event;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistrationDateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistratorHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EventType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.id.IEventId;
@@ -48,6 +49,9 @@ public class Event implements Serializable, IRegistrationDateHolder, IRegistrato
     private EventType eventType;
 
     @JsonProperty
+    private EntityType entityType;
+
+    @JsonProperty
     private String entitySpace;
 
     @JsonProperty
@@ -60,7 +64,7 @@ public class Event implements Serializable, IRegistrationDateHolder, IRegistrato
     private IProjectId entityProjectId;
 
     @JsonProperty
-    private Person entityRegistrator;
+    private String entityRegistrator;
 
     @JsonProperty
     private Date entityRegistrationDate;
@@ -124,6 +128,19 @@ public class Event implements Serializable, IRegistrationDateHolder, IRegistrato
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
+    public EntityType getEntityType()
+    {
+        return entityType;
+    }
+
+    // Method automatically generated with DtoGenerator
+    public void setEntityType(EntityType entityType)
+    {
+        this.entityType = entityType;
+    }
+
+    // Method automatically generated with DtoGenerator
+    @JsonIgnore
     public String getEntitySpace()
     {
         return entitySpace;
@@ -176,20 +193,13 @@ public class Event implements Serializable, IRegistrationDateHolder, IRegistrato
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
-    public Person getEntityRegistrator()
+    public String getEntityRegistrator()
     {
-        if (getFetchOptions() != null && getFetchOptions().hasEntityRegistrator())
-        {
-            return entityRegistrator;
-        }
-        else
-        {
-            throw new NotFetchedException("Registrator has not been fetched.");
-        }
+        return entityRegistrator;
     }
 
     // Method automatically generated with DtoGenerator
-    public void setEntityRegistrator(Person entityRegistrator)
+    public void setEntityRegistrator(String entityRegistrator)
     {
         this.entityRegistrator = entityRegistrator;
     }

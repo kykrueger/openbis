@@ -23,15 +23,15 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 /**
  * @author pkupczyk
  */
-@JsonObject("as.dto.event.search.EventEntityProjectPermIdSearchCriteria")
-public class EventEntityProjectPermIdSearchCriteria extends StringFieldSearchCriteria
+@JsonObject("as.dto.event.search.EventEntityProjectIdSearchCriteria")
+public class EventEntityProjectIdSearchCriteria extends StringFieldSearchCriteria
 {
 
     private static final long serialVersionUID = 1L;
 
-    public EventEntityProjectPermIdSearchCriteria()
+    public EventEntityProjectIdSearchCriteria()
     {
-        super("eventEntityProjectPermId", SearchFieldType.ATTRIBUTE);
+        super("eventEntityProjectId", SearchFieldType.ATTRIBUTE);
     }
 
 }
