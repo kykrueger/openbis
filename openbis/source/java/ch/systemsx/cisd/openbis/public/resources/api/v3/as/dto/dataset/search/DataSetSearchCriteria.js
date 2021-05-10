@@ -94,7 +94,7 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 			return this.addCriteria(new TextAttributeSearchCriteria());
 		};
 		prototype.negate = function() {
-			return AbstractDataSetSearchCriteria.negate();
+			return AbstractDataSetSearchCriteria.prototype.negate.call();
 		};
 	}, {
 		relation : {

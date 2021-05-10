@@ -109,6 +109,9 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 		prototype.withAndOperator = function() {
 			return this.withOperator(SearchOperator.AND);
 		};
+		prototype.isNegated = function() {
+			return this.negated;
+		};
 		prototype.negate = function() {
 			this.negated = true;
 			return this;
