@@ -347,7 +347,7 @@ public class MaintenanceTaskParameters
         public Date getNextTimestamp(Date timestamp)
         {
             GregorianCalendar calendar = new GregorianCalendar();
-            calendar.setTime(timestamp);
+            calendar.setTimeInMillis((timestamp.getTime() / 1000) * 1000);
             calendar.set(GregorianCalendar.HOUR_OF_DAY, hour);
             calendar.set(GregorianCalendar.MINUTE, minute);
             calendar.set(GregorianCalendar.SECOND, 0);

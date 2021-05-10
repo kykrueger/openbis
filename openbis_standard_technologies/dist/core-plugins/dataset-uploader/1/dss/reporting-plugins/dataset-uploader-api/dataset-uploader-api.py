@@ -116,7 +116,6 @@ def insertDataSet(tr, permId, sampleIdentifier, experimentIdentifier, dataSetTyp
 	dss_service = ServiceProvider.getDssServiceRpcGeneric().getService();
 
 	for fileName in fileNames:
-		fileName = fileName.strip()
 		folderFile = File(tempDir + "/" + folderName);
 		folderFile.mkdir();
 		temFile = File(tempDir + "/" + folderName + "/" + fileName);

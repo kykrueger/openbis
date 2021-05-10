@@ -537,7 +537,6 @@ def insertDataSet(tr, parameters, tableBuilder):
 	dss_component = ServiceProvider.getDssServiceRpcGeneric().getService();
 	
 	for fileName in fileNames:
-		fileName = fileName.strip()
 		folderFile = File(tempDir + "/" + folderName);
 		folderFile.mkdir();
 		temFile = File(tempDir + "/" + folderName + "/" + fileName);
