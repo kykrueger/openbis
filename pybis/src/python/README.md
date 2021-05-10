@@ -724,6 +724,7 @@ sample.container = '/MY_SPACE/CONTAINER_SAMPLE_NAME'   # watch out, this will ch
 sample.container = ''                                  # this will remove the container. 
 
 # A Sample may contain other Samples, in order to act like a container (see above)
+# caveat: containers are NOT compatible with ELN-LIMS
 # The Sample-objects inside that Sample are called «components» or «contained Samples»
 # You may also use the xxx_contained() functions, which are just aliases.
 sample.get_components()
@@ -1123,6 +1124,7 @@ dataset.del_children(['20170115220259155-412'])
 
 * A DataSet may belong to other DataSets, which must be of kind=CONTAINER
 * As opposed to Samples, DataSets may belong (contained) to more than one DataSet-container
+* caveat: containers are NOT compatible with ELN-LIMS
 
 ```
 dataset.get_containers()
@@ -1134,6 +1136,7 @@ dataset.del_containers(['20170115220259155-412'])
 * a DataSet of kind=CONTAINER may contain other DataSets, to act like a folder (see above)
 * the DataSet-objects inside that DataSet are called components or contained DataSets
 * you may also use the xxx_contained() functions, which are just aliases.
+* caveat: components are NOT compatible with ELN-LIMS
 
 ```
 dataset.get_components()
