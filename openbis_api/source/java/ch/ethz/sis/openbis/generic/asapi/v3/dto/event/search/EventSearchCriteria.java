@@ -1,9 +1,11 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractObjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.id.IEventId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.RegistratorSearchCriteria;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -55,14 +57,14 @@ public class EventSearchCriteria extends AbstractObjectSearchCriteria<IEventId>
         return with(new EventEntityRegistrationDateSearchCriteria());
     }
 
-    public EventRegistratorSearchCriteria withRegistrator()
+    public RegistratorSearchCriteria withRegistrator()
     {
-        return with(new EventRegistratorSearchCriteria());
+        return with(new RegistratorSearchCriteria());
     }
 
-    public EventRegistrationDateSearchCriteria withRegistrationDate()
+    public RegistrationDateSearchCriteria withRegistrationDate()
     {
-        return with(new EventRegistrationDateSearchCriteria());
+        return with(new RegistrationDateSearchCriteria());
     }
 
     public EventSearchCriteria withOrOperator()

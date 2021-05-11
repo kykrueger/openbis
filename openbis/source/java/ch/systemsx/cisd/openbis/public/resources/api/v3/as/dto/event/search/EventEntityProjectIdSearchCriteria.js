@@ -3,7 +3,7 @@
  */
 define([ "stjs", "as/dto/common/search/StringFieldSearchCriteria", "as/dto/common/search/SearchFieldType" ], function(stjs, StringFieldSearchCriteria, SearchFieldType) {
 	var EventEntityProjectIdSearchCriteria = function() {
-		StringFieldSearchCriteria.call(this, "eventEntityProjectId", SearchFieldType.ATTRIBUTE);
+		StringFieldSearchCriteria.call(this, "entity_project_perm_id", SearchFieldType.ATTRIBUTE);
 	};
 	stjs.extend(EventEntityProjectIdSearchCriteria, StringFieldSearchCriteria, [ StringFieldSearchCriteria ], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.event.search.EventEntityProjectIdSearchCriteria';

@@ -25,31 +25,32 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.SearchEventsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.SearchEventsOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.EventSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.event.IEventTranslator;
-import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author pkupczyk
  */
 @Component
-public class SearchEventsOperationExecutor extends AbstractSearchObjectsOperationExecutor<Event, EventPE, EventSearchCriteria, EventFetchOptions>
+public class SearchEventsOperationExecutor extends SearchObjectsOperationExecutor<Event, Long, EventSearchCriteria, EventFetchOptions>
         implements ISearchEventsOperationExecutor
 {
 
     @Autowired
-    private ISearchEventExecutor searchExecutor;
+    private IEventTranslator translator;
 
     @Autowired
-    private IEventTranslator translator;
+    private EventSearchManager searchManager;
+
+    @Autowired
+    protected IDAOFactory daoFactory;
 
     @Override
     protected Class<? extends SearchObjectsOperation<EventSearchCriteria, EventFetchOptions>> getOperationClass()
@@ -58,16 +59,21 @@ public class SearchEventsOperationExecutor extends AbstractSearchObjectsOperatio
     }
 
     @Override
-    protected List<EventPE> doSearch(IOperationContext context, EventSearchCriteria criteria,
-            EventFetchOptions fetchOptions)
+    protected ISearchObjectExecutor<EventSearchCriteria, Long> getExecutor()
     {
-        return searchExecutor.search(context, criteria, fetchOptions);
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    protected Map<EventPE, Event> doTranslate(TranslationContext translationContext, Collection<EventPE> objects, EventFetchOptions fetchOptions)
+    protected ITranslator<Long, Event, EventFetchOptions> getTranslator()
     {
-        return translator.translate(translationContext, objects, fetchOptions);
+        return translator;
+    }
+
+    @Override
+    protected ILocalSearchManager<EventSearchCriteria, Event, Long> getSearchManager()
+    {
+        return searchManager;
     }
 
     @Override
@@ -77,9 +83,10 @@ public class SearchEventsOperationExecutor extends AbstractSearchObjectsOperatio
     }
 
     @Override
-    protected ILocalSearchManager<EventSearchCriteria, Event, EventPE> getSearchManager()
+    protected SearchObjectsOperationResult<Event> doExecute(final IOperationContext context,
+            final SearchObjectsOperation<EventSearchCriteria, EventFetchOptions> operation)
     {
-        throw new RuntimeException("This method is not implemented yet.");
+        return executeDirectSQLSearch(context, operation);
     }
 
 }

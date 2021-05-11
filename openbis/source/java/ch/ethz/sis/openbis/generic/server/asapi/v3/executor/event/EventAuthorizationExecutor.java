@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.event;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.systemsx.cisd.base.annotation.JsonObject;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.RolesAllowed;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
+import org.springframework.stereotype.Component;
 
 /**
  * @author pkupczyk
  */
-@JsonObject("as.dto.event.search.EventEntityRegistrationDateSearchCriteria")
-public class EventEntityRegistrationDateSearchCriteria extends DateFieldSearchCriteria
+@Component
+public class EventAuthorizationExecutor implements IEventAuthorizationExecutor
 {
 
-    private static final long serialVersionUID = 1L;
-
-    public EventEntityRegistrationDateSearchCriteria()
+    @Override
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
+    public void canGet(IOperationContext context)
     {
-        super("entity_registration_timestamp", SearchFieldType.ATTRIBUTE);
     }
 
 }

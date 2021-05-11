@@ -16,14 +16,40 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.event;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectBaseRecord;
+
+import java.util.Date;
 
 /**
  * @author pkupczyk
  */
-public interface IEventTranslator extends ITranslator<Long, Event, EventFetchOptions>
+public class EventBaseRecord extends ObjectBaseRecord
 {
+
+    public String eventType;
+
+    public String entityType;
+
+    public String entitySpace;
+
+    public String entitySpaceId;
+
+    public String entityProject;
+
+    public String entityProjectId;
+
+    public String entityRegistrator;
+
+    public Date entityRegistrationDate;
+
+    public String identifier;
+
+    public String description;
+
+    public String reason;
+
+    public String content;
+
+    public Date registrationDate;
 
 }

@@ -31,7 +31,7 @@ public class EventEntityProjectSearchCriteria extends StringFieldSearchCriteria
 
     public EventEntityProjectSearchCriteria()
     {
-        super("eventEntityProject", SearchFieldType.ATTRIBUTE);
+        super("entity_project", SearchFieldType.ATTRIBUTE);
     }
 
 }

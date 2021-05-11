@@ -4,7 +4,7 @@
 define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/common/search/SearchOperator", "as/dto/event/search/EventTypeSearchCriteria", "as/dto/event/search/EventEntityTypeSearchCriteria",
  "as/dto/event/search/EventEntitySpaceSearchCriteria", "as/dto/event/search/EventEntitySpaceIdSearchCriteria", "as/dto/event/search/EventEntityProjectSearchCriteria",
  "as/dto/event/search/EventEntityProjectIdSearchCriteria", "as/dto/event/search/EventEntityRegistratorSearchCriteria", "as/dto/event/search/EventEntityRegistrationDateSearchCriteria",
- "as/dto/event/search/EventRegistratorSearchCriteria", "as/dto/event/search/EventRegistrationDateSearchCriteria"],
+ "as/dto/person/search/RegistratorSearchCriteria", "as/dto/common/search/RegistrationDateSearchCriteria"],
 	function(require, stjs, AbstractObjectSearchCriteria, SearchOperator) {
 
 	var EventSearchCriteria = function() {
@@ -47,12 +47,12 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 			return this.addCriteria(new EventEntityRegistrationDateSearchCriteria());
 		};
 		prototype.withRegistrator = function() {
-			var EventRegistratorSearchCriteria = require("as/dto/event/search/EventRegistratorSearchCriteria");
-			return this.addCriteria(new EventRegistratorSearchCriteria());
+			var RegistratorSearchCriteria = require("as/dto/person/search/RegistratorSearchCriteria");
+			return this.addCriteria(new RegistratorSearchCriteria());
 		};
 		prototype.withRegistrationDate = function() {
-			var EventRegistrationDateSearchCriteria = require("as/dto/event/search/EventRegistrationDateSearchCriteria");
-			return this.addCriteria(new EventRegistrationDateSearchCriteria());
+			var RegistrationDateSearchCriteria = require("as/dto/common/search/RegistrationDateSearchCriteria");
+			return this.addCriteria(new RegistrationDateSearchCriteria());
 		};
 		prototype.withOrOperator = function() {
 			return this.withOperator(SearchOperator.OR);

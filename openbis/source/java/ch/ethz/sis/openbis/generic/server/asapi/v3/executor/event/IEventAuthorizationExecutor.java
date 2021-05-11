@@ -14,24 +14,17 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.event;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
-import ch.systemsx.cisd.base.annotation.JsonObject;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IObjectAuthorizationExecutor;
 
 /**
  * @author pkupczyk
  */
-@JsonObject("as.dto.event.search.EventEntityRegistratorSearchCriteria")
-public class EventEntityRegistratorSearchCriteria extends StringFieldSearchCriteria
+public interface IEventAuthorizationExecutor extends IObjectAuthorizationExecutor
 {
 
-    private static final long serialVersionUID = 1L;
-
-    public EventEntityRegistratorSearchCriteria()
-    {
-        super("entity_registerer", SearchFieldType.ATTRIBUTE);
-    }
+    void canGet(IOperationContext context);
 
 }

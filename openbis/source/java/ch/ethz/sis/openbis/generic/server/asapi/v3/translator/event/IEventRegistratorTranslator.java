@@ -16,14 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.event;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person.IObjectToPersonTranslator;
 
 /**
  * @author pkupczyk
  */
-public interface IEventTranslator extends ITranslator<Long, Event, EventFetchOptions>
+public interface IEventRegistratorTranslator extends IObjectToPersonTranslator
 {
 
 }

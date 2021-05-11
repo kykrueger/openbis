@@ -10,7 +10,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class EventSortOptions extends SortOptions<Event>
 {
     @JsonIgnore
+    public static final String ID = "ID";
+
+    @JsonIgnore
     public static final String REGISTRATION_DATE = "REGISTRATION_DATE";
+
+    public SortOrder id()
+    {
+        return getOrCreateSorting(ID);
+    }
+
+    public SortOrder getId()
+    {
+        return getSorting(ID);
+    }
 
     public SortOrder registrationDate()
     {

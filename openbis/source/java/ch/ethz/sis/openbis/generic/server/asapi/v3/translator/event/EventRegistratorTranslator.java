@@ -16,14 +16,27 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.event;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectRelationRecord;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person.ObjectToPersonTranslator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.lemnik.eodsql.QueryTool;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author pkupczyk
  */
-public interface IEventTranslator extends ITranslator<Long, Event, EventFetchOptions>
+@Component
+public class EventRegistratorTranslator extends ObjectToPersonTranslator implements
+        IEventRegistratorTranslator
 {
+
+    @Override
+    protected List<ObjectRelationRecord> loadRecords(LongOpenHashSet objectIds)
+    {
+        EventQuery query = QueryTool.getManagedQuery(EventQuery.class);
+        return query.getRegistratorIds(objectIds);
+    }
 
 }

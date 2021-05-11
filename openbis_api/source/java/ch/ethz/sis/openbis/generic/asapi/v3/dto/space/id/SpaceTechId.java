@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 ETH Zuerich, CISD
+ * Copyright 2013 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,38 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.EnumFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EntityType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectTechId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
+ * Space tech id.
+ *
  * @author pkupczyk
  */
-@JsonObject("as.dto.event.search.EventEntityTypeSearchCriteria")
-public class EventEntityTypeSearchCriteria extends EnumFieldSearchCriteria<EntityType>
+@JsonObject("as.dto.space.id.SpaceTechId")
+public class SpaceTechId extends ObjectTechId implements ISpaceId
 {
 
     private static final long serialVersionUID = 1L;
 
-    public EventEntityTypeSearchCriteria()
+    /**
+     * @param techId Space tech id, e.g. 123.
+     */
+    public SpaceTechId(Long techId)
     {
-        super("entity_type", SearchFieldType.ATTRIBUTE);
+        super(techId);
+    }
+
+    //
+    // JSON-RPC
+    //
+
+    @SuppressWarnings("unused")
+    private SpaceTechId()
+    {
+        super();
     }
 
 }
