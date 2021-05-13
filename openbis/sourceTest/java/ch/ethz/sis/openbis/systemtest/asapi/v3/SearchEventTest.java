@@ -80,6 +80,8 @@ public class SearchEventTest extends AbstractTest
 
     private Space spaceC;
 
+    private Space spaceD;
+
     private Project projectAA;
 
     private Project projectBB;
@@ -110,9 +112,17 @@ public class SearchEventTest extends AbstractTest
                 EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(new TestDataSource());
                 task.execute();
 
+                // create test data
                 initSpaces();
                 initProjects();
                 initExperiments();
+
+                String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+                // generate new events (they will be created in a different transaction than the events
+                // created in beforeMethod and therefore will have a different registration date)
+
+                deleteSpaces(sessionToken, Collections.singletonList(spaceD.getPermId()), "delete spaces");
 
                 return null;
             }
@@ -128,22 +138,11 @@ public class SearchEventTest extends AbstractTest
             {
                 String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-                ExperimentDeletionOptions experimentOptions = new ExperimentDeletionOptions();
-                experimentOptions.setReason("clean up experiments");
-                IDeletionId experimentDeletionId =
-                        v3api.deleteExperiments(sessionToken,
-                                Arrays.asList(experimentAAA.getPermId(), experimentBBB.getPermId(), experimentBBC.getPermId()),
-                                experimentOptions);
-                v3api.confirmDeletions(sessionToken, Collections.singletonList(experimentDeletionId));
-
-                ProjectDeletionOptions projectOptions = new ProjectDeletionOptions();
-                projectOptions.setReason("clean up projects");
-                v3api.deleteProjects(sessionToken, Arrays.asList(projectAA.getPermId(), projectBB.getPermId(), projectCC.getPermId()),
-                        projectOptions);
-
-                SpaceDeletionOptions spaceOptions = new SpaceDeletionOptions();
-                spaceOptions.setReason("clean up spaces");
-                v3api.deleteSpaces(sessionToken, Arrays.asList(spaceA.getPermId(), spaceB.getPermId(), spaceC.getPermId()), spaceOptions);
+                // clean up test data
+                deleteExperiments(sessionToken, Arrays.asList(experimentAAA.getPermId(), experimentBBB.getPermId(), experimentBBC.getPermId()),
+                        "clean up experiments");
+                deleteProjects(sessionToken, Arrays.asList(projectAA.getPermId(), projectBB.getPermId(), projectCC.getPermId()), "clean up projects");
+                deleteSpaces(sessionToken, Arrays.asList(spaceA.getPermId(), spaceB.getPermId(), spaceC.getPermId()), "clean up spaces");
 
                 return null;
             }
@@ -160,24 +159,13 @@ public class SearchEventTest extends AbstractTest
                 String sessionToken = v3api.login(TEST_USER, PASSWORD);
                 String systemSessionToken = v3api.loginAsSystem();
 
-                ExperimentUpdate freezeExperimentAAA = new ExperimentUpdate();
-                freezeExperimentAAA.setExperimentId(experimentAAA.getPermId());
-                freezeExperimentAAA.freeze();
-                v3api.updateExperiments(systemSessionToken, Collections.singletonList(freezeExperimentAAA));
+                // generate new events (they will be created in a different transaction than the events
+                // created in beforeClass and therefore will have a different registration date)
 
-                ExperimentDeletionOptions experimentOptions = new ExperimentDeletionOptions();
-                experimentOptions.setReason("delete experiments");
-                IDeletionId experimentDeletionId =
-                        v3api.deleteExperiments(sessionToken, Arrays.asList(experimentBBB.getPermId(), experimentBBC.getPermId()), experimentOptions);
-                v3api.confirmDeletions(sessionToken, Collections.singletonList(experimentDeletionId));
-
-                ProjectDeletionOptions projectOptions = new ProjectDeletionOptions();
-                projectOptions.setReason("delete projects");
-                v3api.deleteProjects(sessionToken, Arrays.asList(projectBB.getPermId(), projectCC.getPermId()), projectOptions);
-
-                SpaceDeletionOptions spaceOptions = new SpaceDeletionOptions();
-                spaceOptions.setReason("delete spaces");
-                v3api.deleteSpaces(sessionToken, Collections.singletonList(spaceB.getPermId()), spaceOptions);
+                freezeExperiment(systemSessionToken, experimentAAA.getPermId());
+                deleteExperiments(sessionToken, Arrays.asList(experimentBBB.getPermId(), experimentBBC.getPermId()), "delete experiments");
+                deleteProjects(sessionToken, Arrays.asList(projectBB.getPermId(), projectCC.getPermId()), "delete projects");
+                deleteSpaces(sessionToken, Collections.singletonList(spaceB.getPermId()), "delete spaces");
 
                 // process new events
                 EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask(new TestDataSource());
@@ -201,12 +189,16 @@ public class SearchEventTest extends AbstractTest
         SpaceCreation spaceCCreation = new SpaceCreation();
         spaceCCreation.setCode("EVENT_TEST_SPACE_C_" + System.currentTimeMillis());
 
-        List<SpacePermId> spaceIds = v3api.createSpaces(sessionToken, Arrays.asList(spaceACreation, spaceBCreation, spaceCCreation));
+        SpaceCreation spaceDCreation = new SpaceCreation();
+        spaceDCreation.setCode("EVENT_TEST_SPACE_D_" + System.currentTimeMillis());
+
+        List<SpacePermId> spaceIds = v3api.createSpaces(sessionToken, Arrays.asList(spaceACreation, spaceBCreation, spaceCCreation, spaceDCreation));
 
         Map<ISpaceId, Space> spaceMap = v3api.getSpaces(sessionToken, spaceIds, new SpaceFetchOptions());
         spaceA = spaceMap.get(spaceIds.get(0));
         spaceB = spaceMap.get(spaceIds.get(1));
         spaceC = spaceMap.get(spaceIds.get(2));
+        spaceD = spaceMap.get(spaceIds.get(3));
     }
 
     private void initProjects()
@@ -281,7 +273,7 @@ public class SearchEventTest extends AbstractTest
         SearchResult<Event> result = v3api.searchEvents(sessionToken, new EventSearchCriteria(), new EventFetchOptions());
         List<Event> events = getEventsAfterDate(result, startDate);
 
-        assertEquals(events.size(), 6);
+        assertEquals(events.size(), 7);
     }
 
     @Test
@@ -465,7 +457,7 @@ public class SearchEventTest extends AbstractTest
         SearchResult<Event> result = v3api.searchEvents(sessionToken, criteria, new EventFetchOptions());
         List<Event> events = getEventsAfterDate(result, startDate);
 
-        assertEquals(events.size(), 6);
+        assertEquals(events.size(), 7);
 
         // > now
         criteria = new EventSearchCriteria();
@@ -496,6 +488,82 @@ public class SearchEventTest extends AbstractTest
         assertExperimentFreezing(events.get(0), experimentAAA);
     }
 
+    @Test
+    public void testSearchWithSortingById()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        EventSearchCriteria criteria = new EventSearchCriteria();
+
+        EventFetchOptions fo = new EventFetchOptions();
+        fo.withRegistrator();
+        fo.sortBy().id();
+
+        SearchResult<Event> result = v3api.searchEvents(sessionToken, criteria, fo);
+        List<Event> events = getEventsAfterDate(result, startDate);
+
+        assertEquals(events.size(), 7);
+
+        assertSpaceDeletion(events.get(0), spaceD);
+        assertSpaceDeletion(events.get(1), spaceB);
+        // we cannot assert on the exact order of project and experiment deletions as entities deleted
+        // together are stored in random order in the original event table in JSON content column
+        assertExperimentFreezing(events.get(6), experimentAAA);
+    }
+
+    @Test
+    public void testSearchWithSortingByIdentifier()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        EventSearchCriteria criteria = new EventSearchCriteria();
+
+        EventFetchOptions fo = new EventFetchOptions();
+        fo.withRegistrator();
+        fo.sortBy().identifier();
+
+        SearchResult<Event> result = v3api.searchEvents(sessionToken, criteria, fo);
+        List<Event> events = getEventsAfterDate(result, startDate);
+
+        assertEquals(events.size(), 7);
+
+        assertExperimentFreezing(events.get(0), experimentAAA); // experiment freeze has experiment identifier stored as identifier value
+        assertProjectDeletion(events.get(1), projectBB); // project deletions have project perm id stored as identifier value
+        assertProjectDeletion(events.get(2), projectCC);
+        assertExperimentDeletion(events.get(3), experimentBBB); // experiment deletions have experiment perm id stored as identifier value
+        assertExperimentDeletion(events.get(4), experimentBBC);
+        assertSpaceDeletion(events.get(5), spaceB); // space deletions have space code stored as identifier value
+        assertSpaceDeletion(events.get(6), spaceD);
+    }
+
+    @Test
+    public void testSearchWithSortingByRegistrationDate()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        EventSearchCriteria criteria = new EventSearchCriteria();
+
+        EventFetchOptions fo = new EventFetchOptions();
+        fo.withRegistrator();
+        fo.sortBy().registrationDate();
+        // all events created in one transaction have the same registration timestamp
+        // therefore we need to also sort by identifier to have a stable order
+        fo.sortBy().identifier();
+
+        SearchResult<Event> result = v3api.searchEvents(sessionToken, criteria, fo);
+        List<Event> events = getEventsAfterDate(result, startDate);
+
+        assertEquals(events.size(), 7);
+
+        assertSpaceDeletion(events.get(0), spaceD); // it is first as it was created in a different transaction in beforeClass method
+        assertExperimentFreezing(events.get(1), experimentAAA);
+        assertProjectDeletion(events.get(2), projectBB);
+        assertProjectDeletion(events.get(3), projectCC);
+        assertExperimentDeletion(events.get(4), experimentBBB);
+        assertExperimentDeletion(events.get(5), experimentBBC);
+        assertSpaceDeletion(events.get(6), spaceB);
+    }
+
     private static class TestDataSource extends DataSource
     {
 
@@ -514,6 +582,36 @@ public class SearchEventTest extends AbstractTest
         definition.setReadOnly(false);
         TransactionTemplate template = new TransactionTemplate(manager, definition);
         return template.execute(callback);
+    }
+
+    private void freezeExperiment(String sessionToken, IExperimentId id)
+    {
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(id);
+        update.freeze();
+        v3api.updateExperiments(sessionToken, Collections.singletonList(update));
+    }
+
+    private void deleteExperiments(String sessionToken, List<IExperimentId> ids, String reason)
+    {
+        ExperimentDeletionOptions experimentOptions = new ExperimentDeletionOptions();
+        experimentOptions.setReason(reason);
+        IDeletionId experimentDeletionId = v3api.deleteExperiments(sessionToken, ids, experimentOptions);
+        v3api.confirmDeletions(sessionToken, Collections.singletonList(experimentDeletionId));
+    }
+
+    private void deleteProjects(String sessionToken, List<IProjectId> ids, String reason)
+    {
+        ProjectDeletionOptions projectOptions = new ProjectDeletionOptions();
+        projectOptions.setReason(reason);
+        v3api.deleteProjects(sessionToken, ids, projectOptions);
+    }
+
+    private void deleteSpaces(String sessionToken, List<ISpaceId> ids, String reason)
+    {
+        SpaceDeletionOptions spaceOptions = new SpaceDeletionOptions();
+        spaceOptions.setReason(reason);
+        v3api.deleteSpaces(sessionToken, ids, spaceOptions);
     }
 
     private static void assertDateAfter(Date date, Date startDate)
