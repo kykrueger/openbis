@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-class DataSource implements IDataSource
+public class DataSource implements IDataSource
 {
 
     @Override public <T> T executeInNewTransaction(TransactionCallback<T> callback)

@@ -31,7 +31,7 @@ public class EventEntitySpaceSearchCriteria extends StringFieldSearchCriteria
 
     public EventEntitySpaceSearchCriteria()
     {
-        super("entity_space", SearchFieldType.ATTRIBUTE);
+        super("event_entity_space", SearchFieldType.ATTRIBUTE);
     }
 
 }

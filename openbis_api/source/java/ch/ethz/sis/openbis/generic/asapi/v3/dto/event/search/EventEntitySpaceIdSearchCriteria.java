@@ -31,7 +31,7 @@ public class EventEntitySpaceIdSearchCriteria extends StringFieldSearchCriteria
 
     public EventEntitySpaceIdSearchCriteria()
     {
-        super("entity_space_perm_id", SearchFieldType.ATTRIBUTE);
+        super("event_entity_space_id", SearchFieldType.ATTRIBUTE);
     }
 
 }

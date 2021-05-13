@@ -31,7 +31,7 @@ public class EventEntityRegistrationDateSearchCriteria extends DateFieldSearchCr
 
     public EventEntityRegistrationDateSearchCriteria()
     {
-        super("entity_registration_timestamp", SearchFieldType.ATTRIBUTE);
+        super("event_entity_registration_date", SearchFieldType.ATTRIBUTE);
     }
 
 }

@@ -4,8 +4,9 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/SortOptions" ], function
 	};
 
 	var fields = {
-	    ID : "ID",
-        REGISTRATION_DATE : "REGISTRATION_DATE"
+	    ID : "event_id",
+	    IDENTIFIER : "event_identifier",
+        REGISTRATION_DATE : "event_registration_date"
     };
 
 	stjs.extend(EventSortOptions, SortOptions, [ SortOptions ], function(constructor, prototype) {
@@ -17,6 +18,12 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/SortOptions" ], function
         };
         prototype.getId = function() {
             return this.getSorting(fields.ID);
+        };
+        prototype.identifier = function() {
+            return this.getOrCreateSorting(fields.IDENTIFIER);
+        };
+        prototype.getIdentifier = function() {
+            return this.getSorting(fields.IDENTIFIER);
         };
         prototype.registrationDate = function() {
             return this.getOrCreateSorting(fields.REGISTRATION_DATE);

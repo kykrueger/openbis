@@ -32,7 +32,7 @@ public class EventEntityTypeSearchCriteria extends EnumFieldSearchCriteria<Entit
 
     public EventEntityTypeSearchCriteria()
     {
-        super("entity_type", SearchFieldType.ATTRIBUTE);
+        super("event_entity_type", SearchFieldType.ATTRIBUTE);
     }
 
 }

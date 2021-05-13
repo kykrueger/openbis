@@ -31,7 +31,7 @@ public class EventEntityRegistratorSearchCriteria extends StringFieldSearchCrite
 
     public EventEntityRegistratorSearchCriteria()
     {
-        super("entity_registerer", SearchFieldType.ATTRIBUTE);
+        super("event_entity_registrator", SearchFieldType.ATTRIBUTE);
     }
 
 }
