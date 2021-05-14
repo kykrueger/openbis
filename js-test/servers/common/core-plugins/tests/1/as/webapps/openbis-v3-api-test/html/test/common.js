@@ -165,6 +165,8 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.DeletionSearchCriteria = dtos.DeletionSearchCriteria;
         this.EventFetchOptions = dtos.EventFetchOptions;
         this.EventSearchCriteria = dtos.EventSearchCriteria;
+        this.EventType = require('as/dto/event/EventType');
+        this.EntityType = require('as/dto/event/EntityType');
 		this.CustomASServiceSearchCriteria = dtos.CustomASServiceSearchCriteria;
 		this.CustomASServiceFetchOptions = dtos.CustomASServiceFetchOptions;
 		this.CustomASServiceCode = dtos.CustomASServiceCode;

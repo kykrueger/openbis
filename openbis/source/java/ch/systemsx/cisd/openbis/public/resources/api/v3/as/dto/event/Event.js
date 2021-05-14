@@ -107,7 +107,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		};
 		prototype.getRegistrator = function() {
 			if (this.getFetchOptions() && this.getFetchOptions().hasRegistrator()) {
-				return this.type;
+				return this.registrator;
 			} else {
 				throw new exceptions.NotFetchedException("Registrator has not been fetched.");
 			}
