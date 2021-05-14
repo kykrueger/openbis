@@ -304,8 +304,6 @@ var sources = [
     'as/dto/event/search/EventEntitySpaceIdSearchCriteria',
     'as/dto/event/search/EventEntitySpaceSearchCriteria',
     'as/dto/event/search/EventEntityTypeSearchCriteria',
-    'as/dto/event/search/EventRegistrationDateSearchCriteria',
-    'as/dto/event/search/EventRegistratorSearchCriteria',
     'as/dto/event/search/EventSearchCriteria',
     'as/dto/event/search/EventTypeSearchCriteria',
     'as/dto/event/search/SearchEventsOperation',
