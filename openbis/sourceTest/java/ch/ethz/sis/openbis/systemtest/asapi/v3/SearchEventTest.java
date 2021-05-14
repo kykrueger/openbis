@@ -44,6 +44,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.delete.SpaceDeletionOption
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.concurrent.ConcurrencyUtilities;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.task.events_search.DataSource;
@@ -562,6 +563,71 @@ public class SearchEventTest extends AbstractTest
         assertExperimentDeletion(events.get(4), experimentBBB);
         assertExperimentDeletion(events.get(5), experimentBBC);
         assertSpaceDeletion(events.get(6), spaceB);
+    }
+
+    @Test
+    public void testSearchWithAndOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        EventSearchCriteria criteria = new EventSearchCriteria();
+        criteria.withAndOperator();
+        criteria.withEntityProject().thatEquals(projectBB.getIdentifier().getIdentifier());
+        criteria.withEntityType().thatEquals(EntityType.EXPERIMENT);
+
+        EventFetchOptions fo = new EventFetchOptions();
+        fo.withRegistrator();
+        fo.sortBy().identifier();
+
+        SearchResult<Event> result = v3api.searchEvents(sessionToken, criteria, fo);
+        List<Event> events = getEventsAfterDate(result, startDate);
+
+        assertEquals(events.size(), 2);
+
+        assertExperimentDeletion(events.get(0), experimentBBB);
+        assertExperimentDeletion(events.get(1), experimentBBC);
+    }
+
+    @Test
+    public void testSearchWithOrOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        EventSearchCriteria criteria = new EventSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withEntityProject().thatEquals(projectBB.getIdentifier().getIdentifier());
+        criteria.withEntityType().thatEquals(EntityType.EXPERIMENT);
+
+        EventFetchOptions fo = new EventFetchOptions();
+        fo.withRegistrator();
+        fo.sortBy().identifier();
+
+        SearchResult<Event> result = v3api.searchEvents(sessionToken, criteria, fo);
+        List<Event> events = getEventsAfterDate(result, startDate);
+
+        assertEquals(events.size(), 4);
+
+        assertExperimentFreezing(events.get(0), experimentAAA);
+        assertProjectDeletion(events.get(1), projectBB);
+        assertExperimentDeletion(events.get(2), experimentBBB);
+        assertExperimentDeletion(events.get(3), experimentBBC);
+    }
+
+    @Test
+    public void testSearchWithUnauthorized()
+    {
+        String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
+
+        EventSearchCriteria criteria = new EventSearchCriteria();
+        EventFetchOptions fo = new EventFetchOptions();
+
+        assertAuthorizationFailureException(new IDelegatedAction()
+        {
+            @Override public void execute()
+            {
+                v3api.searchEvents(sessionToken, criteria, fo);
+            }
+        });
     }
 
     private static class TestDataSource extends DataSource
