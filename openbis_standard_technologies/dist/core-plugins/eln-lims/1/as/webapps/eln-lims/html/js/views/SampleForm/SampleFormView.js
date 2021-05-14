@@ -1103,6 +1103,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					var newSampleCodeForCopy = $("#newSampleCodeForCopy");
 					var linkParentsOnCopy = $("#linkParentsOnCopy")[0].checked;
 					var copyChildrenOnCopy = $("input[name=copyChildrenOnCopy]:checked").val();
+					if(copyChildrenOnCopy === 'None') {
+					    copyChildrenOnCopy = false;
+					}
 					var copyCommentsLogOnCopy = $("#copyCommentsLogOnCopy")[0].checked;
 					var isValid = newSampleCodeForCopy[0].checkValidity();
 					if(isValid) {
