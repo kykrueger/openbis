@@ -2722,6 +2722,22 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchEvents()", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fSearch = function(facade) {
+                var criteria = new c.EventSearchCriteria();
+                var fetchOptions = new c.EventFetchOptions();
+                return facade.searchEvents(criteria, fetchOptions);
+			}
+
+			var fCheck = function(facade, events) {
+				c.assertEqual(events.length, 6);
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
+
 		QUnit.test("searchQueries() withId", function(assert) {
 			var c = new common(assert, openbis);
 
