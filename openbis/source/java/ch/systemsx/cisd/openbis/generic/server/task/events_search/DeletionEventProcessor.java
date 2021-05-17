@@ -1,15 +1,23 @@
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
-import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
-import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.transaction.support.TransactionCallback;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 
 abstract class DeletionEventProcessor extends EventProcessor
 {
@@ -241,7 +249,7 @@ abstract class DeletionEventProcessor extends EventProcessor
                 Snapshot snapshot = new Snapshot();
                 snapshot.entityCode = entityCode;
                 snapshot.entityPermId = entityPermId;
-                snapshot.from = registrationTimestamp;
+                snapshot.from = registrationTimestamp != null ? registrationTimestamp : new Date(0);
                 snapshot.to = deletion.getRegistrationDateInternal();
 
                 newSnapshots.add(snapshot);
