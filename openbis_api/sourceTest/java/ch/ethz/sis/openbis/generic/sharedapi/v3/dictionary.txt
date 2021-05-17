@@ -2515,6 +2515,14 @@ with Entity Registrator Using
 with Entity Space
 with Entity Space Perm Id
 with Event Type
+Event Entity Project Id Search Criteria
+Event Entity Space Id Search Criteria
+Event Type Search Criteria
+ID
+id
+Space Tech Id
+with Entity Project Id
+with Entity Space Id
 
 isNegated
 setNegated
