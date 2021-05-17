@@ -49,6 +49,7 @@ import ch.systemsx.cisd.common.concurrent.ConcurrencyUtilities;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.task.events_search.DataSource;
 import ch.systemsx.cisd.openbis.generic.server.task.events_search.EventsSearchMaintenanceTask;
+import ch.systemsx.cisd.openbis.generic.server.task.events_search.Statistics;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -633,21 +634,22 @@ public class SearchEventTest extends AbstractTest
     private static class TestDataSource extends DataSource
     {
 
-        @Override public <T> T executeInNewTransaction(final TransactionCallback<T> callback)
+        @Override public Statistics executeInNewTransaction(final TransactionCallback<?> callback)
         {
             // for testing execute everything in the main transaction instead of starting a new transaction
             return executeInTransaction(callback, TransactionDefinition.PROPAGATION_REQUIRED);
         }
     }
 
-    private static <T> T executeInTransaction(TransactionCallback<T> callback, int propagation)
+    private static Statistics executeInTransaction(TransactionCallback<?> callback, int propagation)
     {
         PlatformTransactionManager manager = CommonServiceProvider.getApplicationContext().getBean(PlatformTransactionManager.class);
         DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
         definition.setPropagationBehavior(propagation);
         definition.setReadOnly(false);
         TransactionTemplate template = new TransactionTemplate(manager, definition);
-        return template.execute(callback);
+        template.execute(callback);
+        return new Statistics();
     }
 
     private void freezeExperiment(String sessionToken, IExperimentId id)
