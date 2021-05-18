@@ -713,6 +713,28 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchSamples() withoutContainer with negation", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria().withAndOperator();
+				criteria.withCode().thatStartsWith("TEST-SAMPLE");
+				criteria.withoutContainer();
+				debugger;
+				var subcriteria = criteria.withSubcriteria();
+				var negatedCriteria = subcriteria.negate();
+				negatedCriteria.withCode().thatEndsWith("-1");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+
+			var fCheck = function(facade, samples) {
+				c.assertObjectsWithValues(samples, "code", [ "TEST-SAMPLE-2", "TEST-SAMPLE-2-PARENT",
+					"TEST-SAMPLE-2-CHILD-2" ]);
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
+
 		QUnit.test("searchSamples() withContainer", function(assert) {
 			var c = new common(assert, openbis);
 
