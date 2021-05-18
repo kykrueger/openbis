@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -722,106 +724,135 @@ public class SearchEventTest extends AbstractTest
 
     private void assertExperimentFreezing(Event event, Experiment experiment)
     {
-        assertNotNull(event.getId());
-        assertEquals(event.getEventType(), EventType.FREEZING);
-        assertEquals(event.getEntityType(), EntityType.EXPERIMENT);
-        assertNull(event.getEntitySpace());
-        assertNull(event.getEntitySpaceId());
-        assertNull(event.getEntityProject());
-        assertNull(event.getEntityProjectId());
-        assertNull(event.getEntityRegistrator());
-        assertNull(event.getEntityRegistrationDate());
-        assertEquals(event.getIdentifier(), experiment.getIdentifier().getIdentifier());
-        assertNull(event.getDescription());
-        assertEquals(event.getReason(), "[\"freeze\"]");
-        assertNull(event.getContent());
-        assertEquals(event.getRegistrator().getUserId(), SYSTEM_USER);
-        assertDateAfter(event.getRegistrationDate(), startDate);
+        try
+        {
+            assertNotNull(event.getId());
+            assertEquals(event.getEventType(), EventType.FREEZING);
+            assertEquals(event.getEntityType(), EntityType.EXPERIMENT);
+            assertNull(event.getEntitySpace());
+            assertNull(event.getEntitySpaceId());
+            assertNull(event.getEntityProject());
+            assertNull(event.getEntityProjectId());
+            assertNull(event.getEntityRegistrator());
+            assertNull(event.getEntityRegistrationDate());
+            assertEquals(event.getIdentifier(), experiment.getIdentifier().getIdentifier());
+            assertNull(event.getDescription());
+            assertEquals(event.getReason(), "[\"freeze\"]");
+            assertNull(event.getContent());
+            assertEquals(event.getRegistrator().getUserId(), SYSTEM_USER);
+            assertDateAfter(event.getRegistrationDate(), startDate);
+        } catch (AssertionError e)
+        {
+            throw new AssertionError("Assertion failed for event: " + toString(event) + " and experiment: " + toString(experiment), e);
+        }
     }
 
     private void assertExperimentDeletion(Event event, Experiment experiment)
     {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        Map<ISpaceId, Space> spaces =
-                v3api.getSpaces(sessionToken, Arrays.asList(experiment.getProject().getSpace().getPermId()), new SpaceFetchOptions());
-
-        assertNotNull(event.getId());
-        assertEquals(event.getEventType(), EventType.DELETION);
-        assertEquals(event.getEntityType(), EntityType.EXPERIMENT);
-        assertEquals(event.getEntitySpace(), experiment.getProject().getSpace().getCode());
-
-        if (spaces.size() > 0)
+        try
         {
-            assertEquals(event.getEntitySpaceId(), experiment.getProject().getSpace().getId());
-        } else
+            String sessionToken = v3api.login(TEST_USER, PASSWORD);
+            Map<ISpaceId, Space> spaces =
+                    v3api.getSpaces(sessionToken, Arrays.asList(experiment.getProject().getSpace().getPermId()), new SpaceFetchOptions());
+
+            assertNotNull(event.getId());
+            assertEquals(event.getEventType(), EventType.DELETION);
+            assertEquals(event.getEntityType(), EntityType.EXPERIMENT);
+            assertEquals(event.getEntitySpace(), experiment.getProject().getSpace().getCode());
+
+            if (spaces.size() > 0)
+            {
+                assertEquals(event.getEntitySpaceId(), experiment.getProject().getSpace().getId());
+            } else
+            {
+                assertNull(event.getEntitySpaceId());
+            }
+
+            assertEquals(event.getEntityProject(), experiment.getProject().getIdentifier().getIdentifier());
+            assertEquals(event.getEntityProjectId(), experiment.getProject().getPermId());
+            assertEquals(event.getEntityRegistrator(), experiment.getRegistrator().getUserId());
+            assertDateEquals(event.getEntityRegistrationDate(), experiment.getRegistrationDate());
+            assertEquals(event.getIdentifier(), experiment.getPermId().getPermId());
+            assertEquals(event.getDescription(), experiment.getPermId().getPermId());
+            assertEquals(event.getReason(), "delete experiments");
+            assertTrue(event.getContent().contains(experiment.getCode()));
+            assertEquals(event.getRegistrator().getUserId(), TEST_USER);
+            assertDateAfter(event.getRegistrationDate(), startDate);
+        } catch (AssertionError e)
         {
-            assertNull(event.getEntitySpaceId());
+            throw new AssertionError("Assertion failed for event: " + toString(event) + " and experiment: " + toString(experiment), e);
         }
-
-        assertEquals(event.getEntityProject(), experiment.getProject().getIdentifier().getIdentifier());
-        assertEquals(event.getEntityProjectId(), experiment.getProject().getPermId());
-        assertEquals(event.getEntityRegistrator(), experiment.getRegistrator().getUserId());
-        assertDateEquals(event.getEntityRegistrationDate(), experiment.getRegistrationDate());
-        assertEquals(event.getIdentifier(), experiment.getPermId().getPermId());
-        assertEquals(event.getDescription(), experiment.getPermId().getPermId());
-        assertEquals(event.getReason(), "delete experiments");
-        assertTrue(event.getContent().contains(experiment.getCode()));
-        assertEquals(event.getRegistrator().getUserId(), TEST_USER);
-        assertDateAfter(event.getRegistrationDate(), startDate);
     }
 
     private void assertProjectDeletion(Event event, Project project)
     {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        Map<ISpaceId, Space> spaces = v3api.getSpaces(sessionToken, Arrays.asList(project.getSpace().getPermId()), new SpaceFetchOptions());
-
-        assertNotNull(event.getId());
-        assertEquals(event.getEventType(), EventType.DELETION);
-        assertEquals(event.getEntityType(), EntityType.PROJECT);
-        assertEquals(event.getEntitySpace(), project.getSpace().getCode());
-
-        if (spaces.size() > 0)
+        try
         {
-            assertEquals(event.getEntitySpaceId(), project.getSpace().getId());
-        } else
+            String sessionToken = v3api.login(TEST_USER, PASSWORD);
+            Map<ISpaceId, Space> spaces = v3api.getSpaces(sessionToken, Arrays.asList(project.getSpace().getPermId()), new SpaceFetchOptions());
+
+            assertNotNull(event.getId());
+            assertEquals(event.getEventType(), EventType.DELETION);
+            assertEquals(event.getEntityType(), EntityType.PROJECT);
+            assertEquals(event.getEntitySpace(), project.getSpace().getCode());
+
+            if (spaces.size() > 0)
+            {
+                assertEquals(event.getEntitySpaceId(), project.getSpace().getId());
+            } else
+            {
+                assertNull(event.getEntitySpaceId());
+            }
+
+            assertEquals(event.getEntityProject(), project.getIdentifier().getIdentifier());
+            assertEquals(event.getEntityProjectId(), project.getPermId());
+            assertEquals(event.getEntityRegistrator(), project.getRegistrator().getUserId());
+            assertDateEquals(event.getEntityRegistrationDate(), project.getRegistrationDate());
+            assertEquals(event.getIdentifier(), project.getPermId().getPermId());
+            assertEquals(event.getDescription(), project.getIdentifier().getIdentifier());
+            assertEquals(event.getReason(), "delete projects");
+            assertTrue(event.getContent().contains(project.getCode()));
+            assertEquals(event.getRegistrator().getUserId(), TEST_USER);
+            assertDateAfter(event.getRegistrationDate(), startDate);
+        } catch (AssertionError e)
         {
-            assertNull(event.getEntitySpaceId());
+            throw new AssertionError("Assertion failed for event: " + toString(event) + " and project: " + toString(project), e);
         }
-
-        assertEquals(event.getEntityProject(), project.getIdentifier().getIdentifier());
-        assertEquals(event.getEntityProjectId(), project.getPermId());
-        assertEquals(event.getEntityRegistrator(), project.getRegistrator().getUserId());
-        assertDateEquals(event.getEntityRegistrationDate(), project.getRegistrationDate());
-        assertEquals(event.getIdentifier(), project.getPermId().getPermId());
-        assertEquals(event.getDescription(), project.getIdentifier().getIdentifier());
-        assertEquals(event.getReason(), "delete projects");
-        assertTrue(event.getContent().contains(project.getCode()));
-        assertEquals(event.getRegistrator().getUserId(), TEST_USER);
-        assertDateAfter(event.getRegistrationDate(), startDate);
     }
 
     private void assertSpaceDeletion(Event event, Space space)
     {
-        assertNotNull(event.getId());
-        assertEquals(event.getEventType(), EventType.DELETION);
-        assertEquals(event.getEntityType(), EntityType.SPACE);
-        assertEquals(event.getEntitySpace(), space.getCode());
-        assertNull(event.getEntitySpaceId());
-        assertNull(event.getEntityProject());
-        assertNull(event.getEntityProjectId());
-        assertNull(event.getEntityRegistrator());
-        assertNull(event.getEntityRegistrationDate());
-        assertEquals(event.getIdentifier(), space.getCode());
-        assertEquals(event.getDescription(), space.getCode());
-        assertEquals(event.getReason(), "delete spaces");
-        assertNull(event.getContent());
-        assertEquals(event.getRegistrator().getUserId(), TEST_USER);
-        assertDateAfter(event.getRegistrationDate(), startDate);
+        try
+        {
+            assertNotNull(event.getId());
+            assertEquals(event.getEventType(), EventType.DELETION);
+            assertEquals(event.getEntityType(), EntityType.SPACE);
+            assertEquals(event.getEntitySpace(), space.getCode());
+            assertNull(event.getEntitySpaceId());
+            assertNull(event.getEntityProject());
+            assertNull(event.getEntityProjectId());
+            assertNull(event.getEntityRegistrator());
+            assertNull(event.getEntityRegistrationDate());
+            assertEquals(event.getIdentifier(), space.getCode());
+            assertEquals(event.getDescription(), space.getCode());
+            assertEquals(event.getReason(), "delete spaces");
+            assertNull(event.getContent());
+            assertEquals(event.getRegistrator().getUserId(), TEST_USER);
+            assertDateAfter(event.getRegistrationDate(), startDate);
+        } catch (AssertionError e)
+        {
+            throw new AssertionError("Assertion failed for event: " + toString(event) + " and space: " + toString(space), e);
+        }
     }
 
     private static List<Event> getEventsAfterDate(SearchResult<Event> result, Date startDate)
     {
         return result.getObjects().stream().filter(e -> e.getRegistrationDate().compareTo(startDate) >= 0).collect(Collectors.toList());
+    }
+
+    private static String toString(Object object)
+    {
+        return new ReflectionToStringBuilder(object, new MultilineRecursiveToStringStyle()).toString();
     }
 
 }
