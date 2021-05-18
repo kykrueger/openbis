@@ -16,9 +16,35 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EventType;
@@ -28,6 +54,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
@@ -50,23 +77,6 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.task.events_search.DataSource;
 import ch.systemsx.cisd.openbis.generic.server.task.events_search.EventsSearchMaintenanceTask;
 import ch.systemsx.cisd.openbis.generic.server.task.events_search.Statistics;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.testng.Assert.*;
 
 /**
  * @author pkupczyk
@@ -96,6 +106,8 @@ public class SearchEventTest extends AbstractTest
 
     private Experiment experimentBBC;
 
+    private IEntityTypeId experimentTypeId;
+
     @BeforeClass
     public void beforeClass()
     {
@@ -117,6 +129,7 @@ public class SearchEventTest extends AbstractTest
                 // create test data
                 initSpaces();
                 initProjects();
+                initExperimentTypes();
                 initExperiments();
 
                 String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -143,6 +156,7 @@ public class SearchEventTest extends AbstractTest
                 // clean up test data
                 deleteExperiments(sessionToken, Arrays.asList(experimentAAA.getPermId(), experimentBBB.getPermId(), experimentBBC.getPermId()),
                         "clean up experiments");
+                deleteExperimentTypes(sessionToken, Collections.singletonList(experimentTypeId), "clean up experiment types");
                 deleteProjects(sessionToken, Arrays.asList(projectAA.getPermId(), projectBB.getPermId(), projectCC.getPermId()), "clean up projects");
                 deleteSpaces(sessionToken, Arrays.asList(spaceA.getPermId(), spaceB.getPermId(), spaceC.getPermId()), "clean up spaces");
 
@@ -231,26 +245,32 @@ public class SearchEventTest extends AbstractTest
         projectCC = projectMap.get(projectIds.get(2));
     }
 
-    private void initExperiments()
+    private void initExperimentTypes()
     {
         String systemSessionToken = v3api.loginAsSystem();
 
         ExperimentTypeCreation experimentTypeCreation = new ExperimentTypeCreation();
         experimentTypeCreation.setCode("EVENT_TEST_EXPERIMENT_TYPE_" + System.currentTimeMillis());
         List<EntityTypePermId> experimentTypeIds = v3api.createExperimentTypes(systemSessionToken, Collections.singletonList(experimentTypeCreation));
+        experimentTypeId = experimentTypeIds.get(0);
+    }
+
+    private void initExperiments()
+    {
+        String systemSessionToken = v3api.loginAsSystem();
 
         ExperimentCreation experimentAAACreation = new ExperimentCreation();
-        experimentAAACreation.setTypeId(experimentTypeIds.get(0));
+        experimentAAACreation.setTypeId(experimentTypeId);
         experimentAAACreation.setCode("EVENT_TEST_EXPERIMENT_A_" + System.currentTimeMillis());
         experimentAAACreation.setProjectId(projectAA.getPermId());
 
         ExperimentCreation experimentBBBCreation = new ExperimentCreation();
-        experimentBBBCreation.setTypeId(experimentTypeIds.get(0));
+        experimentBBBCreation.setTypeId(experimentTypeId);
         experimentBBBCreation.setCode("EVENT_TEST_EXPERIMENT_B_" + System.currentTimeMillis());
         experimentBBBCreation.setProjectId(projectBB.getPermId());
 
         ExperimentCreation experimentBBCCreation = new ExperimentCreation();
-        experimentBBCCreation.setTypeId(experimentTypeIds.get(0));
+        experimentBBCCreation.setTypeId(experimentTypeId);
         experimentBBCCreation.setCode("EVENT_TEST_EXPERIMENT_C_" + System.currentTimeMillis());
         experimentBBCCreation.setProjectId(projectBB.getPermId());
 
@@ -666,6 +686,13 @@ public class SearchEventTest extends AbstractTest
         experimentOptions.setReason(reason);
         IDeletionId experimentDeletionId = v3api.deleteExperiments(sessionToken, ids, experimentOptions);
         v3api.confirmDeletions(sessionToken, Collections.singletonList(experimentDeletionId));
+    }
+
+    private void deleteExperimentTypes(String sessionToken, List<IEntityTypeId> ids, String reason)
+    {
+        ExperimentTypeDeletionOptions typeOptions = new ExperimentTypeDeletionOptions();
+        typeOptions.setReason(reason);
+        v3api.deleteExperimentTypes(sessionToken, ids, typeOptions);
     }
 
     private void deleteProjects(String sessionToken, List<IProjectId> ids, String reason)
