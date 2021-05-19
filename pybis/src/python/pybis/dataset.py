@@ -553,7 +553,7 @@ class DataSet(
         rel_file_links = {}
         for filepath in self.file_list:
             quoted_filepath = urllib.parse.quote(filepath, safe='')
-            rel_file_links[filepath] = '/'.join(['datastore_server', location_part, quoted_filepath])
+            rel_file_links[filepath] = '/'.join(['/datastore_server', location_part, quoted_filepath])
                     
         return rel_file_links
 
