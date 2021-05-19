@@ -48,7 +48,7 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
         this.dataSource = new DataSource();
     }
 
-    EventsSearchMaintenanceTask(IDataSource dataSource)
+    public EventsSearchMaintenanceTask(IDataSource dataSource)
     {
         this.dataSource = dataSource;
     }

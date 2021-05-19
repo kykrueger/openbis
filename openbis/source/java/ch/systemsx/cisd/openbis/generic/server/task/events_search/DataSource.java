@@ -31,7 +31,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
 
-class DataSource implements IDataSource
+public class DataSource implements IDataSource
 {
 
     private static final int LOG_LIMIT = 10;
