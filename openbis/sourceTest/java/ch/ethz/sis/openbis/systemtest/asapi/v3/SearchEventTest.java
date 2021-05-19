@@ -335,10 +335,9 @@ public class SearchEventTest extends AbstractTest
 
         assertEquals(events.size(), 3);
 
-        assertExperimentFreezing(events.get(0), experimentAAA);
-        assertExperimentDeletion(events.get(1), experimentBBB);
-        assertExperimentDeletion(events.get(2), experimentBBC);
-
+        assertExperimentDeletion(events.get(0), experimentBBB);
+        assertExperimentDeletion(events.get(1), experimentBBC);
+        assertExperimentFreezing(events.get(2), experimentAAA);
     }
 
     @Test
@@ -551,11 +550,11 @@ public class SearchEventTest extends AbstractTest
 
         assertEquals(events.size(), 7);
 
-        assertExperimentFreezing(events.get(0), experimentAAA); // experiment freeze has experiment identifier stored as identifier value
-        assertProjectDeletion(events.get(1), projectBB); // project deletions have project perm id stored as identifier value
-        assertProjectDeletion(events.get(2), projectCC);
-        assertExperimentDeletion(events.get(3), experimentBBB); // experiment deletions have experiment perm id stored as identifier value
-        assertExperimentDeletion(events.get(4), experimentBBC);
+        assertProjectDeletion(events.get(0), projectBB); // project deletions have project perm id stored as identifier value
+        assertProjectDeletion(events.get(1), projectCC);
+        assertExperimentDeletion(events.get(2), experimentBBB); // experiment deletions have experiment perm id stored as identifier value
+        assertExperimentDeletion(events.get(3), experimentBBC);
+        assertExperimentFreezing(events.get(4), experimentAAA); // experiment freeze has experiment identifier stored as identifier value
         assertSpaceDeletion(events.get(5), spaceB); // space deletions have space code stored as identifier value
         assertSpaceDeletion(events.get(6), spaceD);
     }
@@ -580,11 +579,11 @@ public class SearchEventTest extends AbstractTest
         assertEquals(events.size(), 7);
 
         assertSpaceDeletion(events.get(0), spaceD); // it is first as it was created in a different transaction in beforeClass method
-        assertExperimentFreezing(events.get(1), experimentAAA);
-        assertProjectDeletion(events.get(2), projectBB);
-        assertProjectDeletion(events.get(3), projectCC);
-        assertExperimentDeletion(events.get(4), experimentBBB);
-        assertExperimentDeletion(events.get(5), experimentBBC);
+        assertProjectDeletion(events.get(1), projectBB);
+        assertProjectDeletion(events.get(2), projectCC);
+        assertExperimentDeletion(events.get(3), experimentBBB);
+        assertExperimentDeletion(events.get(4), experimentBBC);
+        assertExperimentFreezing(events.get(5), experimentAAA);
         assertSpaceDeletion(events.get(6), spaceB);
     }
 
@@ -630,10 +629,10 @@ public class SearchEventTest extends AbstractTest
 
         assertEquals(events.size(), 4);
 
-        assertExperimentFreezing(events.get(0), experimentAAA);
-        assertProjectDeletion(events.get(1), projectBB);
-        assertExperimentDeletion(events.get(2), experimentBBB);
-        assertExperimentDeletion(events.get(3), experimentBBC);
+        assertProjectDeletion(events.get(0), projectBB);
+        assertExperimentDeletion(events.get(1), experimentBBB);
+        assertExperimentDeletion(events.get(2), experimentBBC);
+        assertExperimentFreezing(events.get(3), experimentAAA);
     }
 
     @Test
