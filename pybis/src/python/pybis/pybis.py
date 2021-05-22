@@ -2386,6 +2386,10 @@ class Openbis:
         """ Returns an experiment object for a given identifier (code).
         """
 
+        experiment = not only_data and self._object_cache(entity='experiment', code=code)
+        if experiment:
+            return experiment
+
         fetchopts = fetch_option['experiment']
 
         search_request = _type_for_id(code, 'experiment')
@@ -2412,12 +2416,18 @@ class Openbis:
         for permid in resp:
             if only_data:
                 return resp[permid]
-            else:
-                return Experiment(
-                    openbis_obj = self,
-                    type = self.get_experiment_type(resp[code]["type"]["code"]),
-                    data = resp[permid]
-                )
+
+            experiment =  Experiment(
+                openbis_obj = self,
+                type = self.get_experiment_type(resp[code]["type"]["code"]),
+                data = resp[permid]
+            )
+
+            if self.use_cache:
+                self._object_cache(entity='experiment', code=code, value=experiment)
+
+            return experiment
+
     get_collection = get_experiment  # Alias
 
 
