@@ -2413,20 +2413,21 @@ class Openbis:
             raise ValueError(f"No such experiment: {code}")
 
         parse_jackson(resp)
-        for permid in resp:
-            if only_data:
-                return resp[permid]
 
-            experiment =  Experiment(
-                openbis_obj = self,
-                type = self.get_experiment_type(resp[code]["type"]["code"]),
-                data = resp[permid]
-            )
+        data = resp[code]
+        if only_data:
+            return data
 
-            if self.use_cache:
-                self._object_cache(entity='experiment', code=code, value=experiment)
+        experiment =  Experiment(
+            openbis_obj = self,
+            type = self.get_experiment_type(data["type"]["code"]),
+            data = data
+        )
 
-            return experiment
+        if self.use_cache:
+            self._object_cache(entity='experiment', code=code, value=experiment)
+
+        return experiment
 
     get_collection = get_experiment  # Alias
 
